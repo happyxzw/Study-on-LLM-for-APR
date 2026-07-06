@@ -1,0 +1,685 @@
+==================================================
+                Project: Time
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 14.26 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    final int offsetLocal = getOffset(instantLocal);
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    if (offsetLocal != offsetAdjusted) {
+        if ((offsetLocal - offsetAdjusted) > 0) { // Fixed comparison operator
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal > 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetLocal - offsetPrev; // Fixed subtraction order
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+                Failing tests: 21
+  - org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_london
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testPeriod
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens
+  - org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testPeriod', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring', 'org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk', 'org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 14.23 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    final int offsetLocal = getOffset(instantLocal);
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    if (offsetLocal != offsetAdjusted) {
+        if ((offsetLocal - offsetAdjusted) < 0) {
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal > 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetLocal - offsetPrev; // Fixed subtraction order
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+                Failing tests: 15
+  - org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_london
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testPeriod
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens
+  - org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::testPeriod', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring', 'org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight', 'org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 14.79 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    final int offsetLocal = getOffset(instantLocal);
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    if (offsetLocal != offsetAdjusted) {
+        if ((offsetLocal - offsetAdjusted) < 0) {
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal > 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetLocal - offsetPrev; // Corrected difference calculation
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+                Failing tests: 15
+  - org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_london
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testPeriod
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens
+  - org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::testPeriod', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring', 'org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight', 'org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 14.86 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    final int offsetLocal = getOffset(instantLocal);
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    if (offsetLocal != offsetAdjusted) {
+        if ((offsetLocal - offsetAdjusted) > 0) { // Fix: Reversed the comparison to match correct offset difference logic
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal > 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetLocal - offsetPrev; // Fix: Corrected the subtraction order for consistent offset calculation
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+                Failing tests: 21
+  - org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_london
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testPeriod
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens
+  - org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testPeriod', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring', 'org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk', 'org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 14.70 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    final int offsetLocal = getOffset(instantLocal);
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    if (offsetLocal != offsetAdjusted) {
+        if ((offsetLocal - offsetAdjusted) > 0) { // Fixed comparison operator
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantAdjusted + offsetAdjusted); // Fixed argument for nextTransition
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal > 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetPrev - offsetLocal;
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+                Failing tests: 18
+  - org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_NewYork
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_london
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_setHourForward_Moscow_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_setHourAcross_Moscow_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_newValid_Gaza
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_newValid_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_setHourForward_Moscow_Spring', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza', 'org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_NewYork', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_setHourAcross_Moscow_Spring']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 14.29 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    final int offsetLocal = getOffset(instantLocal);
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    if (offsetLocal != offsetAdjusted) {
+        if ((offsetLocal - offsetAdjusted) > 0) { // Fixed comparison sign
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal > 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetLocal - offsetPrev; // Corrected diff calculation
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+                Failing tests: 21
+  - org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_london
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testPeriod
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens
+  - org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testPeriod', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring', 'org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk', 'org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 13.59 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    final int offsetLocal = getOffset(instantLocal);
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    if (offsetLocal != offsetAdjusted) {
+        if ((offsetLocal - offsetAdjusted) > 0) { // Fixed condition to properly check positive offset difference
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal > 0) { // Fixed indentation to align with the else if block
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetLocal - offsetPrev; // Corrected the difference calculation
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+                Failing tests: 21
+  - org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_london
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testPeriod
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens
+  - org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testPeriod', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring', 'org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk', 'org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 13.87 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    final int offsetLocal = getOffset(instantLocal);
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    if (offsetLocal != offsetAdjusted) {
+        if ((offsetLocal - offsetAdjusted) > 0) { // Corrected comparison here
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal > 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetLocal - offsetPrev; // Corrected difference calculation
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+                Failing tests: 21
+  - org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_london
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testPeriod
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens
+  - org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testPeriod', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring', 'org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk', 'org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 14.15 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    final int offsetLocal = getOffset(instantLocal);
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    if (offsetLocal != offsetAdjusted) {
+        if ((offsetLocal - offsetAdjusted) > 0) {  // Corrected comparison to ensure proper condition
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal != 0) {  // Corrected condition to check for non-zero offset
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetLocal - offsetPrev;  // Corrected difference calculation
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+                Failing tests: 21
+  - org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_london
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testPeriod
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens
+  - org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testPeriod', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring', 'org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk', 'org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 14.21 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    final int offsetLocal = getOffset(instantLocal);
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    if (offsetLocal != offsetAdjusted) {
+        if ((offsetLocal - offsetAdjusted) > 0) { // Fix: Changed '< 0' to '> 0' to correctly compare the offset difference.
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal > 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetLocal - offsetPrev; // Fix: Changed 'offsetPrev - offsetLocal' to 'offsetLocal - offsetPrev' to correctly calculate the difference.
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+                Failing tests: 21
+  - org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_london
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza
+  - org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk
+  - org.joda.time.TestDateTimeZoneCutover::testPeriod
+  - org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn
+  - org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens
+  - org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusHour_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_NewYork_Spring', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testPeriod', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Spring', 'org.joda.time.TestDateTimeZone::testIsLocalDateTimeGap_Berlin', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_athens', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Turk', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_minusDay_Gaza', 'org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Guatemata_Autumn', 'org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_paris', 'org.joda.time.TestDateTimeZoneCutover::test_DateTime_plusDayMidGap_Turk', 'org.joda.time.TestLocalDate_Basics::testToInterval_Zone_noMidnight']
+
+                EXCEPTIONS
+                None
+
+

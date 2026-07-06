@@ -1,0 +1,1102 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock(); block != null; block = block.getParent()) {
+    if (block.isLoop) {
+      return false;
+    } else if (block.isFunction) {
+      return true;
+    }
+  }
+  return false;
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  boolean foundLoop = false;
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return !foundLoop; // Return true only if no loops were found
+    } else if (block.isLoop) {
+      foundLoop = true; // Mark that a loop was found
+    }
+  }
+  return !foundLoop; // Return true if no loops were found throughout the blocks
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock(); block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true; // Return true if we reach a function block
+    } else if (block.isLoop) {
+      return false; // Return false if we encounter a loop block
+    }
+  }
+  return true; // Return true if we finish the loop without finding any loops or functions
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 285.70 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isLoop) {
+      return false;
+    } else if (block.isFunction) {
+      return true; // Changed to return true when we reach a function block
+    }
+  }
+  return true; // It should return true if we exit the loop without hitting a loop block
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 292.12 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock(); block != null; block = block.getParent()) {
+    if (block.isLoop) {
+      return false; // Return false if we find it within a loop
+    }
+    if (block.isFunction) {
+      break; // We can stop checking once we've reached a function
+    }
+  }
+  return true; // Return true if all checks passed
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 296.54 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock(); block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true;  // Found a function, return true since assignment is valid in function scope.
+    } else if (block.isLoop) {
+      return false; // Found a loop, return false since assignment is not valid in a loop scope.
+    }
+  }
+  return false; // If we exited the loop without finding a function or loop, return false.
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isLoop) {
+      return false;
+    }
+    if (block.isFunction) {
+      return true; // If we reach a function block, we can confirm assignment is valid
+    }
+  }
+  return true; // If no loop was found, it can be assigned once
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: timeout
+                Validation Time: 300.10 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  boolean isAssignedOnce = true; // Assume it is assigned once unless proven otherwise
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      break;
+    } else if (block.isLoop) {
+      isAssignedOnce = false; // Found a loop, it could be assigned multiple times
+      break; // Exit loop since we cannot guarantee one assignment
+    }
+  }
+  return isAssignedOnce; // Return the result based on the checks
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 296.94 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true;
+    } else if (block.isLoop) {
+      // We found a loop, but we should keep checking parent blocks
+      continue;
+    }
+  }
+  return false;
+}
+
+                TEST STDOUT:
+                Failing tests: 72
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testRedeclare
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testUnreferencedBleedingFunction
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testDoubleDeclaration2
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectRecursion
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectCatch
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectRedeclare
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testDoubleDeclaration
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectShadowing
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNoWarnInExterns1
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNoWarnInExterns2
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction2
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction3
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction4
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction5
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction6
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction7
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testEarlyReference
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedRecursiveFunction1
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedRecursiveFunction2
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedRecursiveFunction3
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectCode
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testHoistedFunction1
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testHoistedFunction2
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectEarlyReference
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testReferencedBleedingFunction
+  - com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testCapturedVariables
+  - com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testGlobals
+  - com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testParameters
+  - com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testFunctions
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testOperators
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testVarDeclarations
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testFor
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testNew
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testTry
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testArray
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testCalls
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testForIn
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testThrow
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testWhile
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testThis
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testType
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testWith
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testSimplePrograms
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testDirectives
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testDecIncOperators
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testReturnStatement
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testConditionals
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testLogicalExpr
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testFunctions
+  - com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testMathExpr
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testNoInlineAliasesInLoop
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction7', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testDirectives', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testNew', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testThis', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testGlobals', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testDecIncOperators', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testReferencedBleedingFunction', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedRecursiveFunction2', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testLogicalExpr', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction2', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNoWarnInExterns2', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction5', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction6', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectRedeclare', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testConditionals', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectCatch', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testCalls', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction3', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testFunctions', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testForIn', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedRecursiveFunction3', 'com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testFunctions', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNoWarnInExterns1', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectShadowing', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testHoistedFunction1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testVarDeclarations', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testRedeclare', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testWith', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testParameters', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectCode', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testMathExpr', 'com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testCapturedVariables', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testWhile', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testEarlyReference', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testType', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testDoubleDeclaration2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedRecursiveFunction1', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testReturnStatement', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testHoistedFunction2', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testThrow', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testOperators', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectEarlyReference', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testArray', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testTry', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testDoubleDeclaration', 'com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testUnreferencedBleedingFunction', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testFor', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectRecursion', 'com.google.javascript.jscomp.jsonml.JsonMLConversionTest::testSimplePrograms', 'com.google.javascript.jscomp.InlineVariablesTest::testNoInlineAliasesInLoop', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction4']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 286.62 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  boolean foundFunction = false;
+  for (BasicBlock block = ref.getBasicBlock(); block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      foundFunction = true;
+      break;
+    } else if (block.isLoop) {
+      return false;
+    }
+  }
+  return foundFunction;
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 265.01 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true; // Fixed: Return true if we reach a function block
+    } else if (block.isLoop) {
+      return false;
+    }
+  }
+  return false; // Fixed: Return false if we exit the loop without finding a function block
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 257.40 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true; // Corrected to return true if we reach a function block
+    } else if (block.isLoop) {
+      return false;
+    }
+  }
+  return false; // Added to return false if no function block is found
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 251.74 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true; // Corrected: Return true if we reach a function block, as it indicates the reference is assigned once in the function's scope.
+    } else if (block.isLoop) {
+      return false; // Remains unchanged: Return false if we encounter a loop block.
+    }
+  }
+  return false; // Corrected: Return false if we finish checking without hitting a function block.
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 253.38 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true; // We should return true if we reach a function block, indicating a valid scope.
+    } else if (block.isLoop) {
+      return false; // If we encounter a loop block, we should return false immediately.
+    }
+  }
+  return false; // If we exit the loop without finding a function or loop, return false.
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 239.89 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true; // Corrected to return true when we reach a function block
+    } else if (block.isLoop) {
+      return false;
+    }
+  }
+  return false; // Ensures that if we exit the loop without hitting a function or loop, we return false
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 246.99 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true; // Corrected: return true if we reach a function block
+    } else if (block.isLoop) {
+      return false; // Return false immediately if we hit a loop block
+    }
+  }
+  return false; // Corrected: return false if no function block was reached
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 261.61 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true; // Corrected to return true if we reach a function block
+    } else if (block.isLoop) {
+      return false; // Keep the return false for loop blocks
+    }
+  }
+  return false; // Added to return false if we exit the loop without finding a function block
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 253.55 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true; // Corrected: We should return true if we reach a function block, indicating the assignment is valid within a function scope.
+    } else if (block.isLoop) {
+      return false; // This part remains unchanged; we return false if we encounter a loop block.
+    }
+  }
+  return false; // Corrected: If we exit the loop without hitting a function, we should return false, indicating the assignment is not valid.
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 238.33 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true; // Return true if we reach a function block
+    } else if (block.isLoop) {
+      return false;
+    }
+  }
+  return false; // Return false if we exit the loop without finding a function block
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 283.99 seconds
+                Failure reason: Regression
+
+                PATCH:
+                boolean isAssignedOnceInLifetime() {
+  Reference ref = getOneAndOnlyAssignment();
+  if (ref == null) {
+    return false;
+  }
+  for (BasicBlock block = ref.getBasicBlock();
+       block != null; block = block.getParent()) {
+    if (block.isFunction) {
+      return true; // Changed from break to return true to indicate assignment is valid.
+    } else if (block.isLoop) {
+      return false; // No change needed here; still returns false for loops.
+    }
+  }
+  return false; // Changed from true to false here, as we should return false if we exit the loop without finding a function block.
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn
+  - com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant
+  - com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testExternalIssue1053
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testInlineConstants
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias2b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant3', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstants', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1b', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineConditionallyDefinedConstant1', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineConstantAliasWithNonConstant', 'com.google.javascript.jscomp.IntegrationTest::testInlineConstants', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsWithInlineAllStringsOn', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstants', 'com.google.javascript.jscomp.InlineVariablesTest::testCascadingInlines', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineVariablesConstantsJsDocStyle', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineCatchAlias1', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.InlineVariablesConstantsTest::testInlineDefinedConstant', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases1d', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineFunctionAlias1b']
+
+                EXCEPTIONS
+                None
+
+

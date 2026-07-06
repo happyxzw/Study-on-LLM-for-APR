@@ -1,0 +1,1900 @@
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 2.22 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+        DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                t = p.nextToken();
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while (t == JsonToken.FIELD_NAME) {
+                    p.nextToken();
+                    tokens.copyCurrentStructure(p);
+                    t = p.nextToken();
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Cannot create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: not a statement
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: not a statement
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: illegal start of expression
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: ';' expected
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: not a statement
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:702: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 2.13 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                t = p.nextToken();
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while (t == JsonToken.FIELD_NAME) {
+                    p.nextToken();
+                    tokens.copyCurrentStructure(p);
+                    t = p.nextToken();
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Cannot create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: not a statement
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: not a statement
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: illegal start of expression
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: ';' expected
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: not a statement
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:702: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 2.14 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                t = p.nextToken();
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while (t == JsonToken.FIELD_NAME) {
+                    p.nextToken();
+                    tokens.copyCurrentStructure(p);
+                    t = p.nextToken();
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Can not create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: not a statement
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: not a statement
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: illegal start of expression
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: ';' expected
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: not a statement
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:702: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 2.15 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                t = p.nextToken();
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while (t == JsonToken.FIELD_NAME) {
+                    p.nextToken();
+                    tokens.copyCurrentStructure(p);
+                    t = p.nextToken();
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Can not create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: not a statement
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: not a statement
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: illegal start of expression
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: ';' expected
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: not a statement
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:702: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 1.57 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                t = p.nextToken();
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while (t == JsonToken.FIELD_NAME) {
+                    p.nextToken();
+                    tokens.copyCurrentStructure(p);
+                    t = p.nextToken();
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Can not create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: not a statement
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: not a statement
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: illegal start of expression
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: ';' expected
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: not a statement
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:702: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 1.97 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                t = p.nextToken();
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while (t == JsonToken.FIELD_NAME) {
+                    p.nextToken();
+                    tokens.copyCurrentStructure(p);
+                    t = p.nextToken();
+                }
+                tokens.writeEndObject();
+                if (!bean.getClass().isAssignableFrom(_beanType.getRawClass())) {
+                    ctxt.reportMappingException("Cannot create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: not a statement
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: not a statement
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: illegal start of expression
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: ';' expected
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: not a statement
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:702: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 2.02 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                t = p.nextToken();
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while (t == JsonToken.FIELD_NAME) {
+                    p.nextToken();
+                    tokens.copyCurrentStructure(p);
+                    t = p.nextToken();
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Can not create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: not a statement
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: not a statement
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: illegal start of expression
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: ';' expected
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: not a statement
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:702: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 2.13 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                t = p.nextToken();
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while (t == JsonToken.FIELD_NAME) {
+                    p.nextToken();
+                    tokens.copyCurrentStructure(p);
+                    t = p.nextToken();
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Cannot create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: not a statement
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: not a statement
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: illegal start of expression
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: ';' expected
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: not a statement
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:702: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 1.86 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                t = p.nextToken();
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while (t == JsonToken.FIELD_NAME) {
+                    p.nextToken();
+                    tokens.copyCurrentStructure(p);
+                    t = p.nextToken();
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Can not create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: not a statement
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: not a statement
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: illegal start of expression
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: ';' expected
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: not a statement
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:702: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 1.91 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                t = p.nextToken();
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while (t == JsonToken.FIELD_NAME) {
+                    p.nextToken();
+                    tokens.copyCurrentStructure(p);
+                    t = p.nextToken();
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Cannot create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: not a statement
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:634: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    [javac]                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:635: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: illegal start of expression
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:643: error: ';' expected
+    [javac]     protected Object deserializeWithExternalTypeId(JsonParser p,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: not a statement
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:644: error: ';' expected
+    [javac]     		DeserializationContext ctxt, Object bean)
+    [javac]     		                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:645: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: illegal start of expression
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:695: error: ';' expected
+    [javac]     protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: not a statement
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:696: error: ';' expected
+    [javac]     		DeserializationContext ctxt)
+    [javac]     		                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: not a statement
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:697: error: ';' expected
+    [javac]         throws IOException, JsonProcessingException
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/src/main/java/com/fasterxml/jackson/databind/deser/BuilderBasedDeserializer.java:702: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_120830/JacksonDatabind_76_4ab697b2096c435796920e2c8d1b4306/maven-build.xml:92: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

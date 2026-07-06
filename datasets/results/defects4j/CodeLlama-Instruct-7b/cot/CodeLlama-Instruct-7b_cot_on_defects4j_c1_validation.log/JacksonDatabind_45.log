@@ -1,0 +1,553 @@
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 113.47 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated)property.getMember());
+        if (format != null) {
+            JsonFormat.Shape shape = format.getShape();
+            if (shape.isNumeric()) {
+                return withFormat(Boolean.TRUE, null);
+            }
+            if (format.getShape() == JsonFormat.Shape.STRING) {
+                TimeZone tz = format.getTimeZone();
+                final String pattern = format.hasPattern()
+                                ? format.getPattern()
+                                : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                final Locale loc = format.hasLocale()
+                                ? format.getLocale()
+                                : serializers.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                if (tz == null) {
+                    tz = serializers.getTimeZone();
+                }
+                df.setTimeZone(tz);
+                return withFormat(Boolean.FALSE, df);
+            }
+        } else {
+            // format is null, return a new SimpleDateFormat instance
+            return withFormat(Boolean.FALSE, new SimpleDateFormat());
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - com.fasterxml.jackson.databind.deser.TestPolymorphicDeserialization676::testDeSerCorrect
+  - com.fasterxml.jackson.databind.deser.TestPolymorphicDeserialization676::testDeSerFail
+  - com.fasterxml.jackson.databind.jsontype.TestExternalId::testWithScalar118
+  - com.fasterxml.jackson.databind.jsontype.TestTypedDeserialization::testIssue506WithDate
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateDefaultShape
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.jsontype.TestTypedDeserialization::testIssue506WithDate', 'com.fasterxml.jackson.databind.deser.TestPolymorphicDeserialization676::testDeSerCorrect', 'com.fasterxml.jackson.databind.jsontype.TestExternalId::testWithScalar118', 'com.fasterxml.jackson.databind.deser.TestPolymorphicDeserialization676::testDeSerFail']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 109.72 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated)property.getMember());
+        if (format != null) {
+            JsonFormat.Shape shape = format.getShape();
+            if (shape.isNumeric()) {
+                return withFormat(Boolean.TRUE, null);
+            }
+            if (shape == JsonFormat.Shape.STRING) {
+                TimeZone tz = format.getTimeZone();
+                final String pattern = format.hasPattern()
+                                ? format.getPattern()
+                                : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                final Locale loc = format.hasLocale()
+                                ? format.getLocale()
+                                : serializers.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                if (tz == null) {
+                    tz = serializers.getTimeZone();
+                }
+                df.setTimeZone(tz);
+                return withFormat(Boolean.FALSE, df);
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateDefaultShape
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 104.98 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated)property.getMember());
+        if (format != null) {
+            JsonFormat.Shape shape = format.getShape();
+            if (shape.isNumeric()) {
+                return withFormat(Boolean.TRUE, null);
+            }
+            if (format.getShape() == JsonFormat.Shape.STRING) {
+                TimeZone tz = format.getTimeZone();
+                final String pattern = format.hasPattern()
+                                ? format.getPattern()
+                                : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                final Locale loc = format.hasLocale()
+                                ? format.getLocale()
+                                : serializers.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                if (tz == null) {
+                    tz = serializers.getTimeZone();
+                }
+                df.setTimeZone(tz);
+                return withFormat(Boolean.FALSE, df);
+            }
+        }
+    }
+    return withFormat(Boolean.TRUE, null); // <-- Changed
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - com.fasterxml.jackson.databind.ext.TestCoreXMLTypes::testXMLGregorianCalendarSerAndDeser
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testWithTimeZoneOverride
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateOther
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateUsingObjectWriter
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateDefaultShape
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateISO8601
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testSqlDate
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateUsingObjectWriter', 'com.fasterxml.jackson.databind.ext.TestCoreXMLTypes::testXMLGregorianCalendarSerAndDeser', 'com.fasterxml.jackson.databind.ser.DateSerializationTest::testSqlDate', 'com.fasterxml.jackson.databind.ser.DateSerializationTest::testWithTimeZoneOverride', 'com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateOther', 'com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateISO8601']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 111.99 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated)property.getMember());
+        if (format != null) {
+            JsonFormat.Shape shape = format.getShape();
+            if (shape.isNumeric()) {
+                return withFormat(Boolean.TRUE, null);
+            }
+            if (shape == JsonFormat.Shape.STRING) {
+                TimeZone tz = format.getTimeZone();
+                final String pattern = format.hasPattern()
+                                ? format.getPattern()
+                                : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                final Locale loc = format.hasLocale()
+                                ? format.getLocale()
+                                : serializers.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                if (tz == null) {
+                    tz = serializers.getTimeZone();
+                }
+                df.setTimeZone(tz);
+                return withFormat(Boolean.FALSE, df);
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateDefaultShape
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 2.12 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated)property.getMember());
+        if (format != null) {
+            JsonFormat.Shape shape = format.getShape();
+            if (shape == JsonFormat.Shape.DATE_TIME) {
+                return withFormat(Boolean.TRUE, null);
+            }
+            if (shape == JsonFormat.Shape.DATE) {
+                return withFormat(Boolean.FALSE, format.getDateInstance(serializers.getTimeZone()));
+            }
+            if (shape == JsonFormat.Shape.TIME) {
+                return withFormat(Boolean.FALSE, format.getTimeInstance(serializers.getTimeZone()));
+            }
+            if (shape == JsonFormat.Shape.NUMBER) {
+                return withFormat(Boolean.FALSE, format.getNumberInstance(serializers.getLocale()));
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/JacksonDatabind_45_f1f1d994f0f64911bfb0cbfc3aa6c27c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/JacksonDatabind_45_f1f1d994f0f64911bfb0cbfc3aa6c27c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/JacksonDatabind_45_f1f1d994f0f64911bfb0cbfc3aa6c27c/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/JacksonDatabind_45_f1f1d994f0f64911bfb0cbfc3aa6c27c/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/JacksonDatabind_45_f1f1d994f0f64911bfb0cbfc3aa6c27c/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:56: error: cannot find symbol
+    [javac]             if (shape == JsonFormat.Shape.DATE_TIME) {
+    [javac]                                          ^
+    [javac]   symbol:   variable DATE_TIME
+    [javac]   location: class Shape
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/JacksonDatabind_45_f1f1d994f0f64911bfb0cbfc3aa6c27c/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:59: error: cannot find symbol
+    [javac]             if (shape == JsonFormat.Shape.DATE) {
+    [javac]                                          ^
+    [javac]   symbol:   variable DATE
+    [javac]   location: class Shape
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/JacksonDatabind_45_f1f1d994f0f64911bfb0cbfc3aa6c27c/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:60: error: cannot find symbol
+    [javac]                 return withFormat(Boolean.FALSE, format.getDateInstance(serializers.getTimeZone()));
+    [javac]                                                        ^
+    [javac]   symbol:   method getDateInstance(TimeZone)
+    [javac]   location: variable format of type Value
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/JacksonDatabind_45_f1f1d994f0f64911bfb0cbfc3aa6c27c/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:62: error: cannot find symbol
+    [javac]             if (shape == JsonFormat.Shape.TIME) {
+    [javac]                                          ^
+    [javac]   symbol:   variable TIME
+    [javac]   location: class Shape
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/JacksonDatabind_45_f1f1d994f0f64911bfb0cbfc3aa6c27c/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: cannot find symbol
+    [javac]                 return withFormat(Boolean.FALSE, format.getTimeInstance(serializers.getTimeZone()));
+    [javac]                                                        ^
+    [javac]   symbol:   method getTimeInstance(TimeZone)
+    [javac]   location: variable format of type Value
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/JacksonDatabind_45_f1f1d994f0f64911bfb0cbfc3aa6c27c/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:66: error: cannot find symbol
+    [javac]                 return withFormat(Boolean.FALSE, format.getNumberInstance(serializers.getLocale()));
+    [javac]                                                        ^
+    [javac]   symbol:   method getNumberInstance(Locale)
+    [javac]   location: variable format of type Value
+    [javac] 6 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/JacksonDatabind_45_f1f1d994f0f64911bfb0cbfc3aa6c27c/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 117.92 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated)property.getMember());
+        if (format != null) {
+            JsonFormat.Shape shape = format.getShape();
+            if (shape.isNumeric()) {
+                return withFormat(Boolean.TRUE, null);
+            }
+            if (shape == JsonFormat.Shape.STRING) {
+                TimeZone tz = format.getTimeZone();
+                final String pattern = format.hasPattern()
+                        ? format.getPattern()
+                        : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                if (tz == null) {
+                    tz = serializers.getTimeZone();
+                }
+                df.setTimeZone(tz);
+                return withFormat(Boolean.FALSE, df);
+            }
+            return null; // Return null if the shape is not numeric or a string
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateDefaultShape
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 107.94 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated)property.getMember());
+        if (format != null) {
+            JsonFormat.Shape shape = format.getShape();
+            if (shape.isNumeric()) {
+                return withFormat(Boolean.FALSE, null);
+            }
+            if (format.getShape() == JsonFormat.Shape.STRING) {
+                TimeZone tz = format.getTimeZone();
+                final String pattern = format.hasPattern()
+                        ? format.getPattern()
+                        : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                if (tz == null) {
+                    tz = serializers.getTimeZone();
+                }
+                df.setTimeZone(tz);
+                return withFormat(Boolean.FALSE, df);
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateWithJsonFormat
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateDefaultShape
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testSqlDate
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.ser.DateSerializationTest::testSqlDate', 'com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateWithJsonFormat']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 104.50 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated)property.getMember());
+        if (format != null) {
+            JsonFormat.Shape shape = format.getShape();
+            if (shape.isNumeric()) {
+                return withFormat(Boolean.TRUE, null);
+            }
+            if (format.getShape() == JsonFormat.Shape.STRING) {
+                TimeZone tz = format.getTimeZone();
+                final String pattern = format.hasPattern()
+                                ? format.getPattern()
+                                : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                final Locale loc = format.hasLocale()
+                                ? format.getLocale()
+                                : serializers.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                if (tz != null) {
+                    df.setTimeZone(tz);
+                } else {
+                    tz = serializers.getTimeZone();
+                    df.setTimeZone(tz);
+                }
+                return withFormat(Boolean.FALSE, df);
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateDefaultShape
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 124.05 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated)property.getMember());
+        if (format != null) {
+            JsonFormat.Shape shape = format.getShape();
+            if (shape.isNumeric()) {
+                return withFormat(Boolean.TRUE, null);
+            }
+            if (format.getShape() == JsonFormat.Shape.STRING) {
+                TimeZone tz = format.getTimeZone();
+                final String pattern = format.hasPattern()
+                        ? format.getPattern()
+                        : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                if (tz == null) {
+                    tz = serializers.getTimeZone();
+                }
+                df.setTimeZone(tz);
+                return withFormat(Boolean.FALSE, df);
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateDefaultShape
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

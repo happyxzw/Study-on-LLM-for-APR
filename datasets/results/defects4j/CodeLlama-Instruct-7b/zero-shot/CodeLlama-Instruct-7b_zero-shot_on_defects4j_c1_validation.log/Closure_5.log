@@ -1,0 +1,3321 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 4.59 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 17.79 seconds
+                Failure reason: Regression
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+    } else if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject13
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject13']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 5.04 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 4.50 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/src/com/google/javascript/jscomp/InlineObjectLiterals.java:157: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 4.59 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp() && gramps.isCall() && gramps.getFirstChild() == parent) {
+      return false;
+    }
+    if (parent.isGetProp() && !validProperties.contains(parent.getLastChild().getString())) {
+      if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+        validProperties.add(parent.getLastChild().getString());
+      } else {
+        return false;
+      }
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null || !val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 4.47 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 4.66 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp() && !NodeUtil.isStatementBlock(gramps)) {
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName) && !NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+        return false;
+      }
+      validProperties.add(propName);
+    } else if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 19.27 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 4.82 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+    } else if (isVarOrAssignExprLhs(name)) {
+      Node val = ref.getAssignedValue();
+      if (val == null) {
+        continue;
+      }
+      if (!val.isObjectLit()) {
+        return false;
+      }
+      for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+        if (child.isGetterDef() || child.isSetterDef()) {
+          return false;
+        }
+        validProperties.add(child.getString());
+        for (Reference t : refs) {
+          Node refNode = t.getParent();
+          while (!NodeUtil.isStatementBlock(refNode)) {
+            if (refNode == child) {
+              return false;
+            }
+            refNode = refNode.getParent();
+          }
+        }
+      }
+    } else {
+      return false;
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 5.81 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      if (!parent.getFirstChild().isEqualTo(name)) {
+        return false;
+      }
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260529_103211/Closure_5_67e92693999f4f508ee521aec72082b4/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 8.49 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 7 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 38.75 seconds
+                Failure reason: Regression
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+    } else if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject13
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject13']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 8.34 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 6 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 11.92 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/src/com/google/javascript/jscomp/InlineObjectLiterals.java:157: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 9 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 8.27 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp() && gramps.isCall() && gramps.getFirstChild() == parent) {
+      return false;
+    }
+    if (parent.isGetProp() && !validProperties.contains(parent.getLastChild().getString())) {
+      if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+        validProperties.add(parent.getLastChild().getString());
+      } else {
+        return false;
+      }
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null || !val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 6 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 12.25 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 9 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 8.97 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp() && !NodeUtil.isStatementBlock(gramps)) {
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName) && !NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+        return false;
+      }
+      validProperties.add(propName);
+    } else if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 6 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 8.22 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+    } else if (isVarOrAssignExprLhs(name)) {
+      Node val = ref.getAssignedValue();
+      if (val == null) {
+        continue;
+      }
+      if (!val.isObjectLit()) {
+        return false;
+      }
+      for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+        if (child.isGetterDef() || child.isSetterDef()) {
+          return false;
+        }
+        validProperties.add(child.getString());
+        for (Reference t : refs) {
+          Node refNode = t.getParent();
+          while (!NodeUtil.isStatementBlock(refNode)) {
+            if (refNode == child) {
+              return false;
+            }
+            refNode = refNode.getParent();
+          }
+        }
+      }
+    } else {
+      return false;
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 6 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 9.46 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      if (!parent.getFirstChild().isEqualTo(name)) {
+        return false;
+      }
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260602_120708/Closure_5_37efd8e5a46d46e49b5009730ac404f0/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 7 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 5.44 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 21.80 seconds
+                Failure reason: Regression
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+    } else if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject13
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject13']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 5.40 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 5.64 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/src/com/google/javascript/jscomp/InlineObjectLiterals.java:157: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 6.64 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp() && gramps.isCall() && gramps.getFirstChild() == parent) {
+      return false;
+    }
+    if (parent.isGetProp() && !validProperties.contains(parent.getLastChild().getString())) {
+      if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+        validProperties.add(parent.getLastChild().getString());
+      } else {
+        return false;
+      }
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null || !val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 5.33 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 5.82 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp() && !NodeUtil.isStatementBlock(gramps)) {
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName) && !NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+        return false;
+      }
+      validProperties.add(propName);
+    } else if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 28.81 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 5.50 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+    } else if (isVarOrAssignExprLhs(name)) {
+      Node val = ref.getAssignedValue();
+      if (val == null) {
+        continue;
+      }
+      if (!val.isObjectLit()) {
+        return false;
+      }
+      for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+        if (child.isGetterDef() || child.isSetterDef()) {
+          return false;
+        }
+        validProperties.add(child.getString());
+        for (Reference t : refs) {
+          Node refNode = t.getParent();
+          while (!NodeUtil.isStatementBlock(refNode)) {
+            if (refNode == child) {
+              return false;
+            }
+            refNode = refNode.getParent();
+          }
+        }
+      }
+    } else {
+      return false;
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 5.29 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      if (!parent.getFirstChild().isEqualTo(name)) {
+        return false;
+      }
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_181159/Closure_5_3c0c1be09d194765bbfd3571ca3a8fa6/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

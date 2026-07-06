@@ -1,0 +1,732 @@
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 60.61 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null && property.getMember() != null) { // Added null check for property.getMember()
+        JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated) property.getMember());
+        if (format != null) {
+            JsonFormat.Shape shape = format.getShape();
+            if (shape.isNumeric()) {
+                return withFormat(Boolean.TRUE, null);
+            }
+            if (shape == JsonFormat.Shape.STRING) { // Fixed redundant re-evaluation of format.getShape()
+                TimeZone tz = format.getTimeZone();
+                final String pattern = format.hasPattern()
+                        ? format.getPattern()
+                        : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                if (tz == null) {
+                    tz = serializers.getTimeZone();
+                }
+                df.setTimeZone(tz);
+                return withFormat(Boolean.FALSE, df);
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateDefaultShape
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 0.76 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        AnnotatedMember member = property.getMember();
+        if (member != null) { // Ensure the member is not null before proceeding
+            JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat(member);
+            if (format != null) {
+                JsonFormat.Shape shape = format.getShape();
+                if (shape.isNumeric()) {
+                    return withFormat(Boolean.TRUE, null);
+                }
+                if (shape == JsonFormat.Shape.STRING) { // Use the variable 'shape' instead of re-calling format.getShape()
+                    TimeZone tz = format.getTimeZone();
+                    final String pattern = format.hasPattern()
+                            ? format.getPattern()
+                            : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                    final Locale loc = format.hasLocale()
+                            ? format.getLocale()
+                            : serializers.getLocale();
+                    SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                    if (tz == null) {
+                        tz = serializers.getTimeZone();
+                    }
+                    df.setTimeZone(tz);
+                    return withFormat(Boolean.FALSE, df);
+                }
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:53: error: cannot find symbol
+    [javac]         AnnotatedMember member = property.getMember();
+    [javac]         ^
+    [javac]   symbol:   class AnnotatedMember
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 61.39 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null && property.getMember() != null) { // Fix: Added null check for property.getMember()
+        JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated)property.getMember());
+        if (format != null) {
+            JsonFormat.Shape shape = format.getShape();
+            if (shape.isNumeric()) {
+                return withFormat(Boolean.TRUE, null);
+            }
+            if (shape == JsonFormat.Shape.STRING) { // Fix: Changed format.getShape() to shape for consistency
+                TimeZone tz = format.getTimeZone();
+                final String pattern = format.hasPattern()
+                                ? format.getPattern()
+                                : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                final Locale loc = format.hasLocale()
+                                ? format.getLocale()
+                                : serializers.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                if (tz == null) {
+                    tz = serializers.getTimeZone();
+                }
+                df.setTimeZone(tz);
+                return withFormat(Boolean.FALSE, df);
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateDefaultShape
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 0.81 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        AnnotatedMember member = property.getMember();
+        if (member != null) { // Check if member is null to avoid NullPointerException
+            JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat(member);
+            if (format != null) {
+                JsonFormat.Shape shape = format.getShape();
+                if (shape.isNumeric()) {
+                    return withFormat(Boolean.TRUE, null);
+                }
+                if (shape == JsonFormat.Shape.STRING) { // Use the 'shape' variable instead of calling format.getShape() again
+                    TimeZone tz = format.getTimeZone();
+                    final String pattern = format.hasPattern()
+                                    ? format.getPattern()
+                                    : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                    final Locale loc = format.hasLocale()
+                                    ? format.getLocale()
+                                    : serializers.getLocale();
+                    SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                    if (tz == null) {
+                        tz = serializers.getTimeZone();
+                    }
+                    df.setTimeZone(tz);
+                    return withFormat(Boolean.FALSE, df);
+                }
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:53: error: cannot find symbol
+    [javac]         AnnotatedMember member = property.getMember();
+    [javac]         ^
+    [javac]   symbol:   class AnnotatedMember
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 0.75 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        AnnotatedMember member = property.getMember();
+        if (member != null) {
+            JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat(member);
+            if (format != null) {
+                JsonFormat.Shape shape = format.getShape();
+                if (shape.isNumeric()) {
+                    return withFormat(Boolean.TRUE, null);
+                }
+                if (shape == JsonFormat.Shape.STRING) { // Fixed comparison here
+                    TimeZone tz = format.getTimeZone();
+                    final String pattern = format.hasPattern()
+                                    ? format.getPattern()
+                                    : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                    final Locale loc = format.hasLocale()
+                                    ? format.getLocale()
+                                    : serializers.getLocale();
+                    SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                    if (tz == null) {
+                        tz = serializers.getTimeZone();
+                    }
+                    df.setTimeZone(tz);
+                    return withFormat(Boolean.FALSE, df);
+                }
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:53: error: cannot find symbol
+    [javac]         AnnotatedMember member = property.getMember();
+    [javac]         ^
+    [javac]   symbol:   class AnnotatedMember
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 0.76 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        AnnotatedMember member = property.getMember();
+        if (member != null) { // Ensure property member is not null
+            JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated) member);
+            if (format != null) {
+                JsonFormat.Shape shape = format.getShape();
+                if (shape.isNumeric()) {
+                    return withFormat(Boolean.TRUE, null);
+                }
+                if (shape == JsonFormat.Shape.STRING) { // Use the variable `shape` instead of calling `format.getShape()` again
+                    TimeZone tz = format.getTimeZone();
+                    final String pattern = format.hasPattern()
+                                    ? format.getPattern()
+                                    : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                    final Locale loc = format.hasLocale()
+                                    ? format.getLocale()
+                                    : serializers.getLocale();
+                    SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                    if (tz == null) {
+                        tz = serializers.getTimeZone();
+                    }
+                    df.setTimeZone(tz);
+                    return withFormat(Boolean.FALSE, df);
+                }
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:53: error: cannot find symbol
+    [javac]         AnnotatedMember member = property.getMember();
+    [javac]         ^
+    [javac]   symbol:   class AnnotatedMember
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 59.54 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null && property.getMember() != null) {
+        JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated) property.getMember());
+        if (format != null) {
+            JsonFormat.Shape shape = format.getShape();
+            if (shape.isNumeric()) {
+                return withFormat(Boolean.TRUE, null);
+            }
+            if (shape == JsonFormat.Shape.STRING) { // Corrected comparison to use the "shape" variable
+                TimeZone tz = format.getTimeZone();
+                final String pattern = format.hasPattern()
+                        ? format.getPattern()
+                        : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+                SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                if (tz == null) {
+                    tz = serializers.getTimeZone();
+                }
+                df.setTimeZone(tz);
+                return withFormat(Boolean.FALSE, df);
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.ser.DateSerializationTest::testDateDefaultShape
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 0.80 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        AnnotatedMember member = property.getMember();
+        if (member != null) { // Added a null check for 'member'
+            JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat(member);
+            if (format != null) {
+                JsonFormat.Shape shape = format.getShape();
+                if (shape.isNumeric()) {
+                    return withFormat(Boolean.TRUE, null);
+                }
+                if (shape == JsonFormat.Shape.STRING) { // Use the already extracted 'shape' variable for comparison
+                    TimeZone tz = format.getTimeZone();
+                    final String pattern = format.hasPattern()
+                                    ? format.getPattern()
+                                    : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                    final Locale loc = format.hasLocale()
+                                    ? format.getLocale()
+                                    : serializers.getLocale();
+                    SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                    if (tz == null) {
+                        tz = serializers.getTimeZone();
+                    }
+                    df.setTimeZone(tz);
+                    return withFormat(Boolean.FALSE, df);
+                }
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:53: error: cannot find symbol
+    [javac]         AnnotatedMember member = property.getMember();
+    [javac]         ^
+    [javac]   symbol:   class AnnotatedMember
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 0.79 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        AnnotatedMember member = property.getMember();
+        if (member != null) {
+            JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat((Annotated) member);
+            if (format != null) {
+                JsonFormat.Shape shape = format.getShape();
+                if (shape.isNumeric()) {
+                    return withFormat(Boolean.TRUE, null);
+                }
+                if (shape == JsonFormat.Shape.STRING) {
+                    TimeZone tz = format.getTimeZone();
+                    final String pattern = format.hasPattern()
+                            ? format.getPattern()
+                            : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                    final Locale loc = format.hasLocale()
+                            ? format.getLocale()
+                            : serializers.getLocale();
+                    SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                    if (tz == null) {
+                        tz = serializers.getTimeZone();
+                    }
+                    df.setTimeZone(tz);
+                    return withFormat(Boolean.FALSE, df);
+                }
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:53: error: cannot find symbol
+    [javac]         AnnotatedMember member = property.getMember();
+    [javac]         ^
+    [javac]   symbol:   class AnnotatedMember
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 0.78 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property != null) {
+        AnnotatedMember member = property.getMember();
+        if (member != null) { // Added null check for member to avoid potential NullPointerException
+            JsonFormat.Value format = serializers.getAnnotationIntrospector().findFormat(member);
+            if (format != null) {
+                JsonFormat.Shape shape = format.getShape();
+                if (shape.isNumeric()) {
+                    return withFormat(Boolean.TRUE, null);
+                }
+                if (shape == JsonFormat.Shape.STRING) { // Changed format.getShape() to shape for consistency
+                    TimeZone tz = format.getTimeZone();
+                    final String pattern = format.hasPattern()
+                                    ? format.getPattern()
+                                    : StdDateFormat.DATE_FORMAT_STR_ISO8601;
+                    final Locale loc = format.hasLocale()
+                                    ? format.getLocale()
+                                    : serializers.getLocale();
+                    SimpleDateFormat df = new SimpleDateFormat(pattern, loc);
+                    if (tz == null) {
+                        tz = serializers.getTimeZone();
+                    }
+                    df.setTimeZone(tz);
+                    return withFormat(Boolean.FALSE, df);
+                }
+            }
+        }
+    }
+    return this;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:53: error: cannot find symbol
+    [javac]         AnnotatedMember member = property.getMember();
+    [javac]         ^
+    [javac]   symbol:   class AnnotatedMember
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_45_9c60f2f74ee748729947eabf9a79d1f2/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

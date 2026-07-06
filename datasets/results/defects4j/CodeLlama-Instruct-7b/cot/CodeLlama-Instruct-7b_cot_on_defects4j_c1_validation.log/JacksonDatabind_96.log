@@ -1,0 +1,695 @@
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 181.67 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected void _addExplicitAnyCreator(DeserializationContext ctxt,
+        BeanDescription beanDesc, CreatorCollector creators,
+        CreatorCandidate candidate)
+    throws JsonMappingException
+{
+    // if the candidate has more than 1 parameter, we can't add any explicit creator
+    if (candidate.paramCount() > 1) {
+        _addExplicitDelegatingCreator(ctxt, beanDesc, creators, candidate);
+        return;
+    }
+
+    // if the candidate has only 1 parameter, we need to check if it is annotated with @JsonProperty or @JacksonInject
+    AnnotatedParameter param = candidate.parameter(0);
+    JacksonInject.Value injectId = candidate.injection(0);
+    PropertyName paramName = candidate.explicitParamName(0);
+    BeanPropertyDefinition paramDef = candidate.propertyDef(0);
+    boolean useProps = (paramName != null) || (injectId != null);
+    if (!useProps && (paramDef != null)) {
+        paramName = candidate.findImplicitParamName(0);
+                useProps = (paramName != null) && paramDef.couldSerialize();
+    }
+    if (useProps) {
+        SettableBeanProperty[] properties = new SettableBeanProperty[] {
+                constructCreatorProperty(ctxt, beanDesc, paramName, 0, param, injectId)
+        };
+        creators.addPropertyCreator(candidate.creator(), true, properties);
+        return;
+    }
+
+    // if the candidate has 1 parameter and it is not annotated with @JsonProperty or @JacksonInject,
+    // we can't add any explicit creator
+    _addExplicitDelegatingCreator(ctxt, beanDesc, creators, candidate);
+    if (paramDef != null) {
+        ((POJOPropertyBuilder) paramDef).removeConstructors();
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 64
+  - com.fasterxml.jackson.databind.contextual.TestContextualDeserialization::testAnnotatedCtor
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithCreatorTest::testWithPropertiesCreator
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtEnd
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterInMiddle
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtEnd
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersInMiddle
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithViewTest::testCreatorViews
+  - com.fasterxml.jackson.databind.deser.creators.BigCreatorTest::testBigPartial
+  - com.fasterxml.jackson.databind.deser.creators.CreatorWithNamingStrategyTest::testSnakeCaseWithOneArg
+  - com.fasterxml.jackson.databind.deser.creators.FailOnNullCreatorTest::testRequiredNonNullParam
+  - com.fasterxml.jackson.databind.deser.creators.RequiredCreatorTest::testRequiredAnnotatedParam
+  - com.fasterxml.jackson.databind.deser.creators.RequiredCreatorTest::testRequiredGloballyParam
+  - com.fasterxml.jackson.databind.deser.creators.TestCreatorNullValue::testCreatorReturningNull
+  - com.fasterxml.jackson.databind.deser.creators.TestCreatorWithNamingStrategy556::testRenameViaCtor
+  - com.fasterxml.jackson.databind.deser.creators.TestCreatorWithNamingStrategy556::testRenameViaFactory
+  - com.fasterxml.jackson.databind.deser.creators.TestCreators::testBrokenConstructor
+  - com.fasterxml.jackson.databind.deser.creators.TestCreators::testConstructorAndProps
+  - com.fasterxml.jackson.databind.deser.creators.TestCreators::testMapWithConstructor
+  - com.fasterxml.jackson.databind.deser.creators.TestCreators::testFactoryCreatorWithMixin
+  - com.fasterxml.jackson.databind.deser.creators.TestCreators::testConstructorCreator
+  - com.fasterxml.jackson.databind.deser.creators.TestCreators2::testConstructorChoice
+  - com.fasterxml.jackson.databind.deser.creators.TestCreators2::testCreatorWithDupNames
+  - com.fasterxml.jackson.databind.deser.creators.TestCreators2::testSimpleConstructor
+  - com.fasterxml.jackson.databind.deser.creators.TestCreators2::testMissingPrimitives
+  - com.fasterxml.jackson.databind.deser.creators.TestCreators3::testMultiCtor421
+  - com.fasterxml.jackson.databind.deser.creators.TestCreators3::testCreator541
+  - com.fasterxml.jackson.databind.deser.creators.TestCreatorsWithIdentity::testSimple
+  - com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testClassWith32CreatorParams
+  - com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testPresentNullReference
+  - com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testMixedPresentAndAbsent
+  - com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testAllAbsent
+  - com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testAllPresent
+  - com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testMoreThan32CreatorParams
+  - com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testPresentZeroPrimitive
+  - com.fasterxml.jackson.databind.deser.creators.TestPolymorphicCreators::testManualPolymorphicWithNumbered
+  - com.fasterxml.jackson.databind.deser.filter.ProblemHandlerLocation1440Test::testIncorrectContext
+  - com.fasterxml.jackson.databind.deser.inject.TestInjectables::testIssue471
+  - com.fasterxml.jackson.databind.deser.jdk.EnumMapDeserializationTest::testCustomEnumMapFromProps
+  - com.fasterxml.jackson.databind.deser.merge.UpdateValueTest::testValueUpdateWithCreator
+  - com.fasterxml.jackson.databind.deser.merge.UpdateValueTest::testValueUpdateOther
+  - com.fasterxml.jackson.databind.exc.ExceptionDeserializationTest::testWithCreator
+  - com.fasterxml.jackson.databind.introspect.CustomAnnotationIntrospector1756Test::testIssue1756
+  - com.fasterxml.jackson.databind.introspect.IgnoredCreatorProperty1572Test::testIgnoredCtorParam
+  - com.fasterxml.jackson.databind.jsontype.TestAbstractTypeNames::testEmptyCollection
+  - com.fasterxml.jackson.databind.jsontype.deftyping.TestDefaultWithCreators::testWithCreators
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId999Test::testExternalTypeId
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue798
+  - com.fasterxml.jackson.databind.misc.CaseInsensitive1854Test::testIssue1854
+  - com.fasterxml.jackson.databind.mixins.TestMixinDeserForCreators::testFactoryPropertyMixin
+  - com.fasterxml.jackson.databind.objectid.ObjectIdReordering1388Test::testDeserializationFinalClassJSOG
+  - com.fasterxml.jackson.databind.objectid.ObjectWithCreator1261Test::testObjectIds1261
+  - com.fasterxml.jackson.databind.objectid.TestObjectId::testColumnMetadata
+  - com.fasterxml.jackson.databind.struct.PojoAsArray646Test::testWithCustomTypeId
+  - com.fasterxml.jackson.databind.struct.TestPOJOAsArray::testSimpleWithIndex
+  - com.fasterxml.jackson.databind.struct.TestPOJOAsArrayAdvanced::testWithViewAndCreator
+  - com.fasterxml.jackson.databind.struct.TestPOJOAsArrayAdvanced::testWithCreatorsOrdered
+  - com.fasterxml.jackson.databind.struct.TestPOJOAsArrayAdvanced::testWithCreatorsShuffled
+  - com.fasterxml.jackson.databind.struct.TestPOJOAsArrayWithBuilder::testWithCreatorAndView
+  - com.fasterxml.jackson.databind.struct.TestPOJOAsArrayWithBuilder::testWithCreator
+  - com.fasterxml.jackson.databind.struct.UnwrappedCreatorParam265Test::testUnwrappedWithNamedCreatorParam
+  - com.fasterxml.jackson.databind.struct.UnwrappedCreatorParam265Test::testUnwrappedWithUnnamedCreatorParam
+  - com.fasterxml.jackson.databind.views.TestViewDeserialization::testWithCreatorAndViews
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.deser.builder.BuilderWithViewTest::testCreatorViews', 'com.fasterxml.jackson.databind.objectid.TestObjectId::testColumnMetadata', 'com.fasterxml.jackson.databind.objectid.ObjectIdReordering1388Test::testDeserializationFinalClassJSOG', 'com.fasterxml.jackson.databind.deser.creators.TestCreatorWithNamingStrategy556::testRenameViaFactory', 'com.fasterxml.jackson.databind.struct.TestPOJOAsArray::testSimpleWithIndex', 'com.fasterxml.jackson.databind.struct.TestPOJOAsArrayWithBuilder::testWithCreator', 'com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterInMiddle', 'com.fasterxml.jackson.databind.deser.creators.BigCreatorTest::testBigPartial', 'com.fasterxml.jackson.databind.struct.TestPOJOAsArrayAdvanced::testWithViewAndCreator', 'com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testMixedPresentAndAbsent', 'com.fasterxml.jackson.databind.deser.creators.TestCreatorNullValue::testCreatorReturningNull', 'com.fasterxml.jackson.databind.struct.UnwrappedCreatorParam265Test::testUnwrappedWithUnnamedCreatorParam', 'com.fasterxml.jackson.databind.views.TestViewDeserialization::testWithCreatorAndViews', 'com.fasterxml.jackson.databind.deser.creators.RequiredCreatorTest::testRequiredGloballyParam', 'com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtEnd', 'com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtBeginning', 'com.fasterxml.jackson.databind.objectid.ObjectWithCreator1261Test::testObjectIds1261', 'com.fasterxml.jackson.databind.misc.CaseInsensitive1854Test::testIssue1854', 'com.fasterxml.jackson.databind.deser.merge.UpdateValueTest::testValueUpdateOther', 'com.fasterxml.jackson.databind.struct.UnwrappedCreatorParam265Test::testUnwrappedWithNamedCreatorParam', 'com.fasterxml.jackson.databind.deser.merge.UpdateValueTest::testValueUpdateWithCreator', 'com.fasterxml.jackson.databind.deser.creators.TestCreators2::testConstructorChoice', 'com.fasterxml.jackson.databind.mixins.TestMixinDeserForCreators::testFactoryPropertyMixin', 'com.fasterxml.jackson.databind.introspect.CustomAnnotationIntrospector1756Test::testIssue1756', 'com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testPresentNullReference', 'com.fasterxml.jackson.databind.deser.creators.TestCreators3::testMultiCtor421', 'com.fasterxml.jackson.databind.deser.creators.TestCreators2::testSimpleConstructor', 'com.fasterxml.jackson.databind.deser.creators.TestPolymorphicCreators::testManualPolymorphicWithNumbered', 'com.fasterxml.jackson.databind.deser.creators.FailOnNullCreatorTest::testRequiredNonNullParam', 'com.fasterxml.jackson.databind.jsontype.deftyping.TestDefaultWithCreators::testWithCreators', 'com.fasterxml.jackson.databind.struct.TestPOJOAsArrayAdvanced::testWithCreatorsShuffled', 'com.fasterxml.jackson.databind.deser.creators.TestCreators::testMapWithConstructor', 'com.fasterxml.jackson.databind.introspect.IgnoredCreatorProperty1572Test::testIgnoredCtorParam', 'com.fasterxml.jackson.databind.jsontype.TestAbstractTypeNames::testEmptyCollection', 'com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testAllAbsent', 'com.fasterxml.jackson.databind.contextual.TestContextualDeserialization::testAnnotatedCtor', 'com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtEnd', 'com.fasterxml.jackson.databind.deser.creators.TestCreators::testConstructorAndProps', 'com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testMoreThan32CreatorParams', 'com.fasterxml.jackson.databind.deser.inject.TestInjectables::testIssue471', 'com.fasterxml.jackson.databind.deser.creators.TestCreators2::testCreatorWithDupNames', 'com.fasterxml.jackson.databind.struct.PojoAsArray646Test::testWithCustomTypeId', 'com.fasterxml.jackson.databind.deser.builder.BuilderWithCreatorTest::testWithPropertiesCreator', 'com.fasterxml.jackson.databind.deser.creators.TestCreatorsWithIdentity::testSimple', 'com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testClassWith32CreatorParams', 'com.fasterxml.jackson.databind.deser.creators.TestCreators3::testCreator541', 'com.fasterxml.jackson.databind.deser.creators.TestCreators::testBrokenConstructor', 'com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtBeginning', 'com.fasterxml.jackson.databind.exc.ExceptionDeserializationTest::testWithCreator', 'com.fasterxml.jackson.databind.deser.creators.TestCreators::testFactoryCreatorWithMixin', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId999Test::testExternalTypeId', 'com.fasterxml.jackson.databind.deser.filter.ProblemHandlerLocation1440Test::testIncorrectContext', 'com.fasterxml.jackson.databind.deser.creators.RequiredCreatorTest::testRequiredAnnotatedParam', 'com.fasterxml.jackson.databind.struct.TestPOJOAsArrayAdvanced::testWithCreatorsOrdered', 'com.fasterxml.jackson.databind.deser.jdk.EnumMapDeserializationTest::testCustomEnumMapFromProps', 'com.fasterxml.jackson.databind.deser.creators.TestCreators::testConstructorCreator', 'com.fasterxml.jackson.databind.deser.creators.TestCreatorWithNamingStrategy556::testRenameViaCtor', 'com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testAllPresent', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue798', 'com.fasterxml.jackson.databind.deser.creators.TestCreators2::testMissingPrimitives', 'com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersInMiddle', 'com.fasterxml.jackson.databind.deser.creators.TestCustomValueInstDefaults::testPresentZeroPrimitive', 'com.fasterxml.jackson.databind.struct.TestPOJOAsArrayWithBuilder::testWithCreatorAndView']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 198.82 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected void _addExplicitAnyCreator(DeserializationContext ctxt,
+        BeanDescription beanDesc, CreatorCollector creators,
+        CreatorCandidate candidate)
+    throws JsonMappingException
+{
+    if (1 != candidate.paramCount()) {
+        int oneNotInjected = candidate.findOnlyParamWithoutInjection();
+        if (oneNotInjected >= 0) {
+            if (candidate.paramName(oneNotInjected) == null) {
+                _addExplicitDelegatingCreator(ctxt, beanDesc, creators, candidate);
+                return;
+            }
+        }
+        _addExplicitPropertyCreator(ctxt, beanDesc, creators, candidate);
+        return;
+    }
+    AnnotatedParameter param = candidate.parameter(0);
+    JacksonInject.Value injectId = candidate.injection(0);
+    PropertyName paramName = candidate.explicitParamName(0);
+    BeanPropertyDefinition paramDef = candidate.propertyDef(0);
+    boolean useProps = (paramName != null) || (injectId != null);
+    if (!useProps && (paramDef != null)) {
+        paramName = candidate.findImplicitParamName(0);
+        useProps = (paramName != null) && paramDef.couldSerialize();
+    }
+    if (useProps) {
+        SettableBeanProperty[] properties = new SettableBeanProperty[] {
+                constructCreatorProperty(ctxt, beanDesc, paramName, 0, param, injectId)
+        };
+        creators.addPropertyCreator(candidate.creator(), true, properties);
+        return;
+    }
+    _handleSingleArgumentCreator(creators, candidate.creator(), true, true);
+    // The following line was added to fix the bug:
+    if (paramDef != null) {
+        ((POJOPropertyBuilder) paramDef).removeConstructors();
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.deser.creators.CreatorWithNamingStrategyTest::testSnakeCaseWithOneArg
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 189.27 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected void _addExplicitAnyCreator(DeserializationContext ctxt,
+        BeanDescription beanDesc, CreatorCollector creators,
+        CreatorCandidate candidate)
+    throws JsonMappingException
+{
+    if (candidate.paramCount() != 1) {
+        _addExplicitPropertyCreator(ctxt, beanDesc, creators, candidate);
+        return;
+    }
+    AnnotatedParameter param = candidate.parameter(0);
+    JacksonInject.Value injectId = candidate.injection(0);
+    PropertyName paramName = candidate.explicitParamName(0);
+    BeanPropertyDefinition paramDef = candidate.propertyDef(0);
+    boolean useProps = (paramName != null) || (injectId != null);
+    if (!useProps && (paramDef != null)) {
+        paramName = candidate.findImplicitParamName(0);
+        useProps = (paramName != null) && paramDef.couldSerialize();
+    }
+    if (useProps) {
+        SettableBeanProperty[] properties = new SettableBeanProperty[] {
+                constructCreatorProperty(ctxt, beanDesc, paramName, 0, param, injectId)
+        };
+        creators.addPropertyCreator(candidate.creator(), true, properties);
+        return;
+    }
+    _handleSingleArgumentCreator(creators, candidate.creator(), true, true);
+    if (paramDef != null) {
+        ((POJOPropertyBuilder) paramDef).removeConstructors();
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - com.fasterxml.jackson.databind.deser.creators.CreatorWithNamingStrategyTest::testSnakeCaseWithOneArg
+  - com.fasterxml.jackson.databind.deser.creators.TestCreatorsDelegating::testWithCtorAndDelegate
+  - com.fasterxml.jackson.databind.deser.creators.TestCreatorsDelegating::testWithFactoryAndDelegate
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.deser.creators.TestCreatorsDelegating::testWithFactoryAndDelegate', 'com.fasterxml.jackson.databind.deser.creators.TestCreatorsDelegating::testWithCtorAndDelegate']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 194.25 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected void _addExplicitAnyCreator(DeserializationContext ctxt,
+        BeanDescription beanDesc, CreatorCollector creators,
+        CreatorCandidate candidate)
+    throws JsonMappingException
+{
+    if (1 != candidate.paramCount()) {
+        int oneNotInjected = candidate.findOnlyParamWithoutInjection();
+        if (oneNotInjected >= 0) {
+            if (candidate.paramName(oneNotInjected) == null) {
+                _addExplicitDelegatingCreator(ctxt, beanDesc, creators, candidate);
+                return;
+            }
+        }
+        _addExplicitPropertyCreator(ctxt, beanDesc, creators, candidate);
+        return;
+    }
+    AnnotatedParameter param = candidate.parameter(0);
+    JacksonInject.Value injectId = candidate.injection(0);
+    PropertyName paramName = candidate.explicitParamName(0);
+    if (paramName == null) {
+        paramName = candidate.findImplicitParamName(0);
+    }
+    BeanPropertyDefinition paramDef = candidate.propertyDef(0);
+    boolean useProps = (paramName != null) || (injectId != null);
+    if (!useProps && (paramDef != null)) {
+        paramName = candidate.findImplicitParamName(0);
+                useProps = (paramName != null) && paramDef.couldSerialize();
+    }
+    if (useProps) {
+        SettableBeanProperty[] properties = new SettableBeanProperty[] {
+                constructCreatorProperty(ctxt, beanDesc, paramName, 0, param, injectId)
+        };
+        creators.addPropertyCreator(candidate.creator(), true, properties);
+        return;
+    }
+    _handleSingleArgumentCreator(creators, candidate.creator(), true, true);
+    if (paramDef != null) {
+        ((POJOPropertyBuilder) paramDef).removeConstructors();
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - com.fasterxml.jackson.databind.deser.creators.CreatorWithNamingStrategyTest::testSnakeCaseWithOneArg
+  - com.fasterxml.jackson.databind.deser.creators.DelegatingCreatorImplicitNames1001Test::testWithNamedParameters
+  - com.fasterxml.jackson.databind.deser.creators.SingleArgCreatorTest::testSingleImplicitDelegating
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.deser.creators.DelegatingCreatorImplicitNames1001Test::testWithNamedParameters', 'com.fasterxml.jackson.databind.deser.creators.SingleArgCreatorTest::testSingleImplicitDelegating']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 198.55 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected void _addExplicitAnyCreator(DeserializationContext ctxt,
+        BeanDescription beanDesc, CreatorCollector creators,
+        CreatorCandidate candidate)
+    throws JsonMappingException
+{
+    if (1 != candidate.paramCount()) {
+        int oneNotInjected = candidate.findOnlyParamWithoutInjection();
+        if (oneNotInjected >= 0) {
+            if (candidate.paramName(oneNotInjected) == null) {
+                _addExplicitDelegatingCreator(ctxt, beanDesc, creators, candidate);
+                return;
+            }
+        }
+        _addExplicitPropertyCreator(ctxt, beanDesc, creators, candidate);
+        return;
+    }
+    AnnotatedParameter param = candidate.parameter(0);
+    JacksonInject.Value injectId = candidate.injection(0);
+    PropertyName paramName = candidate.explicitParamName(0);
+    BeanPropertyDefinition paramDef = candidate.propertyDef(0);
+    boolean useProps = (paramName != null) || (injectId != null);
+    if (!useProps && (paramDef != null)) {
+        paramName = candidate.findImplicitParamName(0);
+        useProps = (paramName != null) && paramDef.couldSerialize();
+    }
+    if (useProps) {
+        SettableBeanProperty[] properties = new SettableBeanProperty[] {
+                constructCreatorProperty(ctxt, beanDesc, paramName, 0, param, injectId)
+        };
+        creators.addPropertyCreator(candidate.creator(), true, properties);
+        return;
+    }
+    _handleSingleArgumentCreator(creators, candidate.creator(), true, true);
+    if (paramDef != null) {
+        ((POJOPropertyBuilder) paramDef).removeConstructors();
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.deser.creators.CreatorWithNamingStrategyTest::testSnakeCaseWithOneArg
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 190.48 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected void _addExplicitAnyCreator(DeserializationContext ctxt,
+        BeanDescription beanDesc, CreatorCollector creators,
+        CreatorCandidate candidate)
+    throws JsonMappingException
+{
+    if (1 != candidate.paramCount()) {
+        int oneNotInjected = candidate.findOnlyParamWithoutInjection();
+        if (oneNotInjected >= 0) {
+            if (candidate.paramName(oneNotInjected) == null) {
+                _addExplicitDelegatingCreator(ctxt, beanDesc, creators, candidate);
+                return;
+            }
+        }
+        _addExplicitPropertyCreator(ctxt, beanDesc, creators, candidate);
+        return;
+    }
+    AnnotatedParameter param = candidate.parameter(0);
+    JacksonInject.Value injectId = candidate.injection(0);
+    PropertyName paramName = candidate.explicitParamName(0);
+    BeanPropertyDefinition paramDef = candidate.propertyDef(0);
+    boolean useProps = (paramName != null) || (injectId != null);
+    if (!useProps && (paramDef != null)) {
+        paramName = candidate.findImplicitParamName(0);
+        useProps = (paramName != null) && paramDef.couldSerialize();
+    }
+    if (useProps) {
+        SettableBeanProperty[] properties = new SettableBeanProperty[] {
+                constructCreatorProperty(ctxt, beanDesc, paramName, 0, param, injectId)
+        };
+        creators.addPropertyCreator(candidate.creator(), true, properties);
+        return;
+    }
+    _handleSingleArgumentCreator(creators, candidate.creator(), true, true);
+    if (paramDef != null) {
+        ((POJOPropertyBuilder) paramDef).removeConstructors();
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.deser.creators.CreatorWithNamingStrategyTest::testSnakeCaseWithOneArg
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 185.24 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected void _addExplicitAnyCreator(DeserializationContext ctxt,
+        BeanDescription beanDesc, CreatorCollector creators,
+        CreatorCandidate candidate)
+    throws JsonMappingException
+{
+    if (1 != candidate.paramCount()) {
+        int oneNotInjected = candidate.findOnlyParamWithoutInjection();
+        if (oneNotInjected >= 0) {
+            if (candidate.paramName(oneNotInjected) == null) {
+                _addExplicitDelegatingCreator(ctxt, beanDesc, creators, candidate);
+                return;
+            }
+        }
+        _addExplicitPropertyCreator(ctxt, beanDesc, creators, candidate);
+        return;
+    }
+    AnnotatedParameter param = candidate.parameter(0);
+    JacksonInject.Value injectId = candidate.injection(0);
+    PropertyName paramName = candidate.explicitParamName(0);
+    BeanPropertyDefinition paramDef = candidate.propertyDef(0);
+    boolean useProps = (paramName != null) || (injectId != null);
+    if (useProps) {
+        SettableBeanProperty[] properties = new SettableBeanProperty[] {
+                constructCreatorProperty(ctxt, beanDesc, paramName, 0, param, injectId)
+        };
+        creators.addPropertyCreator(candidate.creator(), true, properties);
+        return;
+    }
+    _handleSingleArgumentCreator(creators, candidate.creator(), true, true);
+    if (paramDef != null) {
+        ((POJOPropertyBuilder) paramDef).removeConstructors();
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.fasterxml.jackson.databind.deser.creators.CreatorWithNamingStrategyTest::testSnakeCaseWithOneArg
+  - com.fasterxml.jackson.databind.deser.creators.SingleArgCreatorTest::testSingleImplicitlyNamedNotDelegating
+  - com.fasterxml.jackson.databind.introspect.TestScalaLikeImplicitProperties::testVarProperty
+  - com.fasterxml.jackson.databind.introspect.TestScalaLikeImplicitProperties::testVarWithBeanProperty
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.introspect.TestScalaLikeImplicitProperties::testVarWithBeanProperty', 'com.fasterxml.jackson.databind.deser.creators.SingleArgCreatorTest::testSingleImplicitlyNamedNotDelegating', 'com.fasterxml.jackson.databind.introspect.TestScalaLikeImplicitProperties::testVarProperty']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 198.96 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected void _addExplicitAnyCreator(DeserializationContext ctxt,
+        BeanDescription beanDesc, CreatorCollector creators,
+        CreatorCandidate candidate)
+    throws JsonMappingException
+{
+    if (1 != candidate.paramCount()) {
+        int oneNotInjected = candidate.findOnlyParamWithoutInjection();
+        if (oneNotInjected >= 0) {
+            if (candidate.paramName(oneNotInjected) == null) {
+                _addExplicitDelegatingCreator(ctxt, beanDesc, creators, candidate);
+                return;
+            }
+        }
+        _addExplicitPropertyCreator(ctxt, beanDesc, creators, candidate);
+        return;
+    }
+    AnnotatedParameter param = candidate.parameter(0);
+    JacksonInject.Value injectId = candidate.injection(0);
+    PropertyName paramName = candidate.explicitParamName(0);
+    BeanPropertyDefinition paramDef = candidate.propertyDef(0);
+    boolean useProps = (paramName != null) || (injectId != null);
+    if (!useProps && (paramDef != null)) {
+        paramName = candidate.findImplicitParamName(0);
+                useProps = (paramName != null) && paramDef.couldSerialize();
+    }
+    if (useProps) {
+        SettableBeanProperty[] properties = new SettableBeanProperty[] {
+                constructCreatorProperty(ctxt, beanDesc, paramName, 0, param, injectId)
+        };
+        creators.addPropertyCreator(candidate.creator(), true, properties);
+        return;
+    }
+    if ((paramName == null) && (paramDef != null)) {
+        paramName = candidate.findImplicitParamName(0);
+    }
+    _handleSingleArgumentCreator(creators, candidate.creator(), true, true);
+    if (paramDef != null) {
+        ((POJOPropertyBuilder) paramDef).removeConstructors();
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.deser.creators.CreatorWithNamingStrategyTest::testSnakeCaseWithOneArg
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 203.42 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected void _addExplicitAnyCreator(DeserializationContext ctxt,
+        BeanDescription beanDesc, CreatorCollector creators,
+        CreatorCandidate candidate)
+    throws JsonMappingException
+{
+    if (1 != candidate.paramCount()) {
+        int oneNotInjected = candidate.findOnlyParamWithoutInjection();
+        if (oneNotInjected >= 0) {
+            if (candidate.paramName(oneNotInjected) == null) {
+                _addExplicitDelegatingCreator(ctxt, beanDesc, creators, candidate);
+                return;
+            }
+        }
+        _addExplicitPropertyCreator(ctxt, beanDesc, creators, candidate);
+        return;
+    }
+    AnnotatedParameter param = candidate.parameter(0);
+    JacksonInject.Value injectId = candidate.injection(0);
+    PropertyName paramName = candidate.explicitParamName(0);
+    BeanPropertyDefinition paramDef = candidate.propertyDef(0);
+    boolean useProps = (paramName != null) || (injectId != null);
+    if (!useProps && (paramDef != null)) {
+        paramName = candidate.findImplicitParamName(0);
+        useProps = (paramName != null) && paramDef.couldSerialize();
+    }
+    if (useProps) {
+        SettableBeanProperty[] properties = new SettableBeanProperty[] {
+                constructCreatorProperty(ctxt, beanDesc, paramName, 0, param, injectId)
+        };
+        creators.addPropertyCreator(candidate.creator(), true, properties);
+        return;
+    }
+    _handleSingleArgumentCreator(creators, candidate.creator(), true, true);
+    if (paramDef != null) {
+        ((POJOPropertyBuilder) paramDef).removeConstructors();
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.deser.creators.CreatorWithNamingStrategyTest::testSnakeCaseWithOneArg
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 211.01 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected void _addExplicitAnyCreator(DeserializationContext ctxt,
+        BeanDescription beanDesc, CreatorCollector creators,
+        CreatorCandidate candidate)
+    throws JsonMappingException
+{
+    if (1 != candidate.paramCount()) {
+        int oneNotInjected = candidate.findOnlyParamWithoutInjection();
+        if (oneNotInjected >= 0) {
+            if (candidate.paramName(oneNotInjected) == null) {
+                _addExplicitDelegatingCreator(ctxt, beanDesc, creators, candidate);
+                return;
+            }
+        }
+        _addExplicitPropertyCreator(ctxt, beanDesc, creators, candidate);
+        return;
+    }
+    AnnotatedParameter param = candidate.parameter(0);
+    JacksonInject.Value injectId = candidate.injection(0);
+    PropertyName paramName = candidate.explicitParamName(0);
+    BeanPropertyDefinition paramDef = candidate.propertyDef(0);
+    boolean useProps = (paramName != null) || (injectId != null);
+    if (!useProps && (paramDef != null)) {
+        paramName = candidate.findImplicitParamName(0);
+        useProps = (paramName != null) && paramDef.couldSerialize();
+    }
+    if (useProps) {
+        SettableBeanProperty[] properties = new SettableBeanProperty[] {
+                constructCreatorProperty(ctxt, beanDesc, paramName, 0, param, injectId)
+        };
+        creators.addPropertyCreator(candidate.creator(), true, properties);
+        return;
+    }
+    if (paramDef != null) {
+        ((POJOPropertyBuilder) paramDef).removeConstructors();
+    }
+    _handleSingleArgumentCreator(creators, candidate.creator(), true, true);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.deser.creators.CreatorWithNamingStrategyTest::testSnakeCaseWithOneArg
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

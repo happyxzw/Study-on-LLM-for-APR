@@ -1,0 +1,1364 @@
+==================================================
+                Project: Compress
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 7.62 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++) {
+        if (buffer[i] != 0) {
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+        return 0L;
+    }
+    while (start < end) {
+        if (buffer[start] == ' ') {
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer;
+    trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    } else {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, end - 1, trailer));
+    }
+    trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 6.99 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    while (start < end && buffer[start] == ' ') {
+        start++;
+    }
+    while (start < end && buffer[end - 1] == ' ') {
+        end--;
+    }
+    if (start == end) {
+        return 0L;
+    }
+    if (end - start > 18) {
+        throw new IllegalArgumentException("Octal string too long");
+    }
+    for (int i = start; i < end; i++) {
+        final byte currentByte = buffer[i];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, i, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - org.apache.commons.compress.ChainingTestCase::testTarGzip
+  - org.apache.commons.compress.ChainingTestCase::testTarBzip2
+  - org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117
+  - org.apache.commons.compress.IOMethodsTest::testReadTar
+  - org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive
+  - org.apache.commons.compress.archivers.TarTestCase::testFileEntryFromFile
+  - org.apache.commons.compress.archivers.TarTestCase::testDirectoryEntryFromFile
+  - org.apache.commons.compress.archivers.TarTestCase::testExplicitDirectoryEntry
+  - org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114
+  - org.apache.commons.compress.archivers.TarTestCase::testExplicitFileEntry
+  - org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU
+  - org.apache.commons.compress.archivers.tar.TarArchiveEntryTest::testTarFileWithFSRoot
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+  - org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongFileNamePosixMode
+  - org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testBigFileStarMode
+  - org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testBigFilePosixMode
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.archivers.TarTestCase::testDirectoryEntryFromFile', 'org.apache.commons.compress.archivers.TarTestCase::testExplicitDirectoryEntry', 'org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU', 'org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid', 'org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testBigFileStarMode', 'org.apache.commons.compress.archivers.TarTestCase::testFileEntryFromFile', 'org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive', 'org.apache.commons.compress.archivers.tar.TarArchiveEntryTest::testTarFileWithFSRoot', 'org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar', 'org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testBigFilePosixMode', 'org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114', 'org.apache.commons.compress.ChainingTestCase::testTarGzip', 'org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongFileNamePosixMode', 'org.apache.commons.compress.ChainingTestCase::testTarBzip2', 'org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar', 'org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal', 'org.apache.commons.compress.IOMethodsTest::testReadTar', 'org.apache.commons.compress.archivers.TarTestCase::testExplicitFileEntry', 'org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 6.60 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long    result = 0;
+    int     end = offset + length;
+    int     start = offset;
+    if (length < 2){
+        throw new IllegalArgumentException("Length "+length+" must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++){
+        if (buffer[i] != 0){
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+            return 0L;
+    }
+    while (start < end){
+        if (buffer[start] == ' '){
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer;
+    trailer = buffer[end-1];
+    if (trailer == 0 || trailer == ' '){
+        end--;
+    } else {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, end-1, trailer));
+    }
+    trailer = buffer[end-1];
+    if (trailer == 0 || trailer == ' '){
+        end--;
+    }
+    for ( ;start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7'){
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0'); 
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 6.97 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long    result = 0;
+    int     end = offset + length;
+    int     start = offset;
+    if (length < 2){
+        throw new IllegalArgumentException("Length "+length+" must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++){
+        if (buffer[i] != 0){
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+            return 0L;
+    }
+    while (start < end){
+        if (buffer[start] == ' '){
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer;
+    trailer = buffer[end-1];
+    if (trailer == 0 || trailer == ' '){
+        end--;
+    } else {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, end-1, trailer));
+    }
+    trailer = buffer[end-1];
+    if (trailer == 0 || trailer == ' '){
+        end--;
+    }
+    for ( ;start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7'){
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0'); 
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 6.42 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++) {
+        if (buffer[i] != 0) {
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+        return 0L;
+    }
+    while (start < end) {
+        if (buffer[start] == ' ') {
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer;
+    trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    } else {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, end - 1, trailer));
+    }
+    trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 6.97 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long    result = 0;
+    int     end = offset + length;
+    int     start = offset;
+    if (length < 2){
+        throw new IllegalArgumentException("Length "+length+" must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++){
+        if (buffer[i] != 0){
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+            return 0L;
+    }
+    while (start < end){
+        if (buffer[start] == ' '){
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer;
+    trailer = buffer[end-1];
+    if (trailer == 0 || trailer == ' '){
+        end--;
+    } else {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, end-1, trailer));
+    }
+    trailer = buffer[end-1];
+    if (trailer == 0 || trailer == ' '){
+        end--;
+    }
+    for ( ;start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7'){
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0'); 
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 8.77 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++) {
+        if (buffer[i] != 0) {
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+        return 0L;
+    }
+    while (start < end) {
+        if (buffer[start] == ' ') {
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    } else {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, end - 1, trailer));
+    }
+    trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 9.24 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++) {
+        if (buffer[i] != 0) {
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+        return 0L;
+    }
+    while (start < end) {
+        if (buffer[start] == ' ') {
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer;
+    trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    } else {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, end - 1, trailer));
+    }
+    trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 9.96 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++) {
+        if (buffer[i] != 0) {
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+        return 0L;
+    }
+    while (start < end) {
+        if (buffer[start] == ' ') {
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    } else {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, end - 1, trailer));
+    }
+    trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 8.55 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long    result = 0;
+    int     end = offset + length;
+    int     start = offset;
+    if (length < 2){
+        throw new IllegalArgumentException("Length "+length+" must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++){
+        if (buffer[i] != 0){
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+            return 0L;
+    }
+    while (start < end){
+        if (buffer[start] == ' '){
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer;
+    trailer = buffer[end-1];
+    if (trailer == 0 || trailer == ' '){
+        end--;
+    } else {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, end-1, trailer));
+    }
+    trailer = buffer[end-1];
+    if (trailer == 0 || trailer == ' '){
+        end--;
+    }
+    for ( ;start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7'){
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0'); 
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 7.21 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++) {
+        if (buffer[i] != 0) {
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+        return 0L;
+    }
+    while (start < end) {
+        if (buffer[start] == ' ') {
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    } else {
+        throw new IllegalArgumentException(exceptionMessage(buffer, offset, length, end - 1, trailer));
+    }
+    trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 7.59 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long    result = 0;
+    int     end = offset + length;
+    int     start = offset;
+    if (length < 2){
+        throw new IllegalArgumentException("Length "+length+" must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++){
+        if (buffer[i] != 0){
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+            return 0L;
+    }
+    while (start < end){
+        if (buffer[start] == ' '){
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer;
+    trailer = buffer[end-1];
+    if (trailer == 0 || trailer == ' '){
+        end--;
+    } else {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, end-1, trailer));
+    }
+    trailer = buffer[end-1];
+    if (trailer == 0 || trailer == ' '){
+        end--;
+    }
+    for ( ;start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7'){
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0'); 
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 8.37 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++) {
+        if (buffer[i] != 0) {
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+        return 0L;
+    }
+    while (start < end) {
+        if (buffer[start] == ' ') {
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer = buffer[end - 1];
+    if (trailer == 0 || trailer == ' ') {
+        end--;
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 15
+  - org.apache.commons.compress.IOMethodsTest::testReadTar
+  - org.apache.commons.compress.archivers.TarTestCase::testFileEntryFromFile
+  - org.apache.commons.compress.archivers.TarTestCase::testDirectoryEntryFromFile
+  - org.apache.commons.compress.archivers.TarTestCase::testExplicitDirectoryEntry
+  - org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114
+  - org.apache.commons.compress.archivers.TarTestCase::testExplicitFileEntry
+  - org.apache.commons.compress.archivers.tar.TarArchiveEntryTest::testTarFileWithFSRoot
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+  - org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongFileNamePosixMode
+  - org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testBigFileStarMode
+  - org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testBigFilePosixMode
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongFileNamePosixMode', 'org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testBigFileStarMode', 'org.apache.commons.compress.archivers.tar.TarArchiveEntryTest::testTarFileWithFSRoot', 'org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114', 'org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testBigFilePosixMode', 'org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid', 'org.apache.commons.compress.archivers.TarTestCase::testExplicitFileEntry', 'org.apache.commons.compress.archivers.TarTestCase::testDirectoryEntryFromFile', 'org.apache.commons.compress.archivers.TarTestCase::testFileEntryFromFile', 'org.apache.commons.compress.IOMethodsTest::testReadTar', 'org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar', 'org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar', 'org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal', 'org.apache.commons.compress.archivers.TarTestCase::testExplicitDirectoryEntry']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 3.57 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++) {
+        if (buffer[i] != 0) {
+            allNUL = false;
+            break;
+        }
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:88: error: illegal start of expression
+    [javac]     public static long parseOctalOrBinary(final byte[] buffer, final int offset,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:88: error: illegal start of expression
+    [javac]     public static long parseOctalOrBinary(final byte[] buffer, final int offset,
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:88: error: ';' expected
+    [javac]     public static long parseOctalOrBinary(final byte[] buffer, final int offset,
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:88: error: illegal start of expression
+    [javac]     public static long parseOctalOrBinary(final byte[] buffer, final int offset,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:88: error: ';' expected
+    [javac]     public static long parseOctalOrBinary(final byte[] buffer, final int offset,
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:88: error: illegal start of expression
+    [javac]     public static long parseOctalOrBinary(final byte[] buffer, final int offset,
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:88: error: ';' expected
+    [javac]     public static long parseOctalOrBinary(final byte[] buffer, final int offset,
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:88: error: not a statement
+    [javac]     public static long parseOctalOrBinary(final byte[] buffer, final int offset,
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:88: error: ';' expected
+    [javac]     public static long parseOctalOrBinary(final byte[] buffer, final int offset,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:88: error: <identifier> expected
+    [javac]     public static long parseOctalOrBinary(final byte[] buffer, final int offset,
+    [javac]                                                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:89: error: ';' expected
+    [javac]                                           final int length) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:117: error: illegal start of expression
+    [javac]     public static boolean parseBoolean(final byte[] buffer, final int offset) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:117: error: illegal start of expression
+    [javac]     public static boolean parseBoolean(final byte[] buffer, final int offset) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:117: error: ';' expected
+    [javac]     public static boolean parseBoolean(final byte[] buffer, final int offset) {
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:117: error: illegal start of expression
+    [javac]     public static boolean parseBoolean(final byte[] buffer, final int offset) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:117: error: ';' expected
+    [javac]     public static boolean parseBoolean(final byte[] buffer, final int offset) {
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:117: error: illegal start of expression
+    [javac]     public static boolean parseBoolean(final byte[] buffer, final int offset) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:117: error: ';' expected
+    [javac]     public static boolean parseBoolean(final byte[] buffer, final int offset) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:117: error: not a statement
+    [javac]     public static boolean parseBoolean(final byte[] buffer, final int offset) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:117: error: ';' expected
+    [javac]     public static boolean parseBoolean(final byte[] buffer, final int offset) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:117: error: ';' expected
+    [javac]     public static boolean parseBoolean(final byte[] buffer, final int offset) {
+    [javac]                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:122: error: illegal start of expression
+    [javac]     private static String exceptionMessage(byte[] buffer, final int offset,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:122: error: illegal start of expression
+    [javac]     private static String exceptionMessage(byte[] buffer, final int offset,
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:122: error: ';' expected
+    [javac]     private static String exceptionMessage(byte[] buffer, final int offset,
+    [javac]                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:122: error: '.class' expected
+    [javac]     private static String exceptionMessage(byte[] buffer, final int offset,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:122: error: ';' expected
+    [javac]     private static String exceptionMessage(byte[] buffer, final int offset,
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:122: error: <identifier> expected
+    [javac]     private static String exceptionMessage(byte[] buffer, final int offset,
+    [javac]                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:123: error: <identifier> expected
+    [javac]             final int length, int current, final byte currentByte) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:123: error: not a statement
+    [javac]             final int length, int current, final byte currentByte) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:123: error: ';' expected
+    [javac]             final int length, int current, final byte currentByte) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:123: error: ';' expected
+    [javac]             final int length, int current, final byte currentByte) {
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:140: error: illegal start of expression
+    [javac]     public static String parseName(byte[] buffer, final int offset, final int length) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:140: error: illegal start of expression
+    [javac]     public static String parseName(byte[] buffer, final int offset, final int length) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:140: error: ';' expected
+    [javac]     public static String parseName(byte[] buffer, final int offset, final int length) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:140: error: '.class' expected
+    [javac]     public static String parseName(byte[] buffer, final int offset, final int length) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:140: error: ';' expected
+    [javac]     public static String parseName(byte[] buffer, final int offset, final int length) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:140: error: <identifier> expected
+    [javac]     public static String parseName(byte[] buffer, final int offset, final int length) {
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:140: error: ';' expected
+    [javac]     public static String parseName(byte[] buffer, final int offset, final int length) {
+    [javac]                                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:170: error: illegal start of expression
+    [javac]     public static int formatNameBytes(String name, byte[] buf, final int offset, final int length) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:170: error: illegal start of expression
+    [javac]     public static int formatNameBytes(String name, byte[] buf, final int offset, final int length) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:170: error: ';' expected
+    [javac]     public static int formatNameBytes(String name, byte[] buf, final int offset, final int length) {
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:170: error: ')' expected
+    [javac]     public static int formatNameBytes(String name, byte[] buf, final int offset, final int length) {
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:170: error: illegal start of expression
+    [javac]     public static int formatNameBytes(String name, byte[] buf, final int offset, final int length) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:170: error: ';' expected
+    [javac]     public static int formatNameBytes(String name, byte[] buf, final int offset, final int length) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:170: error: illegal start of expression
+    [javac]     public static int formatNameBytes(String name, byte[] buf, final int offset, final int length) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:170: error: ';' expected
+    [javac]     public static int formatNameBytes(String name, byte[] buf, final int offset, final int length) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:170: error: not a statement
+    [javac]     public static int formatNameBytes(String name, byte[] buf, final int offset, final int length) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:170: error: ';' expected
+    [javac]     public static int formatNameBytes(String name, byte[] buf, final int offset, final int length) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:170: error: <identifier> expected
+    [javac]     public static int formatNameBytes(String name, byte[] buf, final int offset, final int length) {
+    [javac]                                                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:170: error: ';' expected
+    [javac]     public static int formatNameBytes(String name, byte[] buf, final int offset, final int length) {
+    [javac]                                                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:195: error: illegal start of expression
+    [javac]     public static void formatUnsignedOctalString(final long value, byte[] buffer,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:195: error: illegal start of expression
+    [javac]     public static void formatUnsignedOctalString(final long value, byte[] buffer,
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:195: error: ';' expected
+    [javac]     public static void formatUnsignedOctalString(final long value, byte[] buffer,
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:195: error: illegal start of expression
+    [javac]     public static void formatUnsignedOctalString(final long value, byte[] buffer,
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:195: error: ';' expected
+    [javac]     public static void formatUnsignedOctalString(final long value, byte[] buffer,
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:195: error: not a statement
+    [javac]     public static void formatUnsignedOctalString(final long value, byte[] buffer,
+    [javac]                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:195: error: ';' expected
+    [javac]     public static void formatUnsignedOctalString(final long value, byte[] buffer,
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:195: error: <identifier> expected
+    [javac]     public static void formatUnsignedOctalString(final long value, byte[] buffer,
+    [javac]                                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:196: error: <identifier> expected
+    [javac]             final int offset, final int length) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:196: error: ';' expected
+    [javac]             final int offset, final int length) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:234: error: illegal start of expression
+    [javac]     public static int formatOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:234: error: illegal start of expression
+    [javac]     public static int formatOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:234: error: ';' expected
+    [javac]     public static int formatOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:234: error: illegal start of expression
+    [javac]     public static int formatOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:234: error: ';' expected
+    [javac]     public static int formatOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:234: error: not a statement
+    [javac]     public static int formatOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:234: error: ';' expected
+    [javac]     public static int formatOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:234: error: <identifier> expected
+    [javac]     public static int formatOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:234: error: <identifier> expected
+    [javac]     public static int formatOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:234: error: ';' expected
+    [javac]     public static int formatOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:259: error: illegal start of expression
+    [javac]     public static int formatLongOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:259: error: illegal start of expression
+    [javac]     public static int formatLongOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:259: error: ';' expected
+    [javac]     public static int formatLongOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:259: error: illegal start of expression
+    [javac]     public static int formatLongOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:259: error: ';' expected
+    [javac]     public static int formatLongOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:259: error: not a statement
+    [javac]     public static int formatLongOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:259: error: ';' expected
+    [javac]     public static int formatLongOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:259: error: <identifier> expected
+    [javac]     public static int formatLongOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:259: error: <identifier> expected
+    [javac]     public static int formatLongOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:259: error: ';' expected
+    [javac]     public static int formatLongOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:286: error: illegal start of expression
+    [javac]     public static int formatLongOctalOrBinaryBytes(
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:286: error: illegal start of expression
+    [javac]     public static int formatLongOctalOrBinaryBytes(
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:286: error: ';' expected
+    [javac]     public static int formatLongOctalOrBinaryBytes(
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:287: error: illegal start of expression
+    [javac]         final long value, byte[] buf, final int offset, final int length) {
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:287: error: ';' expected
+    [javac]         final long value, byte[] buf, final int offset, final int length) {
+    [javac]              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:287: error: not a statement
+    [javac]         final long value, byte[] buf, final int offset, final int length) {
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:287: error: ';' expected
+    [javac]         final long value, byte[] buf, final int offset, final int length) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:287: error: <identifier> expected
+    [javac]         final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:287: error: <identifier> expected
+    [javac]         final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:287: error: ';' expected
+    [javac]         final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:325: error: illegal start of expression
+    [javac]     public static int formatCheckSumOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:325: error: illegal start of expression
+    [javac]     public static int formatCheckSumOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:325: error: ';' expected
+    [javac]     public static int formatCheckSumOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:325: error: illegal start of expression
+    [javac]     public static int formatCheckSumOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:325: error: ';' expected
+    [javac]     public static int formatCheckSumOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:325: error: not a statement
+    [javac]     public static int formatCheckSumOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:325: error: ';' expected
+    [javac]     public static int formatCheckSumOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:325: error: <identifier> expected
+    [javac]     public static int formatCheckSumOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:325: error: <identifier> expected
+    [javac]     public static int formatCheckSumOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java:325: error: ';' expected
+    [javac]     public static int formatCheckSumOctalBytes(final long value, byte[] buf, final int offset, final int length) {
+    [javac]                                                                                                                ^
+    [javac] 100 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260620_133812/Compress_14_24ae968cb7ca455495f3e369903e1c78/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 6.63 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long    result = 0;
+    int     end = offset + length;
+    int     start = offset;
+    if (length < 2){
+        throw new IllegalArgumentException("Length "+length+" must be at least 2");
+    }
+    boolean allNUL = true;
+    for (int i = start; i < end; i++){
+        if (buffer[i] != 0){
+            allNUL = false;
+            break;
+        }
+    }
+    if (allNUL) {
+            return 0L;
+    }
+    while (start < end){
+        if (buffer[start] == ' '){
+            start++;
+        } else {
+            break;
+        }
+    }
+    byte trailer;
+    trailer = buffer[end-1];
+    if (trailer == 0 || trailer == ' '){
+        end--;
+    } else {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, end-1, trailer));
+    }
+    trailer = buffer[end-1];
+    if (trailer == 0 || trailer == ' '){
+        end--;
+    }
+    for ( ;start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7'){
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0'); 
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

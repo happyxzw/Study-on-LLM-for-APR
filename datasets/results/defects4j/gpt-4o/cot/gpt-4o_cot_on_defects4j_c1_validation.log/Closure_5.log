@@ -1,0 +1,1625 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 28.38 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (refNode != null && !NodeUtil.isStatementBlock(refNode)) { // Added null-check for refNode
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 8.47 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!NodeUtil.isVarOrAssignExprLhs(name, parent)) { // Fixed line
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/Closure_5_04d319aa117f430998f1d86b99058b31 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/Closure_5_04d319aa117f430998f1d86b99058b31 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/Closure_5_04d319aa117f430998f1d86b99058b31/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/Closure_5_04d319aa117f430998f1d86b99058b31/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/Closure_5_04d319aa117f430998f1d86b99058b31/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/Closure_5_04d319aa117f430998f1d86b99058b31/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/Closure_5_04d319aa117f430998f1d86b99058b31/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/Closure_5_04d319aa117f430998f1d86b99058b31/src/com/google/javascript/jscomp/InlineObjectLiterals.java:178: error: cannot find symbol
+    [javac]     if (!NodeUtil.isVarOrAssignExprLhs(name, parent)) { // Fixed line
+    [javac]                  ^
+    [javac]   symbol:   method isVarOrAssignExprLhs(Node,Node)
+    [javac]   location: class NodeUtil
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map$Entry.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] 1 error
+    [javac] 52 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/Closure_5_04d319aa117f430998f1d86b99058b31/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 6 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 26.25 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      if (childVal != null) { // Fix: Ensure childVal is not null to avoid NullPointerException
+        for (Reference t : refs) {
+          Node refNode = t.getParent();
+          while (refNode != null && !NodeUtil.isStatementBlock(refNode)) { // Fix: Ensure refNode is not null to prevent infinite loop
+            if (refNode == childVal) {
+              return false;
+            }
+            refNode = refNode.getParent();
+          }
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 23.84 seconds
+                Failure reason: Regression
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!NodeUtil.isVarOrSimpleAssignLhs(name, parent)) { // FIX: Correct method used for checking LHS nodes
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (refNode != null && !NodeUtil.isStatementBlock(refNode)) { // FIX: Added null check for refNode to prevent null pointer exception
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 6
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject11
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject18
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject19
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject20
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject21
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject20', 'com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject18', 'com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject19', 'com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject21', 'com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject11']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 7.46 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!NodeUtil.isVarOrAssignExprLhs(name)) { // Fixed: Added NodeUtil qualifier to match external utility method.
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getNode(); // Fixed: Changed t.getParent() to t.getNode() to correctly traverse the reference node.
+        while (refNode != null && !NodeUtil.isStatementBlock(refNode)) { // Fixed: Added null check to avoid null pointer exception during traversal.
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/src/com/google/javascript/jscomp/InlineObjectLiterals.java:178: error: cannot find symbol
+    [javac]     if (!NodeUtil.isVarOrAssignExprLhs(name)) { // Fixed: Added NodeUtil qualifier to match external utility method.
+    [javac]                  ^
+    [javac]   symbol:   method isVarOrAssignExprLhs(Node)
+    [javac]   location: class NodeUtil
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map$Entry.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] 1 error
+    [javac] 52 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 5 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 27.03 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      if (childVal != null) { // Fix: Added null check for childVal
+        for (Reference t : refs) {
+          Node refNode = t.getParent();
+          while (refNode != null && !NodeUtil.isStatementBlock(refNode)) { // Fix: Added null check for refNode
+            if (refNode == childVal) {
+              return false;
+            }
+            refNode = refNode.getParent();
+          }
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 25.26 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps != null && gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (refNode != null && !NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 27.90 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getNode(); // Fixed bug here: previously used t.getParent() instead of t.getNode()
+        while (refNode != null && !NodeUtil.isStatementBlock(refNode)) { // Added null check to prevent potential NPE
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 5.56 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!NodeUtil.isVarOrAssignExprLhs(name)) { // Fixed function call to include 'NodeUtil.'
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (refNode != null && !NodeUtil.isStatementBlock(refNode)) { // Added null check for 'refNode' to prevent NullPointerException
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/src/com/google/javascript/jscomp/InlineObjectLiterals.java:178: error: cannot find symbol
+    [javac]     if (!NodeUtil.isVarOrAssignExprLhs(name)) { // Fixed function call to include 'NodeUtil.'
+    [javac]                  ^
+    [javac]   symbol:   method isVarOrAssignExprLhs(Node)
+    [javac]   location: class NodeUtil
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map$Entry.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] 1 error
+    [javac] 52 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 21.98 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps != null && gramps.isCall() 
+          && gramps.getFirstChild() == parent) { // Fix: Added null check for 'gramps'.
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (refNode != null && !NodeUtil.isStatementBlock(refNode)) { // Fix: Added null check for 'refNode'.
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 5.68 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!NodeUtil.isVarOrAssignExprLhs(name)) {  // FIX: Replaced isVarOrAssignExprLhs with NodeUtil.isVarOrAssignExprLhs for correct utility method usage.
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getNode(); // FIX: Changed t.getParent() to t.getNode() to correctly iterate over the node references.
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/src/com/google/javascript/jscomp/InlineObjectLiterals.java:177: error: cannot find symbol
+    [javac]     if (!NodeUtil.isVarOrAssignExprLhs(name)) {  // FIX: Replaced isVarOrAssignExprLhs with NodeUtil.isVarOrAssignExprLhs for correct utility method usage.
+    [javac]                  ^
+    [javac]   symbol:   method isVarOrAssignExprLhs(Node)
+    [javac]   location: class NodeUtil
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map$Entry.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] 1 error
+    [javac] 52 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 7.43 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!NodeUtil.isVarOrAssignExprLhs(name)) { // Fixed the call to isVarOrAssignExprLhs
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getNode(); // Fixed to use ref.getNode() instead of ref.getParent()
+        while (refNode != null && !NodeUtil.isStatementBlock(refNode)) { // Added null check
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/src/com/google/javascript/jscomp/InlineObjectLiterals.java:178: error: cannot find symbol
+    [javac]     if (!NodeUtil.isVarOrAssignExprLhs(name)) { // Fixed the call to isVarOrAssignExprLhs
+    [javac]                  ^
+    [javac]   symbol:   method isVarOrAssignExprLhs(Node)
+    [javac]   location: class NodeUtil
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map$Entry.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] 1 error
+    [javac] 52 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_201613/Closure_5_440d83414ef747fa9c4dac5d504fe252/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 6 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

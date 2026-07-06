@@ -1,0 +1,1247 @@
+{
+  "data": {
+    "BITCOUNT": {
+      "input": "public static int bitcount(int n) {\nint count = 0;\nwhile (n != 0) {\n    n = (n ^ (n - 1));\n        count++;\n}\nreturn count;\n}",
+      "function range": "12,5-19,5",
+      "category": "Expression Bug",
+      "output": [
+        "public static int bitcount(int n) {\n    int count = 0;\n    while (n != 0) {\n        n = n & (n - 1);\n        count++;\n    }\n    return count;\n}",
+        "public static int bitcount(int n) {\n    int count = 0;\n    while (n != 0) {\n        n = n & (n - 1); // Clear the least significant 1-bit\n        count++;\n    }\n    return count;\n}"
+      ],
+      "gt_fix": "public static int bitcount(int n) {\n    int count = 0;\n    while (n != 0) {\n        n = (n & (n - 1));\n        count++;\n    }\n    return count;\n    }",
+      "diffs": [
+        "",
+        ""
+      ],
+      "patch_analysis": [
+        {
+          "correctness": "correct"
+        },
+        {
+          "correctness": "correct"
+        }
+      ],
+      "match_rate": 1.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 2
+    },
+    "BREADTH_FIRST_SEARCH": {
+      "input": "public static boolean breadth_first_search(Node startnode, Node goalnode) {\n    Deque<Node> queue = new ArrayDeque<>();\n    queue.addLast(startnode);\n    nodesvisited.add(startnode);\n    while (true) {\n        Node node = queue.removeFirst();\n        if (node == goalnode) {\n            return true;\n        } else {\n            for (Node successor_node : node.getSuccessors()) {\n                if (!nodesvisited.contains(successor_node)) {\n                    queue.addFirst(successor_node);\n                    nodesvisited.add(successor_node);\n                }\n            }\n        }\n    }\n}",
+      "function range": "18,5-43,5",
+      "category": "Control Flow Bug",
+      "output": [
+        "public static boolean breadth_first_search(Node startnode, Node goalnode) {\n    Deque<Node> queue = new ArrayDeque<>();\n    Set<Node> nodesvisited = new HashSet<>();\n    queue.addLast(startnode);\n    nodesvisited.add(startnode);\n    while (!queue.isEmpty()) {\n        Node node = queue.removeFirst();\n        if (node == goalnode) {\n            return true;\n        } else {\n            for (Node successor_node : node.getSuccessors()) {\n                if (!nodesvisited.contains(successor_node)) {\n                    queue.addLast(successor_node);\n                    nodesvisited.add(successor_node);\n                }\n            }\n        }\n    }\n    return false;\n}"
+      ],
+      "gt_fix": "public static boolean breadth_first_search(Node startnode, Node goalnode) {\n        Deque<Node> queue = new ArrayDeque<>();\n        queue.addLast(startnode);\n\n        nodesvisited.add(startnode);\n\n        while (!queue.isEmpty()) {\n            Node node = queue.removeFirst();\n\n            if (node == goalnode) {\n                return true;\n            } else {\n                for (Node successor_node : node.getSuccessors()) {\n                    if (!nodesvisited.contains(successor_node)) {\n                        queue.addFirst(successor_node);\n                        nodesvisited.add(successor_node);\n                    }\n                }\n            }\n        }\n        /**\n         * The buggy program always drops into while(true) loop and will not return false\n         * Removed below line to fix compilation error\n         */\n         return false;\n    }",
+      "diffs": [
+        "--- model_output\n+++ ground_truth\n@@ -3 +2,0 @@\n-Set<Node> nodesvisited = new HashSet<>();\n@@ -13 +12 @@\n-queue.addLast(successor_node);\n+queue.addFirst(successor_node);\n"
+      ],
+      "patch_analysis": [
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            5,
+            6,
+            17
+          ],
+          "model_changed_lines": [
+            2,
+            5,
+            6,
+            12,
+            13,
+            17
+          ],
+          "gt_minus": [
+            "while (true) {"
+          ],
+          "gt_plus": [
+            "while (!queue.isEmpty()) {",
+            "return false;"
+          ],
+          "model_minus": [
+            "while (true) {",
+            "queue.addFirst(successor_node);"
+          ],
+          "model_plus": [
+            "Set<Node> nodesvisited = new HashSet<>();",
+            "while (!queue.isEmpty()) {",
+            "queue.addLast(successor_node);",
+            "return false;"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        }
+      ],
+      "match_rate": 0.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 0
+    },
+    "BUCKETSORT": {
+      "input": "public static ArrayList<Integer> bucketsort(ArrayList<Integer> arr, int k) {\n    ArrayList<Integer> counts = new ArrayList<Integer>(Collections.nCopies(k,0));\n    for (Integer x : arr) {\n        counts.set(x,counts.get(x)+1);\n    }\n    ArrayList<Integer> sorted_arr = new ArrayList<Integer>(100);\n    int i = 0;\n    for (Integer count : arr) { \n        sorted_arr.addAll(Collections.nCopies(count, i));\n        i++;\n            }\n    return sorted_arr;\n}",
+      "function range": "14,5-28,5",
+      "category": "Reference Bug",
+      "output": [
+        "public static ArrayList<Integer> bucketsort(ArrayList<Integer> arr, int k) {\n    ArrayList<Integer> counts = new ArrayList<Integer>(Collections.nCopies(k, 0));\n    for (Integer x : arr) {\n        counts.set(x, counts.get(x) + 1);\n    }\n    ArrayList<Integer> sorted_arr = new ArrayList<Integer>();\n    int i = 0;\n    for (Integer count : counts) { \n        sorted_arr.addAll(Collections.nCopies(count, i));\n        i++;\n    }\n    return sorted_arr;\n}",
+        "public static ArrayList<Integer> bucketsort(ArrayList<Integer> arr, int k) {\n    ArrayList<Integer> counts = new ArrayList<Integer>(Collections.nCopies(k, 0));\n    for (Integer x : arr) {\n        counts.set(x, counts.get(x) + 1);\n    }\n    ArrayList<Integer> sorted_arr = new ArrayList<Integer>();\n    int i = 0;\n    for (Integer count : counts) { \n        sorted_arr.addAll(Collections.nCopies(count, i));\n        i++;\n    }\n    return sorted_arr;\n}"
+      ],
+      "gt_fix": "public static ArrayList<Integer> bucketsort(ArrayList<Integer> arr, int k) {\n        ArrayList<Integer> counts = new ArrayList<Integer>(Collections.nCopies(k,0));\n        for (Integer x : arr) {\n            counts.set(x,counts.get(x)+1);\n        }\n\n        ArrayList<Integer> sorted_arr = new ArrayList<Integer>(100);\n        int i = 0;\n        for (Integer count : counts) {\n            sorted_arr.addAll(Collections.nCopies(count, i));\n            i++;\n        }\n\n        return sorted_arr;\n    }",
+      "diffs": [
+        "--- model_output\n+++ ground_truth\n@@ -2 +2 @@\n-ArrayList<Integer> counts = new ArrayList<Integer>(Collections.nCopies(k, 0));\n+ArrayList<Integer> counts = new ArrayList<Integer>(Collections.nCopies(k,0));\n@@ -4 +4 @@\n-counts.set(x, counts.get(x) + 1);\n+counts.set(x,counts.get(x)+1);\n@@ -6 +6 @@\n-ArrayList<Integer> sorted_arr = new ArrayList<Integer>();\n+ArrayList<Integer> sorted_arr = new ArrayList<Integer>(100);\n",
+        "--- model_output\n+++ ground_truth\n@@ -2 +2 @@\n-ArrayList<Integer> counts = new ArrayList<Integer>(Collections.nCopies(k, 0));\n+ArrayList<Integer> counts = new ArrayList<Integer>(Collections.nCopies(k,0));\n@@ -4 +4 @@\n-counts.set(x, counts.get(x) + 1);\n+counts.set(x,counts.get(x)+1);\n@@ -6 +6 @@\n-ArrayList<Integer> sorted_arr = new ArrayList<Integer>();\n+ArrayList<Integer> sorted_arr = new ArrayList<Integer>(100);\n"
+      ],
+      "patch_analysis": [
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            8,
+            9
+          ],
+          "model_changed_lines": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "gt_minus": [
+            "for (Integer count : arr) {"
+          ],
+          "gt_plus": [
+            "for (Integer count : counts) {"
+          ],
+          "model_minus": [
+            "ArrayList<Integer> counts = new ArrayList<Integer>(Collections.nCopies(k,0));",
+            "counts.set(x,counts.get(x)+1);",
+            "ArrayList<Integer> sorted_arr = new ArrayList<Integer>(100);",
+            "for (Integer count : arr) {"
+          ],
+          "model_plus": [
+            "ArrayList<Integer> counts = new ArrayList<Integer>(Collections.nCopies(k, 0));",
+            "counts.set(x, counts.get(x) + 1);",
+            "ArrayList<Integer> sorted_arr = new ArrayList<Integer>();",
+            "for (Integer count : counts) {"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            8,
+            9
+          ],
+          "model_changed_lines": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "gt_minus": [
+            "for (Integer count : arr) {"
+          ],
+          "gt_plus": [
+            "for (Integer count : counts) {"
+          ],
+          "model_minus": [
+            "ArrayList<Integer> counts = new ArrayList<Integer>(Collections.nCopies(k,0));",
+            "counts.set(x,counts.get(x)+1);",
+            "ArrayList<Integer> sorted_arr = new ArrayList<Integer>(100);",
+            "for (Integer count : arr) {"
+          ],
+          "model_plus": [
+            "ArrayList<Integer> counts = new ArrayList<Integer>(Collections.nCopies(k, 0));",
+            "counts.set(x, counts.get(x) + 1);",
+            "ArrayList<Integer> sorted_arr = new ArrayList<Integer>();",
+            "for (Integer count : counts) {"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        }
+      ],
+      "match_rate": 0.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 0
+    },
+    "DEPTH_FIRST_SEARCH": {
+      "input": "boolean search(Node node) {\n    if (nodesvisited.contains(node)) {\n        return false;\n    } else if (node == goalnode) {\n        return true;\n    } else {\n        for (Node successornodes : node.getSuccessors()) {\n            if (search(successornodes)) { return true; }\n                    }\n    }\n    return false;\n}",
+      "function range": "16,13-27,13",
+      "category": "Control Flow Bug",
+      "output": [
+        "boolean search(Node node) {\n    if (nodesvisited.contains(node)) {\n        return false;\n    }\n    nodesvisited.add(node); // Mark the node as visited\n    if (node == goalnode) {\n        return true;\n    }\n    for (Node successornodes : node.getSuccessors()) {\n        if (search(successornodes)) {\n            return true;\n        }\n    }\n    return false;\n}",
+        "boolean search(Node node) {\n    if (nodesvisited.contains(node)) {\n        return false;\n    }\n    nodesvisited.add(node); // Mark the node as visited\n\n    if (node == goalnode) {\n        return true;\n    }\n\n    for (Node successor : node.getSuccessors()) {\n        if (search(successor)) {\n            return true;\n        }\n    }\n    return false;\n}",
+        "boolean search(Node node) {\n    if (nodesvisited.contains(node)) {\n        return false;\n    }\n    nodesvisited.add(node); // Add the node to the visited set\n\n    if (node == goalnode) {\n        return true;\n    } else {\n        for (Node successornodes : node.getSuccessors()) {\n            if (search(successornodes)) { \n                return true; \n            }\n        }\n    }\n    return false;\n}"
+      ],
+      "gt_fix": "boolean search(Node node) {\n    if (nodesvisited.contains(node)) {\n        return false;\n    } else if (node == goalnode) {\n        return true;\n    } else {\n        nodesvisited.add(node);\n        for (Node successornodes : node.getSuccessors()) {\n            if (search(successornodes)) { return true; }\n        }\n    }\n    return false;\n}",
+      "diffs": [
+        "--- model_output\n+++ ground_truth\n@@ -4 +4,3 @@\n-}\n+} else if (node == goalnode) {\n+return true;\n+} else {\n@@ -6,3 +7,0 @@\n-if (node == goalnode) {\n-return true;\n-}\n@@ -10,2 +9 @@\n-if (search(successornodes)) {\n-return true;\n+if (search(successornodes)) { return true; }\n",
+        "--- model_output\n+++ ground_truth\n@@ -4 +4,3 @@\n-}\n+} else if (node == goalnode) {\n+return true;\n+} else {\n@@ -6,6 +8,2 @@\n-if (node == goalnode) {\n-return true;\n-}\n-for (Node successor : node.getSuccessors()) {\n-if (search(successor)) {\n-return true;\n+for (Node successornodes : node.getSuccessors()) {\n+if (search(successornodes)) { return true; }\n",
+        "--- model_output\n+++ ground_truth\n@@ -4,3 +4 @@\n-}\n-nodesvisited.add(node);\n-if (node == goalnode) {\n+} else if (node == goalnode) {\n@@ -8,0 +7 @@\n+nodesvisited.add(node);\n@@ -10,3 +9 @@\n-if (search(successornodes)) {\n-return true;\n-}\n+if (search(successornodes)) { return true; }\n"
+      ],
+      "patch_analysis": [
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            6
+          ],
+          "model_changed_lines": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "gt_minus": [],
+          "gt_plus": [
+            "nodesvisited.add(node);"
+          ],
+          "model_minus": [
+            "} else if (node == goalnode) {",
+            "} else {",
+            "if (search(successornodes)) { return true; }"
+          ],
+          "model_plus": [
+            "}",
+            "nodesvisited.add(node);",
+            "if (node == goalnode) {",
+            "}",
+            "if (search(successornodes)) {",
+            "return true;"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            6
+          ],
+          "model_changed_lines": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "gt_minus": [],
+          "gt_plus": [
+            "nodesvisited.add(node);"
+          ],
+          "model_minus": [
+            "} else if (node == goalnode) {",
+            "} else {",
+            "for (Node successornodes : node.getSuccessors()) {",
+            "if (search(successornodes)) { return true; }"
+          ],
+          "model_plus": [
+            "}",
+            "nodesvisited.add(node);",
+            "if (node == goalnode) {",
+            "}",
+            "for (Node successor : node.getSuccessors()) {",
+            "if (search(successor)) {",
+            "return true;"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        },
+        {
+          "location_overlap": false,
+          "logic_match": false,
+          "gt_changed_lines": [
+            6
+          ],
+          "model_changed_lines": [
+            4,
+            5,
+            8,
+            9
+          ],
+          "gt_minus": [],
+          "gt_plus": [
+            "nodesvisited.add(node);"
+          ],
+          "model_minus": [
+            "} else if (node == goalnode) {",
+            "if (search(successornodes)) { return true; }"
+          ],
+          "model_plus": [
+            "}",
+            "nodesvisited.add(node);",
+            "if (node == goalnode) {",
+            "if (search(successornodes)) {",
+            "return true;",
+            "}"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        }
+      ],
+      "match_rate": 0.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 0
+    },
+    "DETECT_CYCLE": {
+      "input": "public static boolean detect_cycle(Node node) {\n    Node hare = node;\n    Node tortoise = node;\n    while (true) {\n        if (hare.getSuccessor() == null)\n                    return false;\n        tortoise = tortoise.getSuccessor();\n        hare = hare.getSuccessor().getSuccessor();\n        if (hare == tortoise)\n            return true;\n    }\n}",
+      "function range": "13,5-27,5",
+      "category": "Control Flow Bug",
+      "output": [
+        "public static boolean detect_cycle(Node node) {\n    Node hare = node;\n    Node tortoise = node;\n    while (true) {\n        if (hare == null || hare.getSuccessor() == null) // Check if hare or hare's successor is null\n            return false;\n        tortoise = tortoise.getSuccessor();\n        hare = hare.getSuccessor().getSuccessor();\n        if (hare == tortoise)\n            return true;\n    }\n}",
+        "public static boolean detect_cycle(Node node) {\n    if (node == null) {\n        return false; // Empty list, no cycle\n    }\n    Node hare = node;\n    Node tortoise = node;\n    while (hare != null && hare.getSuccessor() != null) {\n        tortoise = tortoise.getSuccessor();\n        hare = hare.getSuccessor().getSuccessor();\n        if (hare == tortoise) {\n            return true; // Cycle detected\n        }\n    }\n    return false; // No cycle\n}",
+        "public static boolean detect_cycle(Node node) {\n    Node hare = node;\n    Node tortoise = node;\n    while (hare != null && hare.getSuccessor() != null) {\n        tortoise = tortoise.getSuccessor();\n        hare = hare.getSuccessor().getSuccessor();\n        if (hare == tortoise)\n            return true;\n    }\n    return false;\n}",
+        "public static boolean detect_cycle(Node node) {\n    Node hare = node;\n    Node tortoise = node;\n    while (true) {\n        if (hare == null || hare.getSuccessor() == null)\n            return false;\n        tortoise = tortoise.getSuccessor();\n        hare = hare.getSuccessor().getSuccessor();\n        if (hare == tortoise)\n            return true;\n    }\n}",
+        "public static boolean detect_cycle(Node node) {\n    Node hare = node;\n    Node tortoise = node;\n    while (hare != null && hare.getSuccessor() != null) {\n        tortoise = tortoise.getSuccessor();\n        hare = hare.getSuccessor().getSuccessor();\n        if (hare == tortoise)\n            return true;\n    }\n    return false;\n}"
+      ],
+      "gt_fix": "public static boolean detect_cycle(Node node) {\n        Node hare = node;\n        Node tortoise = node;\n\n        while (true) {\n            if (null==hare ||hare.getSuccessor() == null)\n                return false;\n\n            tortoise = tortoise.getSuccessor();\n            hare = hare.getSuccessor().getSuccessor();\n\n            if (hare == tortoise)\n                return true;\n        }\n    }",
+      "diffs": [
+        "--- model_output\n+++ ground_truth\n@@ -5 +5 @@\n-if (hare == null || hare.getSuccessor() == null)\n+if (null==hare ||hare.getSuccessor() == null)\n",
+        "--- model_output\n+++ ground_truth\n@@ -2,3 +1,0 @@\n-if (node == null) {\n-return false;\n-}\n@@ -7 +4,3 @@\n-while (hare != null && hare.getSuccessor() != null) {\n+while (true) {\n+if (null==hare ||hare.getSuccessor() == null)\n+return false;\n@@ -10 +9 @@\n-if (hare == tortoise) {\n+if (hare == tortoise)\n@@ -14,2 +12,0 @@\n-return false;\n-}\n",
+        "--- model_output\n+++ ground_truth\n@@ -4 +4,3 @@\n-while (hare != null && hare.getSuccessor() != null) {\n+while (true) {\n+if (null==hare ||hare.getSuccessor() == null)\n+return false;\n@@ -10 +11,0 @@\n-return false;\n",
+        "--- model_output\n+++ ground_truth\n@@ -5 +5 @@\n-if (hare == null || hare.getSuccessor() == null)\n+if (null==hare ||hare.getSuccessor() == null)\n",
+        "--- model_output\n+++ ground_truth\n@@ -4 +4,3 @@\n-while (hare != null && hare.getSuccessor() != null) {\n+while (true) {\n+if (null==hare ||hare.getSuccessor() == null)\n+return false;\n@@ -10 +11,0 @@\n-return false;\n"
+      ],
+      "patch_analysis": [
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            5,
+            6
+          ],
+          "model_changed_lines": [
+            5,
+            6
+          ],
+          "gt_minus": [
+            "if (hare.getSuccessor() == null)"
+          ],
+          "gt_plus": [
+            "if (null==hare ||hare.getSuccessor() == null)"
+          ],
+          "model_minus": [
+            "if (hare.getSuccessor() == null)"
+          ],
+          "model_plus": [
+            "if (hare == null || hare.getSuccessor() == null)"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            5,
+            6
+          ],
+          "model_changed_lines": [
+            1,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            12
+          ],
+          "gt_minus": [
+            "if (hare.getSuccessor() == null)"
+          ],
+          "gt_plus": [
+            "if (null==hare ||hare.getSuccessor() == null)"
+          ],
+          "model_minus": [
+            "while (true) {",
+            "if (hare.getSuccessor() == null)",
+            "return false;",
+            "if (hare == tortoise)"
+          ],
+          "model_plus": [
+            "if (node == null) {",
+            "return false;",
+            "}",
+            "while (hare != null && hare.getSuccessor() != null) {",
+            "if (hare == tortoise) {",
+            "return false;",
+            "}"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            5,
+            6
+          ],
+          "model_changed_lines": [
+            4,
+            5,
+            6,
+            7,
+            11
+          ],
+          "gt_minus": [
+            "if (hare.getSuccessor() == null)"
+          ],
+          "gt_plus": [
+            "if (null==hare ||hare.getSuccessor() == null)"
+          ],
+          "model_minus": [
+            "while (true) {",
+            "if (hare.getSuccessor() == null)",
+            "return false;"
+          ],
+          "model_plus": [
+            "while (hare != null && hare.getSuccessor() != null) {",
+            "return false;"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            5,
+            6
+          ],
+          "model_changed_lines": [
+            5,
+            6
+          ],
+          "gt_minus": [
+            "if (hare.getSuccessor() == null)"
+          ],
+          "gt_plus": [
+            "if (null==hare ||hare.getSuccessor() == null)"
+          ],
+          "model_minus": [
+            "if (hare.getSuccessor() == null)"
+          ],
+          "model_plus": [
+            "if (hare == null || hare.getSuccessor() == null)"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            5,
+            6
+          ],
+          "model_changed_lines": [
+            4,
+            5,
+            6,
+            7,
+            11
+          ],
+          "gt_minus": [
+            "if (hare.getSuccessor() == null)"
+          ],
+          "gt_plus": [
+            "if (null==hare ||hare.getSuccessor() == null)"
+          ],
+          "model_minus": [
+            "while (true) {",
+            "if (hare.getSuccessor() == null)",
+            "return false;"
+          ],
+          "model_plus": [
+            "while (hare != null && hare.getSuccessor() != null) {",
+            "return false;"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        }
+      ],
+      "match_rate": 0.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 0
+    },
+    "FIND_FIRST_IN_SORTED": {
+      "input": "public static int find_first_in_sorted(int[] arr, int x) {\n    int lo = 0;\n    int hi = arr.length;\n    while (lo <= hi) {\n            int mid = (lo + hi) / 2; \n        if (x == arr[mid] && (mid == 0 || x != arr[mid-1])) {\n            return mid;\n        } else if (x <= arr[mid]) {\n            hi = mid;\n        } else {\n            lo = mid + 1;\n        }\n    }\n    return -1;\n}",
+      "function range": "15,5-32,5",
+      "category": "Control Flow Bug",
+      "output": [
+        "public static int find_first_in_sorted(int[] arr, int x) {\n    int lo = 0;\n    int hi = arr.length - 1; // Corrected initialization of hi\n    while (lo <= hi) {\n        int mid = (lo + hi) / 2;\n        if (x == arr[mid] && (mid == 0 || x != arr[mid - 1])) {\n            return mid;\n        } else if (x <= arr[mid]) {\n            hi = mid - 1; // Correctly move the hi boundary\n        } else {\n            lo = mid + 1;\n        }\n    }\n    return -1;\n}"
+      ],
+      "gt_fix": "public static int find_first_in_sorted(int[] arr, int x) {\n        int lo = 0;\n        int hi = arr.length;\n\n        while (lo < hi) {\n            int mid = (lo + hi) / 2; // check if this is floor division\n\n            if (x == arr[mid] && (mid == 0 || x != arr[mid-1])) {\n                return mid;\n            } else if (x <= arr[mid]) {\n                hi = mid;\n            } else {\n                lo = mid + 1;\n            }\n        }\n\n        return -1;\n    }",
+      "diffs": [
+        "--- model_output\n+++ ground_truth\n@@ -3,2 +3,2 @@\n-int hi = arr.length - 1;\n-while (lo <= hi) {\n+int hi = arr.length;\n+while (lo < hi) {\n@@ -6 +6 @@\n-if (x == arr[mid] && (mid == 0 || x != arr[mid - 1])) {\n+if (x == arr[mid] && (mid == 0 || x != arr[mid-1])) {\n@@ -9 +9 @@\n-hi = mid - 1;\n+hi = mid;\n"
+      ],
+      "patch_analysis": [
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            4,
+            5
+          ],
+          "model_changed_lines": [
+            3,
+            4,
+            6,
+            7,
+            9,
+            10
+          ],
+          "gt_minus": [
+            "while (lo <= hi) {"
+          ],
+          "gt_plus": [
+            "while (lo < hi) {"
+          ],
+          "model_minus": [
+            "int hi = arr.length;",
+            "if (x == arr[mid] && (mid == 0 || x != arr[mid-1])) {",
+            "hi = mid;"
+          ],
+          "model_plus": [
+            "int hi = arr.length - 1;",
+            "if (x == arr[mid] && (mid == 0 || x != arr[mid - 1])) {",
+            "hi = mid - 1;"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        }
+      ],
+      "match_rate": 0.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 0
+    },
+    "FIND_IN_SORTED": {
+      "input": "public static int binsearch(int[] arr, int x, int start, int end) {\n    if (start == end) {\n        return -1;\n    }\n    int mid = start + (end - start) / 2; \n    if (x < arr[mid]) {\n        return binsearch(arr, x, start, mid);\n    } else if (x > arr[mid]) {\n        return binsearch(arr, x, mid, end);\n            } else {\n        return mid;\n    }\n}",
+      "function range": "12,5-24,5",
+      "category": "Control Flow Bug",
+      "output": [
+        "public static int binsearch(int[] arr, int x, int start, int end) {\n    if (start >= end) {\n        return -1;\n    }\n    int mid = start + (end - start) / 2; \n    if (x < arr[mid]) {\n        return binsearch(arr, x, start, mid);\n    } else if (x > arr[mid]) {\n        return binsearch(arr, x, mid + 1, end); // Use mid + 1 here\n    } else {\n        return mid;\n    }\n}"
+      ],
+      "gt_fix": "public static int binsearch(int[] arr, int x, int start, int end) {\n        if (start == end) {\n            return -1;\n        }\n        int mid = start + (end - start) / 2; // check this is floor division\n        if (x < arr[mid]) {\n            return binsearch(arr, x, start, mid);\n        } else if (x > arr[mid]) {\n            return binsearch(arr, x, mid+1, end);\n        } else {\n            return mid;\n        }\n    }",
+      "diffs": [
+        "--- model_output\n+++ ground_truth\n@@ -2 +2 @@\n-if (start >= end) {\n+if (start == end) {\n@@ -9 +9 @@\n-return binsearch(arr, x, mid + 1, end);\n+return binsearch(arr, x, mid+1, end);\n"
+      ],
+      "patch_analysis": [
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            9,
+            10
+          ],
+          "model_changed_lines": [
+            2,
+            3,
+            9,
+            10
+          ],
+          "gt_minus": [
+            "return binsearch(arr, x, mid, end);"
+          ],
+          "gt_plus": [
+            "return binsearch(arr, x, mid+1, end);"
+          ],
+          "model_minus": [
+            "if (start == end) {",
+            "return binsearch(arr, x, mid, end);"
+          ],
+          "model_plus": [
+            "if (start >= end) {",
+            "return binsearch(arr, x, mid + 1, end);"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        }
+      ],
+      "match_rate": 0.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 0
+    },
+    "FLATTEN": {
+      "input": "public static Object flatten(Object arr) {\n    if (arr instanceof ArrayList) {\n        ArrayList narr = (ArrayList) arr;\n        ArrayList result = new ArrayList(50);\n        for (Object x : narr) {\n            if (x instanceof ArrayList) {\n                result.addAll((ArrayList) flatten(x));\n            } else {\n                result.add(flatten(x));\n            }\n        }\n        return result;\n    } else {\n        return flatten(arr);\n    }\n            }",
+      "function range": "13,5-28,5",
+      "category": "Control Flow Bug",
+      "output": [
+        "public static Object flatten(Object arr) {\n    if (arr instanceof ArrayList) {\n        ArrayList narr = (ArrayList) arr;\n        ArrayList result = new ArrayList(50);\n        for (Object x : narr) {\n            if (x instanceof ArrayList) {\n                result.addAll((ArrayList) flatten(x));\n            } else {\n                result.add(x);\n            }\n        }\n        return result;\n    } else {\n        return arr;\n    }\n}",
+        "public static Object flatten(Object arr) {\n    if (arr instanceof ArrayList) {\n        ArrayList narr = (ArrayList) arr;\n        ArrayList result = new ArrayList(50);\n        for (Object x : narr) {\n            if (x instanceof ArrayList) {\n                result.addAll((ArrayList) flatten(x));\n            } else {\n                result.add(x); // Base case: add the element as is\n            }\n        }\n        return result;\n    } else {\n        return arr; // Base case: return the element as is\n    }\n}"
+      ],
+      "gt_fix": "public static Object flatten(Object arr) {\n        if (arr instanceof ArrayList) {\n            ArrayList narr = (ArrayList) arr;\n            ArrayList result = new ArrayList(50);\n            for (Object x : narr) {\n                if (x instanceof ArrayList) {\n                    result.addAll((ArrayList) flatten(x));\n                } else {\n                    result.add((x));\n                }\n            }\n            return result;\n        } else {\n            return arr;\n        }\n    }",
+      "diffs": [
+        "",
+        ""
+      ],
+      "patch_analysis": [
+        {
+          "correctness": "correct"
+        },
+        {
+          "correctness": "correct"
+        }
+      ],
+      "match_rate": 1.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 2
+    },
+    "GCD": {
+      "input": "public static int gcd(int a, int b) {\n    if (b == 0) {\n        return a;\n    } else {\n        return gcd(a % b, b);\n            }\n}",
+      "function range": "15,5-21,5",
+      "category": "Expression Bug",
+      "output": [
+        "public static int gcd(int a, int b) {\n    if (b == 0) {\n        return a;\n    } else {\n        return gcd(b, a % b);\n    }\n}",
+        "public static int gcd(int a, int b) {\n    if (b == 0) {\n        return a;\n    } else {\n        return gcd(b, a % b);\n    }\n}",
+        "public static int gcd(int a, int b) {\n    if (b == 0) {\n        return a;\n    } else {\n        return gcd(b, a % b);\n    }\n}",
+        "public static int gcd(int a, int b) {\n    if (b == 0) {\n        return a;\n    } else {\n        return gcd(b, a % b);\n    }\n}",
+        "public static int gcd(int a, int b) {\n    if (b == 0) {\n        return a;\n    } else {\n        return gcd(b, a % b);\n    }\n}",
+        "public static int gcd(int a, int b) {\n    if (b == 0) {\n        return a;\n    } else {\n        return gcd(b, a % b);\n    }\n}"
+      ],
+      "gt_fix": "public static int gcd(int a, int b) {\n        if (b == 0) {\n            return a;\n        } else {\n            return gcd(b, a%b);\n        }\n    }",
+      "diffs": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "patch_analysis": [
+        {
+          "correctness": "correct"
+        },
+        {
+          "correctness": "correct"
+        },
+        {
+          "correctness": "correct"
+        },
+        {
+          "correctness": "correct"
+        },
+        {
+          "correctness": "correct"
+        },
+        {
+          "correctness": "correct"
+        }
+      ],
+      "match_rate": 1.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 6
+    },
+    "GET_FACTORS": {
+      "input": "public static ArrayList<Integer> get_factors(int n) {\n    if (n == 1) {\n        return new ArrayList<Integer>();\n    }\n    int max = (int)(Math.sqrt(n) + 1.0);\n    for (int i=2; i < max; i++) {\n        if (n % i == 0) {\n                    ArrayList<Integer> prepend = new ArrayList<Integer>(0);\n            prepend.add(i);\n            prepend.addAll(get_factors(n / i));\n            return prepend;\n        }\n    }\n    return new ArrayList<Integer>();\n}",
+      "function range": "14,5-28,5",
+      "category": "Statement Bug",
+      "output": [
+        "public static ArrayList<Integer> get_factors(int n) {\n    if (n == 1) {\n        return new ArrayList<Integer>();\n    }\n    int max = (int)(Math.sqrt(n) + 1.0);\n    for (int i = 2; i < max; i++) {\n        if (n % i == 0) {\n            ArrayList<Integer> prepend = new ArrayList<Integer>();\n            prepend.add(i);\n            prepend.addAll(get_factors(n / i));\n            return prepend;\n        }\n    }\n    // If no factors found, return n as it is prime\n    ArrayList<Integer> result = new ArrayList<Integer>();\n    result.add(n);\n    return result;\n}"
+      ],
+      "gt_fix": "public static ArrayList<Integer> get_factors(int n) {\n        if (n == 1) {\n            return new ArrayList<Integer>();\n        }\n        int max = (int)(Math.sqrt(n) + 1.0);\n        for (int i=2; i < max; i++) {\n            if (n % i == 0) {\n                ArrayList<Integer> prepend = new ArrayList<Integer>(0);\n                prepend.add(i);\n                prepend.addAll(get_factors(n / i));\n                return prepend;\n            }\n        }\n\n        return new ArrayList<Integer>(Arrays.asList(n));\n    }",
+      "diffs": [
+        "--- model_output\n+++ ground_truth\n@@ -6 +6 @@\n-for (int i = 2; i < max; i++) {\n+for (int i=2; i < max; i++) {\n@@ -8 +8 @@\n-ArrayList<Integer> prepend = new ArrayList<Integer>();\n+ArrayList<Integer> prepend = new ArrayList<Integer>(0);\n@@ -14,3 +14 @@\n-ArrayList<Integer> result = new ArrayList<Integer>();\n-result.add(n);\n-return result;\n+return new ArrayList<Integer>(Arrays.asList(n));\n"
+      ],
+      "patch_analysis": [
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            14,
+            15
+          ],
+          "model_changed_lines": [
+            6,
+            7,
+            8,
+            9,
+            14,
+            15
+          ],
+          "gt_minus": [
+            "return new ArrayList<Integer>();"
+          ],
+          "gt_plus": [
+            "return new ArrayList<Integer>(Arrays.asList(n));"
+          ],
+          "model_minus": [
+            "for (int i=2; i < max; i++) {",
+            "ArrayList<Integer> prepend = new ArrayList<Integer>(0);",
+            "return new ArrayList<Integer>();"
+          ],
+          "model_plus": [
+            "for (int i = 2; i < max; i++) {",
+            "ArrayList<Integer> prepend = new ArrayList<Integer>();",
+            "ArrayList<Integer> result = new ArrayList<Integer>();",
+            "result.add(n);",
+            "return result;"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        }
+      ],
+      "match_rate": 0.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 0
+    },
+    "HANOI": {
+      "input": "public static List<Pair<Integer,Integer>> hanoi(int height, int start, int end) {\n    ArrayList<Pair<Integer,Integer>> steps = new ArrayList<Pair<Integer,Integer>>();\n    if (height > 0) {\n        PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();\n        crap_set.add(1);\n        crap_set.add(2);\n        crap_set.add(3);\n        crap_set.remove(start);\n        crap_set.remove(end);\n        int helper = crap_set.poll();\n        steps.addAll(hanoi(height-1, start, helper));\n        steps.add(new Pair<Integer,Integer>(start, helper));\n        steps.addAll(hanoi(height-1, helper, end));\n    }\n    return steps;\n}",
+      "function range": "15,5-32,5",
+      "category": "Reference Bug",
+      "output": [
+        "public static List<Pair<Integer,Integer>> hanoi(int height, int start, int end) {\n    ArrayList<Pair<Integer,Integer>> steps = new ArrayList<Pair<Integer,Integer>>();\n    if (height > 0) {\n        int helper = 6 - start - end;\n        steps.addAll(hanoi(height-1, start, helper));\n        steps.add(new Pair<Integer,Integer>(start, end));\n        steps.addAll(hanoi(height-1, helper, end));\n    }\n    return steps;\n}",
+        "public static List<Pair<Integer,Integer>> hanoi(int height, int start, int end) {\n    ArrayList<Pair<Integer,Integer>> steps = new ArrayList<Pair<Integer,Integer>>();\n    if (height > 0) {\n        int helper = 6 - start - end; // Determine the helper tower\n        steps.addAll(hanoi(height - 1, start, helper)); // Move disks from start to helper\n        steps.add(new Pair<Integer,Integer>(start, end)); // Move the largest disk to the end\n        steps.addAll(hanoi(height - 1, helper, end)); // Move disks from helper to end\n    }\n    return steps;\n}",
+        "public static List<Pair<Integer, Integer>> hanoi(int height, int start, int end) {\n    ArrayList<Pair<Integer, Integer>> steps = new ArrayList<Pair<Integer, Integer>>();\n    if (height > 0) {\n        int helper = 6 - start - end;\n        steps.addAll(hanoi(height - 1, start, helper));\n        steps.add(new Pair<Integer, Integer>(start, end));\n        steps.addAll(hanoi(height - 1, helper, end));\n    }\n    return steps;\n}",
+        "public static List<Pair<Integer,Integer>> hanoi(int height, int start, int end) {\n    ArrayList<Pair<Integer,Integer>> steps = new ArrayList<Pair<Integer,Integer>>();\n    if (height > 0) {\n        int helper = 6 - start - end;\n        steps.addAll(hanoi(height-1, start, helper));\n        steps.add(new Pair<Integer,Integer>(start, end));\n        steps.addAll(hanoi(height-1, helper, end));\n    }\n    return steps;\n}",
+        "public static List<Pair<Integer,Integer>> hanoi(int height, int start, int end) {\n    ArrayList<Pair<Integer,Integer>> steps = new ArrayList<Pair<Integer,Integer>>();\n    if (height > 0) {\n        // Calculate the helper peg as the one not equal to start or end\n        int helper = 6 - start - end; // Because 1 + 2 + 3 = 6 (sum of all three pegs)\n        steps.addAll(hanoi(height - 1, start, helper));\n        steps.add(new Pair<Integer,Integer>(start, end));\n        steps.addAll(hanoi(height - 1, helper, end));\n    }\n    return steps;\n}",
+        "public static List<Pair<Integer, Integer>> hanoi(int height, int start, int end) {\n    ArrayList<Pair<Integer, Integer>> steps = new ArrayList<Pair<Integer, Integer>>();\n    if (height > 0) {\n        int helper = 6 - start - end; // Correctly calculate the helper peg\n        steps.addAll(hanoi(height - 1, start, helper));\n        steps.add(new Pair<Integer, Integer>(start, end)); // Correct move\n        steps.addAll(hanoi(height - 1, helper, end));\n    }\n    return steps;\n}",
+        "public static List<Pair<Integer,Integer>> hanoi(int height, int start, int end) {\n    ArrayList<Pair<Integer,Integer>> steps = new ArrayList<Pair<Integer,Integer>>();\n    if (height > 0) {\n        int helper = 6 - start - end; // The sum of the three pegs is always 6 (1 + 2 + 3), so we can calculate the helper.\n        steps.addAll(hanoi(height - 1, start, helper));\n        steps.add(new Pair<Integer,Integer>(start, end));\n        steps.addAll(hanoi(height - 1, helper, end));\n    }\n    return steps;\n}"
+      ],
+      "gt_fix": "public static List<Pair<Integer,Integer>> hanoi(int height, int start, int end) {\n        ArrayList<Pair<Integer,Integer>> steps = new ArrayList<Pair<Integer,Integer>>();\n\n        if (height > 0) {\n            PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();\n            crap_set.add(1);\n            crap_set.add(2);\n            crap_set.add(3);\n            crap_set.remove(start);\n            crap_set.remove(end);\n            int helper = crap_set.poll();\n            steps.addAll(hanoi(height-1, start, helper));\n            steps.add(new Pair<Integer,Integer>(start, end));\n            steps.addAll(hanoi(height-1, helper, end));\n        }\n\n        return steps;\n    }",
+      "diffs": [
+        "--- model_output\n+++ ground_truth\n@@ -4 +4,7 @@\n-int helper = 6 - start - end;\n+PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();\n+crap_set.add(1);\n+crap_set.add(2);\n+crap_set.add(3);\n+crap_set.remove(start);\n+crap_set.remove(end);\n+int helper = crap_set.poll();\n",
+        "--- model_output\n+++ ground_truth\n@@ -4,2 +4,8 @@\n-int helper = 6 - start - end;\n-steps.addAll(hanoi(height - 1, start, helper));\n+PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();\n+crap_set.add(1);\n+crap_set.add(2);\n+crap_set.add(3);\n+crap_set.remove(start);\n+crap_set.remove(end);\n+int helper = crap_set.poll();\n+steps.addAll(hanoi(height-1, start, helper));\n@@ -7 +13 @@\n-steps.addAll(hanoi(height - 1, helper, end));\n+steps.addAll(hanoi(height-1, helper, end));\n",
+        "--- model_output\n+++ ground_truth\n@@ -1,2 +1,2 @@\n-public static List<Pair<Integer, Integer>> hanoi(int height, int start, int end) {\n-ArrayList<Pair<Integer, Integer>> steps = new ArrayList<Pair<Integer, Integer>>();\n+public static List<Pair<Integer,Integer>> hanoi(int height, int start, int end) {\n+ArrayList<Pair<Integer,Integer>> steps = new ArrayList<Pair<Integer,Integer>>();\n@@ -4,4 +4,10 @@\n-int helper = 6 - start - end;\n-steps.addAll(hanoi(height - 1, start, helper));\n-steps.add(new Pair<Integer, Integer>(start, end));\n-steps.addAll(hanoi(height - 1, helper, end));\n+PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();\n+crap_set.add(1);\n+crap_set.add(2);\n+crap_set.add(3);\n+crap_set.remove(start);\n+crap_set.remove(end);\n+int helper = crap_set.poll();\n+steps.addAll(hanoi(height-1, start, helper));\n+steps.add(new Pair<Integer,Integer>(start, end));\n+steps.addAll(hanoi(height-1, helper, end));\n",
+        "--- model_output\n+++ ground_truth\n@@ -4 +4,7 @@\n-int helper = 6 - start - end;\n+PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();\n+crap_set.add(1);\n+crap_set.add(2);\n+crap_set.add(3);\n+crap_set.remove(start);\n+crap_set.remove(end);\n+int helper = crap_set.poll();\n",
+        "--- model_output\n+++ ground_truth\n@@ -4,2 +4,8 @@\n-int helper = 6 - start - end;\n-steps.addAll(hanoi(height - 1, start, helper));\n+PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();\n+crap_set.add(1);\n+crap_set.add(2);\n+crap_set.add(3);\n+crap_set.remove(start);\n+crap_set.remove(end);\n+int helper = crap_set.poll();\n+steps.addAll(hanoi(height-1, start, helper));\n@@ -7 +13 @@\n-steps.addAll(hanoi(height - 1, helper, end));\n+steps.addAll(hanoi(height-1, helper, end));\n",
+        "--- model_output\n+++ ground_truth\n@@ -1,2 +1,2 @@\n-public static List<Pair<Integer, Integer>> hanoi(int height, int start, int end) {\n-ArrayList<Pair<Integer, Integer>> steps = new ArrayList<Pair<Integer, Integer>>();\n+public static List<Pair<Integer,Integer>> hanoi(int height, int start, int end) {\n+ArrayList<Pair<Integer,Integer>> steps = new ArrayList<Pair<Integer,Integer>>();\n@@ -4,4 +4,10 @@\n-int helper = 6 - start - end;\n-steps.addAll(hanoi(height - 1, start, helper));\n-steps.add(new Pair<Integer, Integer>(start, end));\n-steps.addAll(hanoi(height - 1, helper, end));\n+PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();\n+crap_set.add(1);\n+crap_set.add(2);\n+crap_set.add(3);\n+crap_set.remove(start);\n+crap_set.remove(end);\n+int helper = crap_set.poll();\n+steps.addAll(hanoi(height-1, start, helper));\n+steps.add(new Pair<Integer,Integer>(start, end));\n+steps.addAll(hanoi(height-1, helper, end));\n",
+        "--- model_output\n+++ ground_truth\n@@ -4,2 +4,8 @@\n-int helper = 6 - start - end;\n-steps.addAll(hanoi(height - 1, start, helper));\n+PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();\n+crap_set.add(1);\n+crap_set.add(2);\n+crap_set.add(3);\n+crap_set.remove(start);\n+crap_set.remove(end);\n+int helper = crap_set.poll();\n+steps.addAll(hanoi(height-1, start, helper));\n@@ -7 +13 @@\n-steps.addAll(hanoi(height - 1, helper, end));\n+steps.addAll(hanoi(height-1, helper, end));\n"
+      ],
+      "patch_analysis": [
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            12,
+            13
+          ],
+          "model_changed_lines": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13
+          ],
+          "gt_minus": [
+            "steps.add(new Pair<Integer,Integer>(start, helper));"
+          ],
+          "gt_plus": [
+            "steps.add(new Pair<Integer,Integer>(start, end));"
+          ],
+          "model_minus": [
+            "PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();",
+            "crap_set.add(1);",
+            "crap_set.add(2);",
+            "crap_set.add(3);",
+            "crap_set.remove(start);",
+            "crap_set.remove(end);",
+            "int helper = crap_set.poll();",
+            "steps.add(new Pair<Integer,Integer>(start, helper));"
+          ],
+          "model_plus": [
+            "int helper = 6 - start - end;",
+            "steps.add(new Pair<Integer,Integer>(start, end));"
+          ],
+          "correctness": "wrong",
+          "failure_reason": "Partially fixed"
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            12,
+            13
+          ],
+          "model_changed_lines": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          "gt_minus": [
+            "steps.add(new Pair<Integer,Integer>(start, helper));"
+          ],
+          "gt_plus": [
+            "steps.add(new Pair<Integer,Integer>(start, end));"
+          ],
+          "model_minus": [
+            "PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();",
+            "crap_set.add(1);",
+            "crap_set.add(2);",
+            "crap_set.add(3);",
+            "crap_set.remove(start);",
+            "crap_set.remove(end);",
+            "int helper = crap_set.poll();",
+            "steps.addAll(hanoi(height-1, start, helper));",
+            "steps.add(new Pair<Integer,Integer>(start, helper));",
+            "steps.addAll(hanoi(height-1, helper, end));"
+          ],
+          "model_plus": [
+            "int helper = 6 - start - end;",
+            "steps.addAll(hanoi(height - 1, start, helper));",
+            "steps.add(new Pair<Integer,Integer>(start, end));",
+            "steps.addAll(hanoi(height - 1, helper, end));"
+          ],
+          "correctness": "wrong",
+          "failure_reason": "Partially fixed"
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            12,
+            13
+          ],
+          "model_changed_lines": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          "gt_minus": [
+            "steps.add(new Pair<Integer,Integer>(start, helper));"
+          ],
+          "gt_plus": [
+            "steps.add(new Pair<Integer,Integer>(start, end));"
+          ],
+          "model_minus": [
+            "public static List<Pair<Integer,Integer>> hanoi(int height, int start, int end) {",
+            "ArrayList<Pair<Integer,Integer>> steps = new ArrayList<Pair<Integer,Integer>>();",
+            "PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();",
+            "crap_set.add(1);",
+            "crap_set.add(2);",
+            "crap_set.add(3);",
+            "crap_set.remove(start);",
+            "crap_set.remove(end);",
+            "int helper = crap_set.poll();",
+            "steps.addAll(hanoi(height-1, start, helper));",
+            "steps.add(new Pair<Integer,Integer>(start, helper));",
+            "steps.addAll(hanoi(height-1, helper, end));"
+          ],
+          "model_plus": [
+            "public static List<Pair<Integer, Integer>> hanoi(int height, int start, int end) {",
+            "ArrayList<Pair<Integer, Integer>> steps = new ArrayList<Pair<Integer, Integer>>();",
+            "int helper = 6 - start - end;",
+            "steps.addAll(hanoi(height - 1, start, helper));",
+            "steps.add(new Pair<Integer, Integer>(start, end));",
+            "steps.addAll(hanoi(height - 1, helper, end));"
+          ],
+          "correctness": "wrong",
+          "failure_reason": "Partially fixed"
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            12,
+            13
+          ],
+          "model_changed_lines": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13
+          ],
+          "gt_minus": [
+            "steps.add(new Pair<Integer,Integer>(start, helper));"
+          ],
+          "gt_plus": [
+            "steps.add(new Pair<Integer,Integer>(start, end));"
+          ],
+          "model_minus": [
+            "PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();",
+            "crap_set.add(1);",
+            "crap_set.add(2);",
+            "crap_set.add(3);",
+            "crap_set.remove(start);",
+            "crap_set.remove(end);",
+            "int helper = crap_set.poll();",
+            "steps.add(new Pair<Integer,Integer>(start, helper));"
+          ],
+          "model_plus": [
+            "int helper = 6 - start - end;",
+            "steps.add(new Pair<Integer,Integer>(start, end));"
+          ],
+          "correctness": "wrong",
+          "failure_reason": "Partially fixed"
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            12,
+            13
+          ],
+          "model_changed_lines": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          "gt_minus": [
+            "steps.add(new Pair<Integer,Integer>(start, helper));"
+          ],
+          "gt_plus": [
+            "steps.add(new Pair<Integer,Integer>(start, end));"
+          ],
+          "model_minus": [
+            "PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();",
+            "crap_set.add(1);",
+            "crap_set.add(2);",
+            "crap_set.add(3);",
+            "crap_set.remove(start);",
+            "crap_set.remove(end);",
+            "int helper = crap_set.poll();",
+            "steps.addAll(hanoi(height-1, start, helper));",
+            "steps.add(new Pair<Integer,Integer>(start, helper));",
+            "steps.addAll(hanoi(height-1, helper, end));"
+          ],
+          "model_plus": [
+            "int helper = 6 - start - end;",
+            "steps.addAll(hanoi(height - 1, start, helper));",
+            "steps.add(new Pair<Integer,Integer>(start, end));",
+            "steps.addAll(hanoi(height - 1, helper, end));"
+          ],
+          "correctness": "wrong",
+          "failure_reason": "Partially fixed"
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            12,
+            13
+          ],
+          "model_changed_lines": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          "gt_minus": [
+            "steps.add(new Pair<Integer,Integer>(start, helper));"
+          ],
+          "gt_plus": [
+            "steps.add(new Pair<Integer,Integer>(start, end));"
+          ],
+          "model_minus": [
+            "public static List<Pair<Integer,Integer>> hanoi(int height, int start, int end) {",
+            "ArrayList<Pair<Integer,Integer>> steps = new ArrayList<Pair<Integer,Integer>>();",
+            "PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();",
+            "crap_set.add(1);",
+            "crap_set.add(2);",
+            "crap_set.add(3);",
+            "crap_set.remove(start);",
+            "crap_set.remove(end);",
+            "int helper = crap_set.poll();",
+            "steps.addAll(hanoi(height-1, start, helper));",
+            "steps.add(new Pair<Integer,Integer>(start, helper));",
+            "steps.addAll(hanoi(height-1, helper, end));"
+          ],
+          "model_plus": [
+            "public static List<Pair<Integer, Integer>> hanoi(int height, int start, int end) {",
+            "ArrayList<Pair<Integer, Integer>> steps = new ArrayList<Pair<Integer, Integer>>();",
+            "int helper = 6 - start - end;",
+            "steps.addAll(hanoi(height - 1, start, helper));",
+            "steps.add(new Pair<Integer, Integer>(start, end));",
+            "steps.addAll(hanoi(height - 1, helper, end));"
+          ],
+          "correctness": "wrong",
+          "failure_reason": "Partially fixed"
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            12,
+            13
+          ],
+          "model_changed_lines": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          "gt_minus": [
+            "steps.add(new Pair<Integer,Integer>(start, helper));"
+          ],
+          "gt_plus": [
+            "steps.add(new Pair<Integer,Integer>(start, end));"
+          ],
+          "model_minus": [
+            "PriorityQueue<Integer> crap_set = new PriorityQueue<Integer>();",
+            "crap_set.add(1);",
+            "crap_set.add(2);",
+            "crap_set.add(3);",
+            "crap_set.remove(start);",
+            "crap_set.remove(end);",
+            "int helper = crap_set.poll();",
+            "steps.addAll(hanoi(height-1, start, helper));",
+            "steps.add(new Pair<Integer,Integer>(start, helper));",
+            "steps.addAll(hanoi(height-1, helper, end));"
+          ],
+          "model_plus": [
+            "int helper = 6 - start - end;",
+            "steps.addAll(hanoi(height - 1, start, helper));",
+            "steps.add(new Pair<Integer,Integer>(start, end));",
+            "steps.addAll(hanoi(height - 1, helper, end));"
+          ],
+          "correctness": "wrong",
+          "failure_reason": "Partially fixed"
+        }
+      ],
+      "match_rate": 0.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 0
+    },
+    "IS_VALID_PARENTHESIZATION": {
+      "input": "public static Boolean is_valid_parenthesization(String parens) {\n    int depth = 0;\n    for (int i = 0; i < parens.length(); i++) {\n        Character paren = parens.charAt(i);\n        if (paren.equals('(')) {\n                    depth++;\n        } else {\n            depth--;\n            if (depth < 0) { return false; }\n        }\n    }\n    return true;\n}",
+      "function range": "13,5-25,5",
+      "category": "Control Flow Bug",
+      "output": [
+        "public static Boolean is_valid_parenthesization(String parens) {\n    int depth = 0;\n    for (int i = 0; i < parens.length(); i++) {\n        Character paren = parens.charAt(i);\n        if (paren.equals('(')) {\n            depth++;\n        } else {\n            depth--;\n            if (depth < 0) {\n                return false;\n            }\n        }\n    }\n    return depth == 0;\n}",
+        "public static Boolean is_valid_parenthesization(String parens) {\n    int depth = 0;\n    for (int i = 0; i < parens.length(); i++) {\n        Character paren = parens.charAt(i);\n        if (paren.equals('(')) {\n            depth++;\n        } else {\n            depth--;\n            if (depth < 0) { \n                return false; \n            }\n        }\n    }\n    return depth == 0;\n}"
+      ],
+      "gt_fix": "public static Boolean is_valid_parenthesization(String parens) {\n        int depth = 0;\n        for (int i = 0; i < parens.length(); i++) {\n            Character paren = parens.charAt(i);\n            if (paren.equals('(')) {\n                depth++;\n            } else {\n                depth--;\n                if (depth < 0) { return false; }\n            }\n        }\n        return depth==0;\n    }",
+      "diffs": [
+        "",
+        ""
+      ],
+      "patch_analysis": [
+        {
+          "correctness": "correct"
+        },
+        {
+          "correctness": "correct"
+        }
+      ],
+      "match_rate": 1.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 2
+    },
+    "KHEAPSORT": {
+      "input": "public static ArrayList<Integer> kheapsort(ArrayList<Integer> arr, int k) {\n    PriorityQueue<Integer> heap = new PriorityQueue<Integer>();\n    for (Integer v : arr.subList(0,k)) {\n        heap.add(v);\n    }\n    ArrayList<Integer> output = new ArrayList<Integer>();\n    for (Integer x : arr) {\n        heap.add(x);\n                Integer popped = heap.poll();\n        output.add(popped);\n    }\n    while (!heap.isEmpty()) {\n        output.add(heap.poll());\n    }\n    return output;\n}",
+      "function range": "20,5-39,5",
+      "category": "Control Flow Bug",
+      "output": [
+        "public static ArrayList<Integer> kheapsort(ArrayList<Integer> arr, int k) {\n    PriorityQueue<Integer> heap = new PriorityQueue<Integer>();\n    \n    // Add the first k elements to the heap\n    for (Integer v : arr.subList(0, k)) {\n        heap.add(v);\n    }\n    \n    ArrayList<Integer> output = new ArrayList<Integer>();\n    \n    // Iterate through the remaining elements in the array\n    for (int i = k; i < arr.size(); i++) {\n        heap.add(arr.get(i));\n        Integer popped = heap.poll();\n        output.add(popped);\n    }\n    \n    // Add the remaining elements in the heap to the output\n    while (!heap.isEmpty()) {\n        output.add(heap.poll());\n    }\n    \n    return output;\n}",
+        "public static ArrayList<Integer> kheapsort(ArrayList<Integer> arr, int k) {\n    PriorityQueue<Integer> heap = new PriorityQueue<Integer>();\n    // Add the first k elements to the heap\n    for (Integer v : arr.subList(0, k)) {\n        heap.add(v);\n    }\n    ArrayList<Integer> output = new ArrayList<Integer>();\n    // Process elements from index k to the end of the array\n    for (int i = k; i < arr.size(); i++) {\n        heap.add(arr.get(i)); // Add the next element to the heap\n        output.add(heap.poll()); // Remove and add the smallest element to the output\n    }\n    // Add remaining elements from the heap to the output\n    while (!heap.isEmpty()) {\n        output.add(heap.poll());\n    }\n    return output;\n}",
+        "public static ArrayList<Integer> kheapsort(ArrayList<Integer> arr, int k) {\n    PriorityQueue<Integer> heap = new PriorityQueue<Integer>();\n    for (Integer v : arr.subList(0, k)) {\n        heap.add(v);\n    }\n    ArrayList<Integer> output = new ArrayList<Integer>();\n    for (Integer x : arr.subList(k, arr.size())) {\n        heap.add(x);\n        Integer popped = heap.poll();\n        output.add(popped);\n    }\n    while (!heap.isEmpty()) {\n        output.add(heap.poll());\n    }\n    return output;\n}"
+      ],
+      "gt_fix": "public static ArrayList<Integer> kheapsort(ArrayList<Integer> arr, int k) {\n        PriorityQueue<Integer> heap = new PriorityQueue<Integer>();\n        for (Integer v : arr.subList(0,k)) {\n            heap.add(v);\n        }\n\n        ArrayList<Integer> output = new ArrayList<Integer>();\n        for (Integer x : arr.subList(k, arr.size())) {\n            heap.add(x);\n            Integer popped = heap.poll();\n            output.add(popped);\n        }\n\n        while (!heap.isEmpty()) {\n            output.add(heap.poll());\n        }\n\n        return output;\n\n    }",
+      "diffs": [
+        "--- model_output\n+++ ground_truth\n@@ -3 +3 @@\n-for (Integer v : arr.subList(0, k)) {\n+for (Integer v : arr.subList(0,k)) {\n@@ -7,2 +7,2 @@\n-for (int i = k; i < arr.size(); i++) {\n-heap.add(arr.get(i));\n+for (Integer x : arr.subList(k, arr.size())) {\n+heap.add(x);\n",
+        "--- model_output\n+++ ground_truth\n@@ -3 +3 @@\n-for (Integer v : arr.subList(0, k)) {\n+for (Integer v : arr.subList(0,k)) {\n@@ -7,3 +7,4 @@\n-for (int i = k; i < arr.size(); i++) {\n-heap.add(arr.get(i));\n-output.add(heap.poll());\n+for (Integer x : arr.subList(k, arr.size())) {\n+heap.add(x);\n+Integer popped = heap.poll();\n+output.add(popped);\n",
+        ""
+      ],
+      "patch_analysis": [
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            7,
+            8
+          ],
+          "model_changed_lines": [
+            3,
+            4,
+            7,
+            8,
+            9
+          ],
+          "gt_minus": [
+            "for (Integer x : arr) {"
+          ],
+          "gt_plus": [
+            "for (Integer x : arr.subList(k, arr.size())) {"
+          ],
+          "model_minus": [
+            "for (Integer v : arr.subList(0,k)) {",
+            "for (Integer x : arr) {",
+            "heap.add(x);"
+          ],
+          "model_plus": [
+            "for (Integer v : arr.subList(0, k)) {",
+            "for (int i = k; i < arr.size(); i++) {",
+            "heap.add(arr.get(i));"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        },
+        {
+          "location_overlap": true,
+          "logic_match": false,
+          "gt_changed_lines": [
+            7,
+            8
+          ],
+          "model_changed_lines": [
+            3,
+            4,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "gt_minus": [
+            "for (Integer x : arr) {"
+          ],
+          "gt_plus": [
+            "for (Integer x : arr.subList(k, arr.size())) {"
+          ],
+          "model_minus": [
+            "for (Integer v : arr.subList(0,k)) {",
+            "for (Integer x : arr) {",
+            "heap.add(x);",
+            "Integer popped = heap.poll();",
+            "output.add(popped);"
+          ],
+          "model_plus": [
+            "for (Integer v : arr.subList(0, k)) {",
+            "for (int i = k; i < arr.size(); i++) {",
+            "heap.add(arr.get(i));",
+            "output.add(heap.poll());"
+          ],
+          "correctness": "plausible",
+          "failure_reason": null
+        },
+        {
+          "correctness": "correct"
+        }
+      ],
+      "match_rate": 0.3333333333333333,
+      "exact_match_count": 0,
+      "semantic_match_count": 1
+    },
+    "KNAPSACK": {
+      "input": "public static int knapsack(int capacity, int [][] items) {\n    int weight = 0, value = 0;\n    int n = items.length;\n    int memo[][] = new int[n + 1][capacity + 1];\n    for (int i = 0; i <= n ; i++)\n    {\n        if (i - 1 >= 0) {\n            weight = items[i - 1][0];\n            value = items[i - 1][1];\n        }\n        for (int j = 0; j <= capacity; j++)\n        {\n            if (i == 0 || j == 0) {\n                memo[i][j] = 0;\n            }\n            else if (weight < j) {\n                            memo[i][j] = Math.max(memo[i - 1][j], value + memo[i - 1][j - weight]);\n            }\n            else {\n                memo[i][j] = memo [i-1][j];\n            }\n        }\n    }\n    return memo[n][capacity];\n}",
+      "function range": "14,5-40,5",
+      "category": "Expression Bug",
+      "output": [
+        "public static int knapsack(int capacity, int [][] items) {\n    int weight = 0, value = 0;\n    int n = items.length;\n    int memo[][] = new int[n + 1][capacity + 1];\n    for (int i = 0; i <= n ; i++)\n    {\n        if (i - 1 >= 0) {\n            weight = items[i - 1][0];\n            value = items[i - 1][1];\n        }\n        for (int j = 0; j <= capacity; j++)\n        {\n            if (i == 0 || j == 0) {\n                memo[i][j] = 0;\n            }\n            else if (weight <= j) {  // Fixed: Changed `weight < j` to `weight <= j`\n                memo[i][j] = Math.max(memo[i - 1][j], value + memo[i - 1][j - weight]);\n            }\n            else {\n                memo[i][j] = memo [i-1][j];\n            }\n        }\n    }\n    return memo[n][capacity];\n}"
+      ],
+      "gt_fix": "public static int knapsack(int capacity, int [][] items) {\n        int weight = 0, value = 0;\n        int n = items.length;\n        int memo[][] = new int[n + 1][capacity + 1];\n\n        for (int i = 0; i <= n ; i++)\n        {\n            if (i - 1 >= 0) {\n                weight = items[i - 1][0];\n                value = items[i - 1][1];\n            }\n            for (int j = 0; j <= capacity; j++)\n            {\n                if (i == 0 || j == 0) {\n                    memo[i][j] = 0;\n                }\n                else if (weight <= j) {\n                    memo[i][j] = Math.max(memo[i - 1][j], value + memo[i - 1][j - weight]);\n                }\n                else {\n                    memo[i][j] = memo [i-1][j];\n                }\n\n            }\n        }\n        return memo[n][capacity];\n    }",
+      "diffs": [
+        ""
+      ],
+      "patch_analysis": [
+        {
+          "location_overlap": true,
+          "logic_match": true,
+          "gt_changed_lines": [
+            16,
+            17
+          ],
+          "model_changed_lines": [
+            16,
+            17
+          ],
+          "gt_minus": [
+            "else if (weight < j) {"
+          ],
+          "gt_plus": [
+            "else if (weight <= j) {"
+          ],
+          "model_minus": [
+            "else if (weight < j) {"
+          ],
+          "model_plus": [
+            "else if (weight <= j) {"
+          ],
+          "correctness": "wrong",
+          "failure_reason": "Partially fixed"
+        }
+      ],
+      "match_rate": 1.0,
+      "exact_match_count": 1,
+      "semantic_match_count": 1
+    },
+    "KTH": {
+      "input": "public static Integer kth(ArrayList<Integer> arr, int k) {\n    int pivot = arr.get(0);\n    ArrayList<Integer> below, above;\n    below = new ArrayList<Integer>(arr.size());\n    above = new ArrayList<Integer>(arr.size());\n    for (Integer x : arr) {\n        if (x < pivot) {\n            below.add(x);\n        } else if (x > pivot) {\n            above.add(x);\n        }\n    }\n    int num_less = below.size();\n    int num_lessoreq = arr.size() - above.size();\n    if (k < num_less) {\n        return kth(below, k);\n    } else if (k >= num_lessoreq) {\n        return kth(above, k);\n    } else {\n            return pivot;\n    }\n}",
+      "function range": "7,5-29,5",
+      "category": "Expression Bug",
+      "output": [],
+      "gt_fix": "public static Integer kth(ArrayList<Integer> arr, int k) {\n        int pivot = arr.get(0);\n        ArrayList<Integer> below, above;\n        below = new ArrayList<Integer>(arr.size());\n        above = new ArrayList<Integer>(arr.size());\n        for (Integer x : arr) {\n            if (x < pivot) {\n                below.add(x);\n            } else if (x > pivot) {\n                above.add(x);\n            }\n        }\n\n        int num_less = below.size();\n        int num_lessoreq = arr.size() - above.size();\n        if (k < num_less) {\n            return kth(below, k);\n        } else if (k >= num_lessoreq) {\n            return kth(above, k-num_lessoreq);\n        } else {\n            return pivot;\n        }\n    }",
+      "diffs": [],
+      "patch_analysis": [],
+      "match_rate": 0.0,
+      "exact_match_count": 0,
+      "semantic_match_count": 0
+    }
+  },
+  "diff_summary": {
+    "total_entries": 15,
+    "total_outputs": 37,
+    "exact_matches": 1,
+    "semantic_matches": 14,
+    "corrects": 13,
+    "match_rate": 0.3783783783783784
+  }
+}

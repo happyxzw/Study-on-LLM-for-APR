@@ -1,0 +1,701 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 9.77 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double result;
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    switch (n.getType()) {
+      case Token.LSH:
+        result = lvalInt << rvalInt;
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        result = (lvalInt >>> rvalInt) & 0xFFFFFFFFL;
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: plausible
+                Validation Time: 10.66 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double result;
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    switch (n.getType()) {
+      case Token.LSH:
+        result = lvalInt << rvalInt;
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        result = Integer.toUnsignedLong(lvalInt) >>> rvalInt; // Fixed line
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: plausible
+                Validation Time: 9.50 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double result;
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    switch (n.getType()) {
+      case Token.LSH:
+        result = lvalInt << rvalInt;
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        result = ((long) lvalInt & 0xFFFFFFFFL) >>> rvalInt;
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: plausible
+                Validation Time: 10.04 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double result;
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    switch (n.getType()) {
+      case Token.LSH:
+        result = lvalInt << rvalInt;
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        result = lvalInt >>> rvalInt & 0xFFFFFFFFL; // Corrected line
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: plausible
+                Validation Time: 9.47 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double result;
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    switch (n.getType()) {
+      case Token.LSH:
+        result = lvalInt << rvalInt;
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        result = (lvalInt >>> rvalInt) & 0xFFFFFFFFL; // Fix: explicitly mask the unsigned right-shift result with 0xFFFFFFFFL to ensure it is represented correctly as a long value.
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: plausible
+                Validation Time: 10.36 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double result;
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    switch (n.getType()) {
+      case Token.LSH:
+        result = lvalInt << rvalInt;
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        // Fix: Ensure result is treated as an unsigned 32-bit integer
+        result = ((long) lvalInt & 0xFFFFFFFFL) >>> rvalInt;
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: plausible
+                Validation Time: 9.58 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double result;
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    switch (n.getType()) {
+      case Token.LSH:
+        result = lvalInt << rvalInt;
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        result = lvalInt >>> rvalInt & 0xFFFFFFFFL;  // Fix: Ensure unsigned right shift produces an unsigned result.
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: plausible
+                Validation Time: 9.40 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double result;
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    switch (n.getType()) {
+      case Token.LSH:
+        result = lvalInt << rvalInt;
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        result = (lvalInt >>> rvalInt) & 0xFFFFFFFFL; // Fixed lines
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: plausible
+                Validation Time: 9.60 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double result;
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    switch (n.getType()) {
+      case Token.LSH:
+        result = lvalInt << rvalInt;
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        result = ((long) lvalInt & 0xFFFFFFFFL) >>> rvalInt;
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 10.26 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double result;
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    switch (n.getType()) {
+      case Token.LSH:
+        result = lvalInt << rvalInt;
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        result = Integer.toUnsignedLong(lvalInt) >>> rvalInt; // Corrected line
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

@@ -1,0 +1,2292 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 4.80 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+  }
+  return validProperties.size() > 0;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 19.86 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 4.20 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 20.90 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 19.08 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 5.34 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 20.22 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 4.08 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+  return false;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 5.32 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map$Entry.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/UnsupportedOperationException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/UnsupportedOperationException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/src/com/google/javascript/jscomp/InlineObjectLiterals.java:207: error: missing return statement
+    [javac] }
+    [javac] ^
+    [javac] 1 error
+    [javac] 62 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260529_103211/Closure_5_71b7494eb9fa4719b389917146ce0d00/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 19.64 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 8.10 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+  }
+  return validProperties.size() > 0;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 6 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 27.82 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 8.93 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 5 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 30.16 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+  }
+  return true;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 29.92 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 8.31 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 7 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 36.79 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+      return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 7.34 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = new HashSet<>();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+  return false;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/src/com/google/javascript/jscomp/InlineObjectLiterals.java:156: error: diamond operator is not supported in -source 1.6
+    [javac]   Set<String> validProperties = new HashSet<>();
+    [javac]                                             ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 6 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 9.43 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    return true;
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashSet.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map$Entry.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/UnsupportedOperationException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/UnsupportedOperationException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/src/com/google/javascript/jscomp/InlineObjectLiterals.java:207: error: missing return statement
+    [javac] }
+    [javac] ^
+    [javac] 1 error
+    [javac] 62 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260619_203310/Closure_5_b64c8fdbb9f14dcfad69e38412da9043/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 7 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 30.74 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

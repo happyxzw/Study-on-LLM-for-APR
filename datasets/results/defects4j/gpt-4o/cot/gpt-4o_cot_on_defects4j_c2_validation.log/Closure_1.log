@@ -1,0 +1,598 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 26.90 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void removeUnreferencedFunctionArgs(Scope fnScope) {
+  Node function = fnScope.getRootNode();
+  Preconditions.checkState(function.isFunction());
+  if (NodeUtil.isGetOrSetKey(function.getParent())) {
+    return;
+  }
+  Node argList = getFunctionArgList(function);
+  boolean modifyCallers = modifyCallSites
+      && callSiteOptimizer.canModifyCallers(function);
+  if (!modifyCallers) {
+    Node lastArg;
+    while ((lastArg = argList.getLastChild()) != null) {
+      Var var = fnScope.getVar(lastArg.getString());
+      if (var == null || !referenced.contains(var)) { // Fix: Check if 'var' is null before proceeding
+        argList.removeChild(lastArg);
+        compiler.reportCodeChange();
+      } else {
+        break;
+      }
+    }
+  } else {
+    callSiteOptimizer.optimize(fnScope, referenced);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testSimpleModeLeavesUnusedParams
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testForwardDeclareDroppedTypes
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag1
+  - com.google.javascript.jscomp.IntegrationTest::testIssue787
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal1
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal2
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal3
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testIssue168b
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 27.61 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void removeUnreferencedFunctionArgs(Scope fnScope) {
+  Node function = fnScope.getRootNode();
+  Preconditions.checkState(function.isFunction());
+  if (NodeUtil.isGetOrSetKey(function.getParent())) {
+    return;
+  }
+  Node argList = getFunctionArgList(function);
+  boolean modifyCallers = modifyCallSites
+      && callSiteOptimizer.canModifyCallers(function);
+  if (!modifyCallers) {
+    Node lastArg;
+    while ((lastArg = argList.getLastChild()) != null) {
+      if (lastArg.isName()) { // Fix: Ensure the node is a named argument before proceeding
+        Var var = fnScope.getVar(lastArg.getString());
+        if (!referenced.contains(var)) {
+          argList.removeChild(lastArg);
+          compiler.reportCodeChange();
+        } else {
+          break;
+        }
+      } else {
+        break; // Fix: Break the loop if the last node isn't a named argument
+      }
+    }
+  } else {
+    callSiteOptimizer.optimize(fnScope, referenced);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testSimpleModeLeavesUnusedParams
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testForwardDeclareDroppedTypes
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag1
+  - com.google.javascript.jscomp.IntegrationTest::testIssue787
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal1
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal2
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal3
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testIssue168b
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 29.18 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void removeUnreferencedFunctionArgs(Scope fnScope) {
+  Node function = fnScope.getRootNode();
+  Preconditions.checkState(function.isFunction());
+  if (NodeUtil.isGetOrSetKey(function.getParent())) {
+    return;
+  }
+  Node argList = getFunctionArgList(function);
+  boolean modifyCallers = modifyCallSites
+      && callSiteOptimizer.canModifyCallers(function);
+  if (!modifyCallers) {
+    Node lastArg;
+    while ((lastArg = argList.getLastChild()) != null) {
+      if (lastArg.isName()) { // Ensure the node is a NAME node
+        Var var = fnScope.getVar(lastArg.getString());
+        if (!referenced.contains(var)) {
+          argList.removeChild(lastArg);
+          compiler.reportCodeChange();
+        } else {
+          break;
+        }
+      } else {
+        break; // Exit if the last child is not a NAME node
+      }
+    }
+  } else {
+    callSiteOptimizer.optimize(fnScope, referenced);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testSimpleModeLeavesUnusedParams
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testForwardDeclareDroppedTypes
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag1
+  - com.google.javascript.jscomp.IntegrationTest::testIssue787
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal1
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal2
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal3
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testIssue168b
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 27.42 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void removeUnreferencedFunctionArgs(Scope fnScope) {
+  Node function = fnScope.getRootNode();
+  Preconditions.checkState(function.isFunction());
+  if (NodeUtil.isGetOrSetKey(function.getParent())) {
+    return;
+  }
+  Node argList = getFunctionArgList(function);
+  boolean modifyCallers = modifyCallSites
+      && callSiteOptimizer.canModifyCallers(function);
+  if (!modifyCallers) {
+    Node lastArg;
+    while ((lastArg = argList.getLastChild()) != null) {
+      // Ensure that `lastArg.getString()` is valid before using it to fetch the variable.
+      if (lastArg.isName()) {
+        Var var = fnScope.getVar(lastArg.getString());
+        if (!referenced.contains(var)) {
+          argList.removeChild(lastArg);
+          compiler.reportCodeChange();
+        } else {
+          break;
+        }
+      } else {
+        break; // Exit the loop if `lastArg` is not a valid argument name.
+      }
+    }
+  } else {
+    callSiteOptimizer.optimize(fnScope, referenced);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testSimpleModeLeavesUnusedParams
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testForwardDeclareDroppedTypes
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag1
+  - com.google.javascript.jscomp.IntegrationTest::testIssue787
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal1
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal2
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal3
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testIssue168b
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 28.31 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void removeUnreferencedFunctionArgs(Scope fnScope) {
+  Node function = fnScope.getRootNode();
+  Preconditions.checkState(function.isFunction());
+  if (NodeUtil.isGetOrSetKey(function.getParent())) {
+    return;
+  }
+  Node argList = getFunctionArgList(function);
+  boolean modifyCallers = modifyCallSites
+      && callSiteOptimizer.canModifyCallers(function);
+  if (!modifyCallers) {
+    Node lastArg;
+    while ((lastArg = argList.getLastChild()) != null) {
+      Var var = fnScope.getVar(lastArg.getString());
+      if (var != null && !referenced.contains(var)) { // Fixed condition
+        argList.removeChild(lastArg);
+        compiler.reportCodeChange();
+      } else {
+        break;
+      }
+    }
+  } else {
+    callSiteOptimizer.optimize(fnScope, referenced);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testSimpleModeLeavesUnusedParams
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testForwardDeclareDroppedTypes
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag1
+  - com.google.javascript.jscomp.IntegrationTest::testIssue787
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal1
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal2
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal3
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testIssue168b
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 27.44 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void removeUnreferencedFunctionArgs(Scope fnScope) {
+  Node function = fnScope.getRootNode();
+  Preconditions.checkState(function.isFunction());
+  if (NodeUtil.isGetOrSetKey(function.getParent())) {
+    return;
+  }
+  Node argList = getFunctionArgList(function);
+  boolean modifyCallers = modifyCallSites
+      && callSiteOptimizer.canModifyCallers(function);
+  if (!modifyCallers) {
+    Node lastArg;
+    while ((lastArg = argList.getLastChild()) != null) {
+      if (lastArg.isName()) { // Fixed: Ensure the last argument is a named node before getting its string.
+        Var var = fnScope.getVar(lastArg.getString());
+        if (!referenced.contains(var)) {
+          argList.removeChild(lastArg);
+          compiler.reportCodeChange();
+        } else {
+          break;
+        }
+      } else {
+        break; // Fixed: Exit the loop if the last argument is not a named node.
+      }
+    }
+  } else {
+    callSiteOptimizer.optimize(fnScope, referenced);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testSimpleModeLeavesUnusedParams
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testForwardDeclareDroppedTypes
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag1
+  - com.google.javascript.jscomp.IntegrationTest::testIssue787
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal1
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal2
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal3
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testIssue168b
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 28.84 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void removeUnreferencedFunctionArgs(Scope fnScope) {
+  Node function = fnScope.getRootNode();
+  Preconditions.checkState(function.isFunction());
+  if (NodeUtil.isGetOrSetKey(function.getParent())) {
+    return;
+  }
+  Node argList = getFunctionArgList(function);
+  boolean modifyCallers = modifyCallSites
+      && callSiteOptimizer.canModifyCallers(function);
+  if (!modifyCallers) {
+    Node lastArg;
+    while ((lastArg = argList.getLastChild()) != null) {
+      Var var = fnScope.getVar(lastArg.getString());
+      if (var != null && !referenced.contains(var)) { // Fixed condition
+        argList.removeChild(lastArg);
+        compiler.reportCodeChange();
+      } else {
+        break;
+      }
+    }
+  } else {
+    callSiteOptimizer.optimize(fnScope, referenced);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testSimpleModeLeavesUnusedParams
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testForwardDeclareDroppedTypes
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag1
+  - com.google.javascript.jscomp.IntegrationTest::testIssue787
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal1
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal2
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal3
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testIssue168b
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 25.50 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void removeUnreferencedFunctionArgs(Scope fnScope) {
+  Node function = fnScope.getRootNode();
+  Preconditions.checkState(function.isFunction());
+  if (NodeUtil.isGetOrSetKey(function.getParent())) {
+    return;
+  }
+  Node argList = getFunctionArgList(function);
+  boolean modifyCallers = modifyCallSites
+      && callSiteOptimizer.canModifyCallers(function);
+  if (!modifyCallers) {
+    Node lastArg;
+    while ((lastArg = argList.getLastChild()) != null) {
+      Var var = fnScope.getVar(lastArg.getString());
+      if (var == null || !referenced.contains(var)) { // Fixed condition
+        argList.removeChild(lastArg);
+        compiler.reportCodeChange();
+      } else {
+        break;
+      }
+    }
+  } else {
+    callSiteOptimizer.optimize(fnScope, referenced);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testSimpleModeLeavesUnusedParams
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testForwardDeclareDroppedTypes
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag1
+  - com.google.javascript.jscomp.IntegrationTest::testIssue787
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal1
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal2
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal3
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testIssue168b
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 25.81 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void removeUnreferencedFunctionArgs(Scope fnScope) {
+  Node function = fnScope.getRootNode();
+  Preconditions.checkState(function.isFunction());
+  if (NodeUtil.isGetOrSetKey(function.getParent())) {
+    return;
+  }
+  Node argList = getFunctionArgList(function);
+  boolean modifyCallers = modifyCallSites
+      && callSiteOptimizer.canModifyCallers(function);
+  if (!modifyCallers) {
+    Node lastArg;
+    while ((lastArg = argList.getLastChild()) != null) {
+      // Corrected line: Ensure `lastArg.getString()` does not return null before accessing the variable
+      String argName = lastArg.getString();
+      if (argName != null) {
+        Var var = fnScope.getVar(argName);
+        if (!referenced.contains(var)) {
+          argList.removeChild(lastArg);
+          compiler.reportCodeChange();
+        } else {
+          break;
+        }
+      } else {
+        break; // Added safeguard to prevent null-pointer exceptions
+      }
+    }
+  } else {
+    callSiteOptimizer.optimize(fnScope, referenced);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testSimpleModeLeavesUnusedParams
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testForwardDeclareDroppedTypes
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag1
+  - com.google.javascript.jscomp.IntegrationTest::testIssue787
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal1
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal2
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal3
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testIssue168b
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 28.80 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void removeUnreferencedFunctionArgs(Scope fnScope) {
+  Node function = fnScope.getRootNode();
+  Preconditions.checkState(function.isFunction());
+  if (NodeUtil.isGetOrSetKey(function.getParent())) {
+    return;
+  }
+  Node argList = getFunctionArgList(function);
+  boolean modifyCallers = modifyCallSites
+      && callSiteOptimizer.canModifyCallers(function);
+  if (!modifyCallers) {
+    Node lastArg;
+    while ((lastArg = argList.getLastChild()) != null) {
+      // Check if the child node has a valid string representation before calling getString()
+      if (lastArg.isName()) {
+        Var var = fnScope.getVar(lastArg.getString());
+        if (!referenced.contains(var)) {
+          argList.removeChild(lastArg);
+          compiler.reportCodeChange();
+        } else {
+          break;
+        }
+      } else {
+        break; // Stop the loop if the node is not a "name" node
+      }
+    }
+  } else {
+    callSiteOptimizer.optimize(fnScope, referenced);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testSimpleModeLeavesUnusedParams
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testForwardDeclareDroppedTypes
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag1
+  - com.google.javascript.jscomp.IntegrationTest::testIssue787
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal1
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal2
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testRemoveGlobal3
+  - com.google.javascript.jscomp.RemoveUnusedVarsTest::testIssue168b
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

@@ -1,0 +1,570 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 15.73 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  // check if the node has matching exit node
+  if (matchingExitNode(n, exitType, labelName)) {
+    // if yes, remove the node from the tree
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+
+  // check if the node is an if statement
+  if (n.isIf()) {
+    // if yes, try to minimize exits in both if and else branches
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+
+  // check if the node is a try statement
+  if (n.isTry()) {
+    // if yes, try to minimize exits in the try block, catch block, and finally block
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+      }
+
+  // check if the node is a label
+  if (n.isLabel()) {
+    // if yes, try to minimize exits in the block associated with the label
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+  }
+
+  // check if the node is a block
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+
+  // iterate over the children of the node
+  for (Node c : n.children()) {
+    // check if the child is an if statement
+    if (c.isIf()) {
+      // if yes, try to minimize exits in both if and else branches
+      Node ifTree = c;
+      Node trueBlock, falseBlock;
+      trueBlock = ifTree.getFirstChild().getNext();
+      falseBlock = trueBlock.getNext();
+      tryMinimizeIfBlockExits(trueBlock, falseBlock,
+          ifTree, exitType, labelName);
+      trueBlock = ifTree.getFirstChild().getNext();
+      falseBlock = trueBlock.getNext();
+      if (falseBlock != null) {
+        tryMinimizeIfBlockExits(falseBlock, trueBlock,
+            ifTree, exitType, labelName);
+      }
+    }
+    // check if the child is the last child of the node
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+
+  // iterate over the children of the node in reverse order
+  for (Node c = n.getLastChild(); c != null; c = n.getLastChild()) {
+    // try to minimize exits in the child
+    tryMinimizeExits(c, exitType, labelName);
+    // check if the child is the last child of the node
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testDontRemoveBreakInTryFinally
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testFunctionReturnOptimization
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 16.27 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  if (matchingExitNode(n, exitType, labelName)) {
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+
+  if (n.isIf()) {
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+
+  if (n.isTry()) {
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+    return;
+  }
+
+  if (n.isLabel()) {
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+  }
+
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+
+  for (Node c : n.children()) {
+    if (c.isIf()) {
+      Node ifTree = c;
+      Node trueBlock, falseBlock;
+      trueBlock = ifTree.getFirstChild().getNext();
+      falseBlock = trueBlock.getNext();
+      tryMinimizeIfBlockExits(trueBlock, falseBlock,
+          ifTree, exitType, labelName);
+
+      trueBlock = ifTree.getFirstChild().getNext();
+      falseBlock = trueBlock.getNext();
+      if (falseBlock != null) {
+        tryMinimizeIfBlockExits(falseBlock, trueBlock,
+            ifTree, exitType, labelName);
+      }
+    }
+
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+
+  for (Node c = n.getLastChild(); c != null; c = n.getLastChild()) {
+    tryMinimizeExits(c, exitType, labelName);
+
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testDontRemoveBreakInTryFinally
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testFunctionReturnOptimization
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 13.80 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  if (matchingExitNode(n, exitType, labelName)) {
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+  if (n.isIf()) {
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isTry()) {
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isLabel()) {
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+    return;
+  }
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+  for (Node c : n.children()) {
+    if (c.isIf()) {
+      Node ifTree = c;
+      Node trueBlock, falseBlock;
+      trueBlock = ifTree.getFirstChild().getNext();
+      falseBlock = trueBlock.getNext();
+      tryMinimizeIfBlockExits(trueBlock, falseBlock,
+          ifTree, exitType, labelName);
+      trueBlock = ifTree.getFirstChild().getNext();
+      falseBlock = trueBlock.getNext();
+      if (falseBlock != null) {
+        tryMinimizeIfBlockExits(falseBlock, trueBlock,
+            ifTree, exitType, labelName);
+      }
+    }
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+  for (Node c = n.getLastChild(); c != null; c = n.getLastChild()) {
+    tryMinimizeExits(c, exitType, labelName);
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testDontRemoveBreakInTryFinally
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testFunctionReturnOptimization
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 13.96 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  if (matchingExitNode(n, exitType, labelName)) {
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+  if (n.isIf()) {
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isTry()) {
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+  }
+  if (n.isLabel()) {
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+  }
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+  for (Node c : n.children()) {
+    if (c.isIf()) {
+      Node ifTree = c;
+      Node trueBlock, falseBlock;
+      trueBlock = ifTree.getFirstChild().getNext();
+      falseBlock = trueBlock.getNext();
+      tryMinimizeIfBlockExits(trueBlock, falseBlock,
+          ifTree, exitType, labelName);
+      trueBlock = ifTree.getFirstChild().getNext();
+      falseBlock = trueBlock.getNext();
+      if (falseBlock != null) {
+        tryMinimizeIfBlockExits(falseBlock, trueBlock,
+            ifTree, exitType, labelName);
+      }
+    }
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+  for (Node c = n.getLastChild(); c != null; c = n.getLastChild()) {
+    tryMinimizeExits(c, exitType, labelName);
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testDontRemoveBreakInTryFinally
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testFunctionReturnOptimization
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 13.44 seconds
+                Failure reason: Regression
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  if (matchingExitNode(n, exitType, labelName)) {
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+  if (n.isIf()) {
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isTry()) {
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+  }
+  if (n.isLabel()) {
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+  }
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+  // Loop through the children of the node,
+  // starting from the last child and going backwards
+  for (Node c = n.getLastChild(); c != null; c = n.getLastChild()) {
+    tryMinimizeExits(c, exitType, labelName);
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 10
+  - com.google.javascript.jscomp.CreateSyntheticBlocksTest::testFold1
+  - com.google.javascript.jscomp.CreateSyntheticBlocksTest::testFold2
+  - com.google.javascript.jscomp.IntegrationTest::testMinimizeExits
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testForContinueOptimization
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testWhileContinueOptimization
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testDontRemoveBreakInTryFinally
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testDoContinueOptimization
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testBreakOptimization
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testCodeMotionDoesntBreakFunctionHoisting
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testFunctionReturnOptimization
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.MinimizeExitPointsTest::testCodeMotionDoesntBreakFunctionHoisting', 'com.google.javascript.jscomp.MinimizeExitPointsTest::testBreakOptimization', 'com.google.javascript.jscomp.MinimizeExitPointsTest::testWhileContinueOptimization', 'com.google.javascript.jscomp.CreateSyntheticBlocksTest::testFold2', 'com.google.javascript.jscomp.CreateSyntheticBlocksTest::testFold1', 'com.google.javascript.jscomp.MinimizeExitPointsTest::testForContinueOptimization', 'com.google.javascript.jscomp.MinimizeExitPointsTest::testDoContinueOptimization', 'com.google.javascript.jscomp.IntegrationTest::testMinimizeExits']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 15.06 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  if (matchingExitNode(n, exitType, labelName)) {
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+  if (n.isIf()) {
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isTry()) {
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isLabel()) {
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+    return;
+  }
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+  for (Node c : n.children()) {
+    if (c.isIf()) {
+      Node ifTree = c;
+      Node trueBlock, falseBlock;
+      trueBlock = ifTree.getFirstChild().getNext();
+      falseBlock = trueBlock.getNext();
+      tryMinimizeIfBlockExits(trueBlock, falseBlock,
+          ifTree, exitType, labelName);
+      trueBlock = ifTree.getFirstChild().getNext();
+      falseBlock = trueBlock.getNext();
+      if (falseBlock != null) {
+        tryMinimizeIfBlockExits(falseBlock, trueBlock,
+            ifTree, exitType, labelName);
+      }
+    }
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+  for (Node c = n.getLastChild(); c != null; c = n.getLastChild()) {
+    tryMinimizeExits(c, exitType, labelName);
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testDontRemoveBreakInTryFinally
+  - com.google.javascript.jscomp.MinimizeExitPointsTest::testFunctionReturnOptimization
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

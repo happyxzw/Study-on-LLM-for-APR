@@ -1,0 +1,646 @@
+==================================================
+                Project: Cli
+                Rank: 0
+                Correctness: timeout
+                Validation Time: 12.01 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected StringBuffer renderWrappedText(StringBuffer sb, int width, 
+                                         int nextLineTabStop, String text)
+{
+    int pos = findWrapPos(text, width, 0);
+    if (pos == -1)
+    {
+        sb.append(rtrim(text));
+        return sb;
+    }
+    sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    if (nextLineTabStop >= width)
+    {
+        nextLineTabStop = width - 1;
+    }
+    final String padding = createPadding(nextLineTabStop);
+    while (true)
+    {
+        text = text.substring(pos).trim(); // Trim and remove the processed part of the text
+        if (text.isEmpty()) {
+            break; // Exit if no more text to process
+        }
+        text = padding + text; // Add padding to the remaining text
+        pos = findWrapPos(text, width, 0);
+        if (pos == -1)
+        {
+            sb.append(rtrim(text)); // Append the remaining text
+            return sb;
+        }
+        sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine); // Append the wrapped text
+    }
+    return sb; // Ensure the function always returns the StringBuffer
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Cli
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 5.76 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected StringBuffer renderWrappedText(StringBuffer sb, int width, 
+                                         int nextLineTabStop, String text)
+{
+    int pos = findWrapPos(text, width, 0);
+    if (pos == -1)
+    {
+        sb.append(rtrim(text));
+        return sb;
+    }
+    sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    if (nextLineTabStop >= width)
+    {
+        nextLineTabStop = width - 1;
+    }
+    final String padding = createPadding(nextLineTabStop);
+    while (true)
+    {
+        text = padding + text.substring(pos).trim();
+        pos = findWrapPos(text, width, nextLineTabStop); // Changed 0 to nextLineTabStop
+        if (pos == -1)
+        {
+            sb.append(text);
+            return sb;
+        }
+        if ( (text.length() > width) && (pos >= width) ) // Fixed condition
+        {
+            pos = width;
+        }
+        sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - org.apache.commons.cli.HelpFormatterTest::testPrintWrapped
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunkingIndentIgnored
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking', 'org.apache.commons.cli.HelpFormatterTest::testPrintWrapped']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Cli
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 4.13 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected StringBuffer renderWrappedText(StringBuffer sb, int width, 
+                                         int nextLineTabStop, String text)
+{
+    int pos = findWrapPos(text, width, 0);
+    if (pos == -1)
+    {
+        sb.append(rtrim(text));
+        return sb;
+    }
+    sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    if (nextLineTabStop >= width)
+    {
+        nextLineTabStop = width - 1;
+    }
+    final String padding = createPadding(nextLineTabStop);
+    while (true)
+    {
+        text = text.substring(pos).trim(); // Remove padding concatenation here
+        if (text.isEmpty()) { // Handle edge case when text becomes empty
+            return sb;
+        }
+        text = padding + text; // Add padding here after trimming
+        pos = findWrapPos(text, width, 0);
+        if (pos == -1)
+        {
+            sb.append(text);
+            return sb;
+        }
+        if (text.length() > width && pos == nextLineTabStop - 1) 
+        {
+            pos = width;
+        }
+        sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunkingIndentIgnored
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Cli
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 5.86 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected StringBuffer renderWrappedText(StringBuffer sb, int width, 
+                                         int nextLineTabStop, String text)
+{
+    int pos = findWrapPos(text, width, 0);
+    if (pos == -1)
+    {
+        sb.append(rtrim(text));
+        return sb;
+    }
+    sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    if (nextLineTabStop >= width)
+    {
+        nextLineTabStop = width - 1;
+    }
+    final String padding = createPadding(nextLineTabStop);
+    while (true)
+    {
+        text = padding + text.substring(pos).trim();
+        pos = findWrapPos(text, width, nextLineTabStop); // Fixed the third parameter from 0 to nextLineTabStop
+        if (pos == -1)
+        {
+            sb.append(text);
+            return sb;
+        }
+        if ( (text.length() > width) && (pos == width) ) // Corrected condition from nextLineTabStop - 1 to width
+        {
+            pos = width;
+        }
+        sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - org.apache.commons.cli.HelpFormatterTest::testPrintWrapped
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunkingIndentIgnored
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking', 'org.apache.commons.cli.HelpFormatterTest::testPrintWrapped']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Cli
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 5.34 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected StringBuffer renderWrappedText(StringBuffer sb, int width, 
+                                         int nextLineTabStop, String text)
+{
+    int pos = findWrapPos(text, width, 0);
+    if (pos == -1)
+    {
+        sb.append(rtrim(text));
+        return sb;
+    }
+    sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    if (nextLineTabStop >= width)
+    {
+        nextLineTabStop = width - 1;
+    }
+    final String padding = createPadding(nextLineTabStop);
+    while (true)
+    {
+        text = text.substring(pos).trim(); // Removed padding addition to avoid infinite loop
+        if (text.isEmpty()) { // Added check to prevent infinite loop for empty text
+            return sb;
+        }
+        text = padding + text;
+        pos = findWrapPos(text, width, nextLineTabStop); // Adjusted third argument to nextLineTabStop
+        if (pos == -1)
+        {
+            sb.append(text);
+            return sb;
+        }
+        if ( (text.length() > width) && (pos == nextLineTabStop - 1) ) 
+        {
+            pos = width;
+        }
+        sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - org.apache.commons.cli.HelpFormatterTest::testPrintWrapped
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunkingIndentIgnored
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking', 'org.apache.commons.cli.HelpFormatterTest::testPrintWrapped']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Cli
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 4.30 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected StringBuffer renderWrappedText(StringBuffer sb, int width, 
+                                         int nextLineTabStop, String text)
+{
+    int pos = findWrapPos(text, width, 0);
+    if (pos == -1)
+    {
+        sb.append(rtrim(text));
+        return sb;
+    }
+    sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    if (nextLineTabStop >= width)
+    {
+        nextLineTabStop = width - 1;
+    }
+    final String padding = createPadding(nextLineTabStop);
+    while (true)
+    {
+        text = text.substring(pos).trim(); // Removed padding before trimming the text
+        if (text.isEmpty()) { // Added check to avoid infinite loop on empty text
+            return sb;
+        }
+        text = padding + text;
+        pos = findWrapPos(text, width, 0);
+        if (pos == -1)
+        {
+            sb.append(text);
+            return sb;
+        }
+        if ((text.length() > width) && (pos <= nextLineTabStop)) // Fixed condition for pos
+        {
+            pos = width;
+        }
+        sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunkingIndentIgnored
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Cli
+                Rank: 5
+                Correctness: timeout
+                Validation Time: 14.01 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected StringBuffer renderWrappedText(StringBuffer sb, int width, 
+                                         int nextLineTabStop, String text)
+{
+    int pos = findWrapPos(text, width, 0);
+    if (pos == -1)
+    {
+        sb.append(rtrim(text));
+        return sb;
+    }
+    sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    if (nextLineTabStop >= width)
+    {
+        nextLineTabStop = width - 1;
+    }
+    final String padding = createPadding(nextLineTabStop);
+    while (true)
+    {
+        text = padding + text.substring(pos).trim();
+        pos = findWrapPos(text, width, 0);
+        if (pos == -1)
+        {
+            sb.append(text);
+            return sb;
+        }
+        if ( (text.length() > width) && (pos + padding.length() < width) ) 
+        {
+            pos = width - padding.length();
+        }
+        sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Cli
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 4.00 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected StringBuffer renderWrappedText(StringBuffer sb, int width, 
+                                         int nextLineTabStop, String text)
+{
+    int pos = findWrapPos(text, width, 0);
+    if (pos == -1)
+    {
+        sb.append(rtrim(text));
+        return sb;
+    }
+    sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    if (nextLineTabStop >= width)
+    {
+        nextLineTabStop = width - 1;
+    }
+    final String padding = createPadding(nextLineTabStop);
+    while (true)
+    {
+        text = padding + text.substring(pos).trim();
+        pos = findWrapPos(text, width, nextLineTabStop); // Fixed the third parameter
+        if (pos == -1)
+        {
+            sb.append(text);
+            return sb;
+        }
+        if ( (text.length() > width) && (pos == nextLineTabStop - 1) ) 
+        {
+            pos = width;
+        }
+        sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - org.apache.commons.cli.HelpFormatterTest::testPrintWrapped
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunkingIndentIgnored
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking', 'org.apache.commons.cli.HelpFormatterTest::testPrintWrapped']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Cli
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 3.96 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected StringBuffer renderWrappedText(StringBuffer sb, int width, 
+                                         int nextLineTabStop, String text)
+{
+    int pos = findWrapPos(text, width, 0);
+    if (pos == -1)
+    {
+        sb.append(rtrim(text));
+        return sb;
+    }
+    sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    if (nextLineTabStop >= width)
+    {
+        nextLineTabStop = width - 1;
+    }
+    final String padding = createPadding(nextLineTabStop);
+    while (true)
+    {
+        text = padding + text.substring(pos).trim();
+        pos = findWrapPos(text, width, nextLineTabStop); // Fixed offset
+        if (pos == -1)
+        {
+            sb.append(text);
+            return sb;
+        }
+        if ( (text.length() > width) && (pos < nextLineTabStop) ) // Fixed condition
+        {
+            pos = width;
+        }
+        sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - org.apache.commons.cli.HelpFormatterTest::testPrintWrapped
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunkingIndentIgnored
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking', 'org.apache.commons.cli.HelpFormatterTest::testPrintWrapped']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Cli
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 4.02 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected StringBuffer renderWrappedText(StringBuffer sb, int width, 
+                                         int nextLineTabStop, String text)
+{
+    int pos = findWrapPos(text, width, 0);
+    if (pos == -1)
+    {
+        sb.append(rtrim(text));
+        return sb;
+    }
+    sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    if (nextLineTabStop >= width)
+    {
+        nextLineTabStop = width - 1;
+    }
+    final String padding = createPadding(nextLineTabStop);
+    while (true)
+    {
+        text = padding + text.substring(pos).trim();
+        pos = findWrapPos(text, width, nextLineTabStop); // Fixed 0 to nextLineTabStop
+        if (pos == -1)
+        {
+            sb.append(text);
+            return sb;
+        }
+        if ( (text.length() > width) && (pos == width) ) // Fixed condition to check pos == width
+        {
+            pos = width;
+        }
+        sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - org.apache.commons.cli.HelpFormatterTest::testPrintWrapped
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunkingIndentIgnored
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking', 'org.apache.commons.cli.HelpFormatterTest::testPrintWrapped']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Cli
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 4.11 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected StringBuffer renderWrappedText(StringBuffer sb, int width, 
+                                         int nextLineTabStop, String text)
+{
+    int pos = findWrapPos(text, width, 0);
+    if (pos == -1)
+    {
+        sb.append(rtrim(text));
+        return sb;
+    }
+    sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    if (nextLineTabStop >= width)
+    {
+        nextLineTabStop = width - 1;
+    }
+    final String padding = createPadding(nextLineTabStop);
+    while (true)
+    {
+        text = padding + text.substring(pos).trim();
+        pos = findWrapPos(text, width, nextLineTabStop); // Corrected third parameter from 0 to nextLineTabStop
+        if (pos == -1)
+        {
+            sb.append(text);
+            return sb;
+        }
+        if ( (text.length() > width) && (pos == width) ) // Corrected condition to check pos == width instead of nextLineTabStop - 1
+        {
+            pos = width;
+        }
+        sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - org.apache.commons.cli.HelpFormatterTest::testPrintWrapped
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunkingIndentIgnored
+  - org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.cli.bug.BugCLI162Test::testLongLineChunking', 'org.apache.commons.cli.HelpFormatterTest::testPrintWrapped']
+
+                EXCEPTIONS
+                None
+
+

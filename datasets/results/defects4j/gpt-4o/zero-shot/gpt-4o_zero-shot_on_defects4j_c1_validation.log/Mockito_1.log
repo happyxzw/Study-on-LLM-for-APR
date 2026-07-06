@@ -1,0 +1,1258 @@
+==================================================
+                Project: Mockito
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 113.98 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    for (Object varArg : varArgs) {
+                        ((CapturesArguments) m).captureFrom(varArg);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 17
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 117.49 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        Object[] varArgs = (Object[]) invocation.getRawArguments()[indexOfVararg];
+        for (int i = 0; i < varArgs.length; i++) {
+            int position = indexOfVararg + i;
+            if (position < matchers.size()) {
+                Matcher m = matchers.get(position);
+                if (m instanceof CapturesArguments) {
+                    ((CapturesArguments) m).captureFrom(varArgs[i]);
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldStubBooleanVarargs
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyBooleanVarargs
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldStubCorrectlyWhenMixedVarargsUsed
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldStubCorrectlyWhenDoubleStringAndMixedVarargsUsed
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 112.03 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        Object[] varArgsArray = (Object[]) invocation.getRawArguments()[indexOfVararg];
+        for (int i = 0; i < varArgsArray.length; i++) {
+            if (matchers.size() > indexOfVararg + i) {
+                Matcher m = matchers.get(indexOfVararg + i);
+                if (m instanceof CapturesArguments) {
+                    ((CapturesArguments) m).captureFrom(varArgsArray[i]);
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldStubBooleanVarargs
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyBooleanVarargs
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldStubCorrectlyWhenMixedVarargsUsed
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldStubCorrectlyWhenDoubleStringAndMixedVarargsUsed
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 113.80 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        Object[] varArgsArray = (Object[]) invocation.getRawArguments()[indexOfVararg];
+        for (int i = 0; i < varArgsArray.length; i++) {
+            int position = indexOfVararg + i;
+            if (position < matchers.size()) {
+                Matcher m = matchers.get(position);
+                if (m instanceof CapturesArguments) {
+                    ((CapturesArguments) m).captureFrom(varArgsArray[i]);
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldStubBooleanVarargs
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyBooleanVarargs
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldStubCorrectlyWhenMixedVarargsUsed
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldStubCorrectlyWhenDoubleStringAndMixedVarargsUsed
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 116.85 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    if (varArgs != null && position - indexOfVararg < varArgs.length) {
+                        ((CapturesArguments) m).captureFrom(varArgs[position - indexOfVararg]);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 16
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 114.42 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    if (varArgs != null && position - indexOfVararg < varArgs.length) {
+                        ((CapturesArguments) m).captureFrom(varArgs[position - indexOfVararg]);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 16
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 122.36 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    if (varArgs != null && position - indexOfVararg < varArgs.length) {
+                        ((CapturesArguments) m).captureFrom(varArgs[position - indexOfVararg]);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 16
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 119.36 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    for (Object varArg : varArgs) {
+                        ((CapturesArguments) m).captureFrom(varArg);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 17
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 121.53 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    if (varArgs != null && position - indexOfVararg < varArgs.length) {
+                        ((CapturesArguments) m).captureFrom(varArgs[position - indexOfVararg]);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 16
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 120.35 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        Object[] varArgs = (Object[]) invocation.getRawArguments()[indexOfVararg];
+        for (int i = 0; i < varArgs.length; i++) {
+            int position = indexOfVararg + i;
+            if (position < matchers.size()) {
+                Matcher m = matchers.get(position);
+                if (m instanceof CapturesArguments) {
+                    ((CapturesArguments) m).captureFrom(varArgs[i]);
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldStubBooleanVarargs
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyBooleanVarargs
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldStubCorrectlyWhenMixedVarargsUsed
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldStubCorrectlyWhenDoubleStringAndMixedVarargsUsed
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 108.04 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    for (Object varArg : varArgs) {
+                        ((CapturesArguments) m).captureFrom(varArg);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 17
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 108.29 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    for (Object varArg : varArgs) {
+                        ((CapturesArguments) m).captureFrom(varArg);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 17
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 111.76 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varargs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    for (Object vararg : varargs) {
+                        ((CapturesArguments) m).captureFrom(vararg);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 17
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 110.87 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    if (position - indexOfVararg < varArgs.length) {
+                        ((CapturesArguments) m).captureFrom(varArgs[position - indexOfVararg]);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 17
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 111.25 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    for (Object varArg : varArgs) {
+                        ((CapturesArguments) m).captureFrom(varArg);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 17
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 111.81 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgsArray = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    if (varArgsArray != null && position - indexOfVararg < varArgsArray.length) {
+                        ((CapturesArguments) m).captureFrom(varArgsArray[position - indexOfVararg]);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 16
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 108.81 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getRawArguments()[indexOfVararg];
+                    for (Object varArg : varArgs) {
+                        ((CapturesArguments) m).captureFrom(varArg);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 108.72 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgsArray = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    for (Object varArg : varArgsArray) {
+                        ((CapturesArguments) m).captureFrom(varArg);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 17
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 108.21 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    for (Object varArg : varArgs) {
+                        ((CapturesArguments) m).captureFrom(varArg);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 17
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Mockito
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 107.83 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public void captureArgumentsFrom(Invocation invocation) {
+    if (invocation.getMethod().isVarArgs()) {
+        int indexOfVararg = invocation.getRawArguments().length - 1;
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                if (position < indexOfVararg) {
+                    ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+                } else {
+                    Object[] varArgs = (Object[]) invocation.getArgumentAt(indexOfVararg, Object.class);
+                    for (Object varArg : varArgs) {
+                        ((CapturesArguments) m).captureFrom(varArg);
+                    }
+                }
+            }
+        }
+    } else {
+        for (int position = 0; position < matchers.size(); position++) {
+            Matcher m = matchers.get(position);
+            if (m instanceof CapturesArguments) {
+                ((CapturesArguments) m).captureFrom(invocation.getArgumentAt(position, Object.class));
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 17
+  - org.mockito.internal.invocation.InvocationMatcherTest::should_capture_arguments_when_args_count_does_NOT_match
+  - org.mockito.internal.util.reflection.FieldInitializerTest::can_instantiate_class_with_parameterized_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_report_failure_if_constructor_throws_exception
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_fail_if_an_argument_instance_type_do_not_match_wanted_type
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_with_vararg_constructor
+  - org.mockito.internal.util.reflection.ParameterizedConstructorInstantiatorTest::should_instantiate_type_if_resolver_provide_matching_types
+  - org.mockitousage.basicapi.ResetTest::shouldRemoveAllStubbing
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithNullVarArgArray
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldVerifyWithAnyObject
+  - org.mockitousage.basicapi.UsingVarargsTest::shouldMatchEasilyEmptyVararg
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyWithAnyVarargs
+  - org.mockitousage.bugs.varargs.VarargsAndAnyObjectPicksUpExtraInvocationsTest::shouldVerifyCorrectlyNumberOfInvocationsUsingAnyVarargAndEqualArgument
+  - org.mockitousage.bugs.varargs.VarargsNotPlayingWithAnyObjectTest::shouldStubUsingAnyVarargs
+  - org.mockitousage.matchers.VerificationAndStubbingUsingMatchersTest::shouldVerifyUsingMatchers
+  - org.mockitousage.stubbing.BasicStubbingTest::test_stub_only_not_verifiable
+  - org.mockitousage.stubbing.BasicStubbingTest::should_evaluate_latest_stubbing_first
+  - org.mockitousage.stubbing.DeprecatedStubbingTest::shouldEvaluateLatestStubbingFirst
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

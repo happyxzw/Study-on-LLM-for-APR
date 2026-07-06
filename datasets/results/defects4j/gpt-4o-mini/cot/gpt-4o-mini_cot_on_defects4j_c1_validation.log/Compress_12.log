@@ -1,0 +1,2668 @@
+==================================================
+                Project: Compress
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 2.58 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) >= 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        // No need to call getNextEntry() here
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0
+            && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+        // After reading the long name, we should fetch the next entry
+        return getNextTarEntry(); // Recursively call to get the next entry
+    }
+    if (currEntry.isPaxHeader()){ 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()){ 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 2.62 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) > 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        if (length < 0) { // If EOF is hit while reading the long name
+            return null; // Exit early if EOF is reached
+        }
+        getNextEntry();
+        if (currEntry == null) {
+            return null;
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:222: error: illegal start of expression
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:222: error: ';' expected
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:222: error: not a statement
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:222: error: ';' expected
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:238: error: illegal start of expression
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:238: error: illegal start of expression
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:238: error: ';' expected
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:238: error: not a statement
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:238: error: ';' expected
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:257: error: ';' expected
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:257: error: ';' expected
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:257: error: not a statement
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:257: error: ';' expected
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:303: error: illegal start of expression
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:303: error: illegal start of expression
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:303: error: ';' expected
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:303: error: ';' expected
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:342: error: illegal start of expression
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:342: error: illegal start of expression
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:342: error: ';' expected
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:342: error: not a statement
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:342: error: ';' expected
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:364: error: ';' expected
+    [javac]     public ArchiveEntry getNextEntry() throws IOException {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:364: error: not a statement
+    [javac]     public ArchiveEntry getNextEntry() throws IOException {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:364: error: ';' expected
+    [javac]     public ArchiveEntry getNextEntry() throws IOException {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: <identifier> expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: not a statement
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: not a statement
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:455: error: ';' expected
+    [javac]     public boolean canReadEntryData(ArchiveEntry ae) {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:455: error: ';' expected
+    [javac]     public boolean canReadEntryData(ArchiveEntry ae) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:463: error: illegal start of expression
+    [javac]     protected final TarArchiveEntry getCurrentEntry() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:463: error: ';' expected
+    [javac]     protected final TarArchiveEntry getCurrentEntry() {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:467: error: illegal start of expression
+    [javac]     protected final void setCurrentEntry(TarArchiveEntry e) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:467: error: ';' expected
+    [javac]     protected final void setCurrentEntry(TarArchiveEntry e) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:467: error: ';' expected
+    [javac]     protected final void setCurrentEntry(TarArchiveEntry e) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:471: error: illegal start of expression
+    [javac]     protected final boolean isAtEOF() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:471: error: ';' expected
+    [javac]     protected final boolean isAtEOF() {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:475: error: illegal start of expression
+    [javac]     protected final void setAtEOF(boolean b) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:475: error: ';' expected
+    [javac]     protected final void setAtEOF(boolean b) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:475: error: ';' expected
+    [javac]     protected final void setAtEOF(boolean b) {
+    [javac]                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:488: error: illegal start of expression
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:488: error: illegal start of expression
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:488: error: ';' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:488: error: '.class' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:488: error: ';' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:488: error: ';' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:526: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 56 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 2.35 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuilder longName = new StringBuilder();
+        byte[] buf = new byte;
+        int length;
+        while ((length = read(buf)) > 0) {  // Ensure we check for > 0
+            longName.append(new String(buf, 0, length));
+        }
+        if (length < 0) { // Check if we hit EOF
+            throw new IOException("Unexpected end of stream while reading long name");
+        }
+        getNextEntry();
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0 && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()) { 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()) { 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length;
+    [javac]            ^
+    [javac] 3 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 3.08 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length;
+        while ((length = read(buf)) > 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        if (length < 0 && hasHitEOF) {
+            currEntry = null; // If we hit EOF while reading long name, set currEntry to null
+            return null;
+        }
+        if (currEntry.isPaxHeader()){ 
+            paxHeaders();
+        }
+        if (currEntry.isGNUSparse()){ 
+            readGNUSparse();
+        }
+        if (currEntry != null) {
+            currEntry.setName(longName.toString().replaceAll("\u0000$", "")); // Remove trailing null character
+        }
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length;
+    [javac]            ^
+    [javac] 3 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 3.35 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (headerBuf == null || hasHitEOF) { // Check for EOF immediately after reading the header
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) >= 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        getNextEntry();
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0
+            && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()){ 
+        paxHeaders();
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:228: error: illegal start of expression
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:228: error: ';' expected
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:228: error: not a statement
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:228: error: ';' expected
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:244: error: illegal start of expression
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:244: error: illegal start of expression
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:244: error: ';' expected
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:244: error: not a statement
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:244: error: ';' expected
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:263: error: ';' expected
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:263: error: ';' expected
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:263: error: not a statement
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:263: error: ';' expected
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:309: error: illegal start of expression
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:309: error: illegal start of expression
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:309: error: ';' expected
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:309: error: ';' expected
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:348: error: illegal start of expression
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:348: error: illegal start of expression
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:348: error: ';' expected
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:348: error: not a statement
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:348: error: ';' expected
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:370: error: ';' expected
+    [javac]     public ArchiveEntry getNextEntry() throws IOException {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:370: error: not a statement
+    [javac]     public ArchiveEntry getNextEntry() throws IOException {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:370: error: ';' expected
+    [javac]     public ArchiveEntry getNextEntry() throws IOException {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:388: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:388: error: <identifier> expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:388: error: not a statement
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:388: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:388: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:388: error: not a statement
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:388: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:461: error: ';' expected
+    [javac]     public boolean canReadEntryData(ArchiveEntry ae) {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:461: error: ';' expected
+    [javac]     public boolean canReadEntryData(ArchiveEntry ae) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:469: error: illegal start of expression
+    [javac]     protected final TarArchiveEntry getCurrentEntry() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:469: error: ';' expected
+    [javac]     protected final TarArchiveEntry getCurrentEntry() {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:473: error: illegal start of expression
+    [javac]     protected final void setCurrentEntry(TarArchiveEntry e) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:473: error: ';' expected
+    [javac]     protected final void setCurrentEntry(TarArchiveEntry e) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:473: error: ';' expected
+    [javac]     protected final void setCurrentEntry(TarArchiveEntry e) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:477: error: illegal start of expression
+    [javac]     protected final boolean isAtEOF() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:477: error: ';' expected
+    [javac]     protected final boolean isAtEOF() {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:481: error: illegal start of expression
+    [javac]     protected final void setAtEOF(boolean b) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:481: error: ';' expected
+    [javac]     protected final void setAtEOF(boolean b) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:481: error: ';' expected
+    [javac]     protected final void setAtEOF(boolean b) {
+    [javac]                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:494: error: illegal start of expression
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:494: error: illegal start of expression
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:494: error: ';' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:494: error: '.class' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:494: error: ';' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:494: error: ';' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:532: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 56 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 2.03 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (headerBuf == null || hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuilder longName = new StringBuilder();
+        byte[] buf = new byte;
+        int length;
+        while ((length = read(buf)) > 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        if (length < 0 && !hasHitEOF) {
+            throw new IOException("Error reading long name entry");
+        }
+        TarArchiveEntry nextEntry = getNextTarEntry();
+        if (nextEntry == null) {
+            return null;
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:222: error: illegal start of expression
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:222: error: ';' expected
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:222: error: not a statement
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:222: error: ';' expected
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:238: error: illegal start of expression
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:238: error: illegal start of expression
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:238: error: ';' expected
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:238: error: not a statement
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:238: error: ';' expected
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:257: error: ';' expected
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:257: error: ';' expected
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:257: error: not a statement
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:257: error: ';' expected
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:303: error: illegal start of expression
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:303: error: illegal start of expression
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:303: error: ';' expected
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:303: error: ';' expected
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:342: error: illegal start of expression
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:342: error: illegal start of expression
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:342: error: ';' expected
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:342: error: not a statement
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:342: error: ';' expected
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:364: error: ';' expected
+    [javac]     public ArchiveEntry getNextEntry() throws IOException {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:364: error: not a statement
+    [javac]     public ArchiveEntry getNextEntry() throws IOException {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:364: error: ';' expected
+    [javac]     public ArchiveEntry getNextEntry() throws IOException {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: <identifier> expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: not a statement
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: not a statement
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:382: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:455: error: ';' expected
+    [javac]     public boolean canReadEntryData(ArchiveEntry ae) {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:455: error: ';' expected
+    [javac]     public boolean canReadEntryData(ArchiveEntry ae) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:463: error: illegal start of expression
+    [javac]     protected final TarArchiveEntry getCurrentEntry() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:463: error: ';' expected
+    [javac]     protected final TarArchiveEntry getCurrentEntry() {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:467: error: illegal start of expression
+    [javac]     protected final void setCurrentEntry(TarArchiveEntry e) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:467: error: ';' expected
+    [javac]     protected final void setCurrentEntry(TarArchiveEntry e) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:467: error: ';' expected
+    [javac]     protected final void setCurrentEntry(TarArchiveEntry e) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:471: error: illegal start of expression
+    [javac]     protected final boolean isAtEOF() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:471: error: ';' expected
+    [javac]     protected final boolean isAtEOF() {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:475: error: illegal start of expression
+    [javac]     protected final void setAtEOF(boolean b) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:475: error: ';' expected
+    [javac]     protected final void setAtEOF(boolean b) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:475: error: ';' expected
+    [javac]     protected final void setAtEOF(boolean b) {
+    [javac]                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:488: error: illegal start of expression
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:488: error: illegal start of expression
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:488: error: ';' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:488: error: '.class' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:488: error: ';' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:488: error: ';' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:526: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 54 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 2.80 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) >= 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        // Here we check if we've hit EOF after reading long name
+        if (hasHitEOF) {
+            currEntry = null;
+            return null;
+        }
+        getNextTarEntry();  // Recursively call to get the next entry
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0 && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()) { 
+        paxHeaders();
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:232: error: illegal start of expression
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:232: error: ';' expected
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:232: error: not a statement
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:232: error: ';' expected
+    [javac]     private byte[] getRecord() throws IOException {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:248: error: illegal start of expression
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:248: error: illegal start of expression
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:248: error: ';' expected
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:248: error: not a statement
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:248: error: ';' expected
+    [javac]     private void paxHeaders() throws IOException{
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:267: error: ';' expected
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:267: error: ';' expected
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:267: error: not a statement
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:267: error: ';' expected
+    [javac]     Map<String, String> parsePaxHeaders(Reader br) throws IOException {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:313: error: illegal start of expression
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:313: error: illegal start of expression
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:313: error: ';' expected
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:313: error: ';' expected
+    [javac]     private void applyPaxHeadersToCurrentEntry(Map<String, String> headers) {
+    [javac]                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:352: error: illegal start of expression
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:352: error: illegal start of expression
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:352: error: ';' expected
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:352: error: not a statement
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:352: error: ';' expected
+    [javac]     private void readGNUSparse() throws IOException {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:374: error: ';' expected
+    [javac]     public ArchiveEntry getNextEntry() throws IOException {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:374: error: not a statement
+    [javac]     public ArchiveEntry getNextEntry() throws IOException {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:374: error: ';' expected
+    [javac]     public ArchiveEntry getNextEntry() throws IOException {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:392: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:392: error: <identifier> expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:392: error: not a statement
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:392: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:392: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:392: error: not a statement
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:392: error: ';' expected
+    [javac]     public int read(byte[] buf, int offset, int numToRead) throws IOException {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:465: error: ';' expected
+    [javac]     public boolean canReadEntryData(ArchiveEntry ae) {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:465: error: ';' expected
+    [javac]     public boolean canReadEntryData(ArchiveEntry ae) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:473: error: illegal start of expression
+    [javac]     protected final TarArchiveEntry getCurrentEntry() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:473: error: ';' expected
+    [javac]     protected final TarArchiveEntry getCurrentEntry() {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:477: error: illegal start of expression
+    [javac]     protected final void setCurrentEntry(TarArchiveEntry e) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:477: error: ';' expected
+    [javac]     protected final void setCurrentEntry(TarArchiveEntry e) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:477: error: ';' expected
+    [javac]     protected final void setCurrentEntry(TarArchiveEntry e) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:481: error: illegal start of expression
+    [javac]     protected final boolean isAtEOF() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:481: error: ';' expected
+    [javac]     protected final boolean isAtEOF() {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:485: error: illegal start of expression
+    [javac]     protected final void setAtEOF(boolean b) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:485: error: ';' expected
+    [javac]     protected final void setAtEOF(boolean b) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:485: error: ';' expected
+    [javac]     protected final void setAtEOF(boolean b) {
+    [javac]                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:498: error: illegal start of expression
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:498: error: illegal start of expression
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:498: error: ';' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:498: error: '.class' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:498: error: ';' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:498: error: ';' expected
+    [javac]     public static boolean matches(byte[] signature, int length) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:536: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 56 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 2.33 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) >= 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        TarArchiveEntry longNameEntry = getNextTarEntry();
+        if (longNameEntry == null) {
+            currEntry = null; // Set currEntry to null if there is no next entry
+            return null;
+        }
+        if (longName.length() > 0 && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()) { 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()) { 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 2.09 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuilder longName = new StringBuilder();
+        byte[] buf = new byte;
+        int length;
+        while ((length = read(buf)) > 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        if (length < 0) {
+            throw new IOException("Unexpected EOF while reading long name");
+        }
+        getNextTarEntry();
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0 && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()) { 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()) { 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length;
+    [javac]            ^
+    [javac] 3 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 2.25 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) >= 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        getNextEntry();
+        if (currEntry == null) {
+            return null; // Early return if currEntry is null
+        }
+        if (longName.length() > 0
+            && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()){ 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()){ 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Compress_12_efcb24f124604590953cc9aa72f7495c/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 2.09 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuilder longName = new StringBuilder(); // Changed StringBuffer to StringBuilder for better performance in single-threaded context
+        byte[] buf = new byte;
+        int length;
+        while ((length = read(buf)) > 0) { // Changed >= 0 to > 0 to correctly handle read termination
+            longName.append(new String(buf, 0, length));
+        }
+        if (hasHitEOF) { // Added check for EOF after reading long name
+            currEntry = null;
+            return null;
+        }
+        getNextEntry(); // Should be called after ensuring long name is completely read
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0 && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()) { 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()) { 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length;
+    [javac]            ^
+    [javac] 3 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 2.02 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped < 0) { // Changed from `<= 0` to `< 0`
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) > 0) { // Changed from `>= 0` to `> 0`
+            longName.append(new String(buf, 0, length));
+        }
+        getNextEntry();
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0
+            && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()){ 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()){ 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 2.57 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuilder longName = new StringBuilder(); // Changed StringBuffer to StringBuilder for better performance
+        byte[] buf = new byte;
+        int length;
+        while ((length = read(buf)) >= 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        getNextEntry();
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0 && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()) { 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()) { 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length;
+    [javac]            ^
+    [javac] 3 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 1.99 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped < 0) { // Changed to '< 0' to correctly handle the skip return value
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) > 0) { // Changed condition to '> 0' to ensure we only append valid data
+            longName.append(new String(buf, 0, length));
+        }
+        getNextEntry();
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0
+            && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()){ 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()){ 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 2.13 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+
+    // Check if this entry has a long name
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuilder longName = new StringBuilder(); // Use StringBuilder for better performance
+        byte[] buf = new byte;
+        int length;
+        while ((length = read(buf)) > 0) { // Changed condition to > 0 to avoid appending empty strings
+            longName.append(new String(buf, 0, length));
+        }
+        getNextEntry();
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0 && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+
+    // Handle PAX headers if applicable
+    if (currEntry.isPaxHeader()) { 
+        paxHeaders();
+    }
+
+    // Handle GNU sparse if applicable
+    if (currEntry.isGNUSparse()) { 
+        readGNUSparse();
+    }
+
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:199: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:199: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:200: error: ';' expected
+    [javac]         int length;
+    [javac]            ^
+    [javac] 3 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 2.68 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) > 0) { // Changed from >= 0 to > 0 to correctly handle reading
+            longName.append(new String(buf, 0, length));
+        }
+        getNextEntry(); // Retrieve the next entry
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0 && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()) { 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()) { 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 2.61 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped < 0) { // Change condition to < 0 to handle errors correctly
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) >= 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        getNextEntry();
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0
+            && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()){ 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()){ 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 2.19 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped < 0) { // Changed from <= 0 to < 0
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) >= 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        getNextEntry();
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0
+            && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()){ 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()){ 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 2.31 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped <= 0) {
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) > 0) { // Change from >= 0 to > 0
+            longName.append(new String(buf, 0, length));
+        }
+        getNextEntry();
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0 && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()){ 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()){ 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 2.56 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TarArchiveEntry getNextTarEntry() throws IOException {
+    if (hasHitEOF) {
+        return null;
+    }
+    if (currEntry != null) {
+        long numToSkip = entrySize - entryOffset;
+        while (numToSkip > 0) {
+            long skipped = skip(numToSkip);
+            if (skipped < 0) { // Change from <= 0 to < 0 to properly handle the skip failure.
+                throw new RuntimeException("failed to skip current tar entry");
+            }
+            numToSkip -= skipped;
+        }
+        readBuf = null;
+    }
+    byte[] headerBuf = getRecord();
+    if (hasHitEOF) {
+        currEntry = null;
+        return null;
+    }
+    currEntry = new TarArchiveEntry(headerBuf);
+    entryOffset = 0;
+    entrySize = currEntry.getSize();
+    if (currEntry.isGNULongNameEntry()) {
+        StringBuffer longName = new StringBuffer();
+        byte[] buf = new byte;
+        int length = 0;
+        while ((length = read(buf)) >= 0) {
+            longName.append(new String(buf, 0, length));
+        }
+        getNextEntry();
+        if (currEntry == null) {
+            return null;
+        }
+        if (longName.length() > 0
+            && longName.charAt(longName.length() - 1) == 0) {
+            longName.deleteCharAt(longName.length() - 1);
+        }
+        currEntry.setName(longName.toString());
+    }
+    if (currEntry.isPaxHeader()){ 
+        paxHeaders();
+    }
+    if (currEntry.isGNUSparse()){ 
+        readGNUSparse();
+    }
+    entrySize = currEntry.getSize();
+    return currEntry;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: '[' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:197: error: ']' expected
+    [javac]         byte[] buf = new byte;
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: illegal start of expression
+    [javac]         int length = 0;
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveInputStream.java:198: error: ';' expected
+    [javac]         int length = 0;
+    [javac]                     ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Compress_12_c4e9ece13f664fd8bbee677d61a04b4b/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

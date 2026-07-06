@@ -1,0 +1,707 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 4.31 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double result;
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval <= 31)) { // Corrected upper bound to include 31 as valid
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    switch (n.getType()) {
+      case Token.LSH:
+        result = (long) lvalInt << rvalInt; // Cast to long to handle large shift results correctly
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        result = (lvalInt >>> rvalInt) & 0xFFFFFFFFL; // Ensure unsigned right shift handles 32-bit correctly
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 4.10 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    int rvalInt = (int) rval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    double result;
+    switch (n.getType()) {
+      case Token.LSH:
+        result = (double) (lvalInt << rvalInt);
+        break;
+      case Token.RSH:
+        result = (double) (lvalInt >> rvalInt);
+        break;
+      case Token.URSH:
+        result = (double) (lvalInt >>> rvalInt);
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.PeepholeFoldConstantsTest::testFoldBitShifts
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 4.20 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    int rvalInt = (int) rval;
+    if (lvalInt != lval || rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, lvalInt != lval ? left : right);
+      return n;
+    }
+    double result;
+    switch (n.getType()) {
+      case Token.LSH:
+        result = (double) (lvalInt << rvalInt);
+        break;
+      case Token.RSH:
+        result = (double) (lvalInt >> rvalInt);
+        break;
+      case Token.URSH:
+        result = (double) (lvalInt >>> rvalInt);
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.PeepholeFoldConstantsTest::testFoldBitShifts
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 3.87 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+
+    double result;
+    switch (n.getType()) {
+      case Token.LSH:
+        result = (double) (lvalInt << rvalInt);
+        break;
+      case Token.RSH:
+        result = (double) (lvalInt >> rvalInt);
+        break;
+      case Token.URSH:
+        result = (double) (lvalInt >>> rvalInt);
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.PeepholeFoldConstantsTest::testFoldBitShifts
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 4.35 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    double result;
+    switch (n.getType()) {
+      case Token.LSH:
+        result = (double) (lvalInt << rvalInt);
+        break;
+      case Token.RSH:
+        result = (double) (lvalInt >> rvalInt);
+        break;
+      case Token.URSH:
+        result = (double) (lvalInt >>> rvalInt);
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.PeepholeFoldConstantsTest::testFoldBitShifts
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 4.02 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    double result;
+    switch (n.getType()) {
+      case Token.LSH:
+        result = (double) (lvalInt << rvalInt);
+        break;
+      case Token.RSH:
+        result = (double) (lvalInt >> rvalInt);
+        break;
+      case Token.URSH:
+        result = (double) (lvalInt >>> rvalInt);
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.PeepholeFoldConstantsTest::testFoldBitShifts
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 4.27 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    double result;
+    switch (n.getType()) {
+      case Token.LSH:
+        result = (double) (lvalInt << rvalInt);
+        break;
+      case Token.RSH:
+        result = (double) (lvalInt >> rvalInt);
+        break;
+      case Token.URSH:
+        result = (double) (lvalInt >>> rvalInt);
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.PeepholeFoldConstantsTest::testFoldBitShifts
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: plausible
+                Validation Time: 4.35 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    int rvalInt = (int) rval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    double result;
+    switch (n.getType()) {
+      case Token.LSH:
+        result = (long) lvalInt << rvalInt;
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        result = (lvalInt >>> rvalInt) & 0xFFFFFFFFL;
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 3.91 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval < 32)) {
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    double result;
+    switch (n.getType()) {
+      case Token.LSH:
+        result = (double) (lvalInt << rvalInt);
+        break;
+      case Token.RSH:
+        result = (double) (lvalInt >> rvalInt);
+        break;
+      case Token.URSH:
+        result = (double) (lvalInt >>> rvalInt);
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.PeepholeFoldConstantsTest::testFoldBitShifts
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 4.30 seconds
+                Failure reason: None
+
+                PATCH:
+                private Node tryFoldShift(Node n, Node left, Node right) {
+  if (left.getType() == Token.NUMBER &&
+      right.getType() == Token.NUMBER) {
+    double result;
+    double lval = left.getDouble();
+    double rval = right.getDouble();
+    if (!(lval >= Integer.MIN_VALUE && lval <= Integer.MAX_VALUE)) {
+      error(BITWISE_OPERAND_OUT_OF_RANGE, left);
+      return n;
+    }
+    if (!(rval >= 0 && rval <= 31)) { // Fixed rval range to include 31
+      error(SHIFT_AMOUNT_OUT_OF_BOUNDS, right);
+      return n;
+    }
+    int lvalInt = (int) lval;
+    if (lvalInt != lval) {
+      error(FRACTIONAL_BITWISE_OPERAND, left);
+      return n;
+    }
+    int rvalInt = (int) rval;
+    if (rvalInt != rval) {
+      error(FRACTIONAL_BITWISE_OPERAND, right);
+      return n;
+    }
+    switch (n.getType()) {
+      case Token.LSH:
+        result = (long) lvalInt << rvalInt; // Ensure result is calculated as a long to handle large shifts
+        break;
+      case Token.RSH:
+        result = lvalInt >> rvalInt;
+        break;
+      case Token.URSH:
+        result = (lvalInt >>> rvalInt) & 0xFFFFFFFFL; // Ensure unsigned right shift handles large values correctly
+        break;
+      default:
+        throw new AssertionError("Unknown shift operator: " +
+            Node.tokenToName(n.getType()));
+    }
+    Node newNumber = Node.newNumber(result);
+    n.getParent().replaceChild(n, newNumber);
+    reportCodeChange();
+    return newNumber;
+  }
+  return n;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

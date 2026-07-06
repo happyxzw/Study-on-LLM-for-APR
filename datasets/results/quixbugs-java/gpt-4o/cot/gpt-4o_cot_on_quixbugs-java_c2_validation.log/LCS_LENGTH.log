@@ -1,0 +1,1371 @@
+==================================================
+                Project: LCS_LENGTH
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 3.10 seconds
+                Failure reason: None
+
+                PATCH:
+                public static Integer lcs_length(String s, String t) {
+    Map<Integer, Map<Integer, Integer>> dp = new HashMap<Integer, Map<Integer, Integer>>();
+    for (int i = 0; i < s.length(); i++) {
+        Map<Integer, Integer> initialize = new HashMap<Integer, Integer>();
+        dp.put(i, initialize);
+        for (int j = 0; j < t.length(); j++) {
+            Map<Integer, Integer> internal_map = dp.get(i);
+            internal_map.put(j, 0);
+            dp.put(i, internal_map);
+        }
+    }
+    for (int i = 0; i < s.length(); i++) {
+        for (int j = 0; j < t.length(); j++) {
+            if (s.charAt(i) == t.charAt(j)) {
+                if (i > 0 && j > 0 && dp.containsKey(i - 1)) { // FIX: Added `j > 0` condition and adjusted logic
+                    Map<Integer, Integer> internal_map = dp.get(i);
+                    int insert_value = dp.get(i - 1).get(j - 1) + 1; // FIX: Access dp(i-1)(j-1) instead of dp(i-1)(j)
+                    internal_map.put(j, insert_value);
+                    dp.put(i, internal_map);
+                } else {
+                    Map<Integer, Integer> internal_map = dp.get(i);
+                    internal_map.put(j, 1);
+                    dp.put(i, internal_map);
+                }
+            }
+        }
+    }
+    if (!dp.isEmpty()) {
+        List<Integer> ret_list = new ArrayList<Integer>();
+        for (int i = 0; i < s.length(); i++) {
+            ret_list.add(!dp.get(i).isEmpty() ? Collections.max(dp.get(i).values()) : 0);
+        }
+        return Collections.max(ret_list);
+    } else {
+        return 0;
+    }
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+.........
+Time: 0.049
+
+OK (9 tests)
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: LCS_LENGTH
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 3.05 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static Integer lcs_length(String s, String t) {
+    Map<Integer, Map<Integer, Integer>> dp = new HashMap<Integer, Map<Integer, Integer>>();
+    for (int i = 0; i < s.length(); i++) {
+        Map<Integer, Integer> initialize = new HashMap<Integer, Integer>();
+        dp.put(i, initialize);
+        for (int j = 0; j < t.length(); j++) {
+            initialize.put(j, 0);
+        }
+    }
+    for (int i = 0; i < s.length(); i++) {
+        for (int j = 0; j < t.length(); j++) {
+            if (s.charAt(i) == t.charAt(j)) {
+                Map<Integer, Integer> internal_map = dp.get(i);
+                if (i > 0 && j > 0) { // Fixed the boundary check condition
+                    int insert_value = dp.get(i - 1).get(j - 1) + 1;
+                    internal_map.put(j, insert_value);
+                } else {
+                    internal_map.put(j, 1);
+                }
+                dp.put(i, internal_map);
+            } else {
+                Map<Integer, Integer> internal_map = dp.get(i);
+                int max_value = 0;
+                if (i > 0) max_value = Math.max(max_value, dp.get(i - 1).get(j));
+                if (j > 0) max_value = Math.max(max_value, internal_map.getOrDefault(j - 1, 0));
+                internal_map.put(j, max_value);
+                dp.put(i, internal_map);
+            }
+        }
+    }
+    if (!dp.isEmpty()) {
+        return dp.get(s.length() - 1).get(t.length() - 1);
+    } else {
+        return 0;
+    }
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+.E..E..E...E.E
+Time: 0.058
+There were 5 failures:
+1) test_0(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<2> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_0(LCS_LENGTH_TEST.java:8)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+2) test_2(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<0> but was:<null>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_2(LCS_LENGTH_TEST.java:20)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+3) test_4(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_4(LCS_LENGTH_TEST.java:32)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+4) test_7(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<5>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_7(LCS_LENGTH_TEST.java:50)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+5) test_8(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<6>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_8(LCS_LENGTH_TEST.java:56)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+
+FAILURES!!!
+Tests run: 9,  Failures: 5
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['test_2']
+
+                EXCEPTIONS
+                ['org.junit.Assert.fail', 'java.lang.AssertionError', 'org.junit.runners.model.FrameworkMethod', 'org.junit.runners.model.FrameworkMethod.invokeExplosively', 'org.junit.internal.runners.statements.InvokeMethod.evaluate', 'org.junit.internal.runners.statements.FailOnTimeout', 'org.junit.Assert.assertEquals', 'org.junit.Assert.failNotEquals', 'AssertionError', 'org.junit.internal.runners.model.ReflectiveCallable.run']
+
+
+==================================================
+                Project: LCS_LENGTH
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 3.35 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static Integer lcs_length(String s, String t) {
+    Map<Integer, Map<Integer,Integer>> dp = new HashMap<Integer,Map<Integer,Integer>>();
+    for (int i=0; i < s.length(); i++) {
+        Map<Integer,Integer> initialize = new HashMap<Integer,Integer>();
+        dp.put(i, initialize);
+        for (int j=0; j < t.length(); j++) {
+            Map<Integer,Integer> internal_map = dp.get(i);
+            internal_map.put(j,0);
+        }
+    }
+    for (int i=0; i < s.length(); i++) {
+        for (int j=0; j < t.length(); j++) {
+            if (s.charAt(i) == t.charAt(j)) {
+                if (i > 0 && j > 0) { // Fixed condition to check valid indices
+                    int insert_value = dp.get(i-1).get(j-1) + 1; // Use (i-1, j-1) for LCS calculation
+                    dp.get(i).put(j, insert_value);
+                } else {
+                    dp.get(i).put(j, 1); // Initialize to 1 if at the start of either string
+                }
+            } else {
+                int max_value = 0;
+                if (i > 0) max_value = Math.max(max_value, dp.get(i-1).get(j)); // Get value from top
+                if (j > 0) max_value = Math.max(max_value, dp.get(i).get(j-1)); // Get value from left
+                dp.get(i).put(j, max_value);
+            }
+        }
+    }
+    if (!dp.isEmpty()) {
+        return dp.get(s.length()-1).get(t.length()-1); // Final LCS length is in the last cell
+    } else {
+        return 0;
+    }
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+.E..E..E...E.E
+Time: 0.053
+There were 5 failures:
+1) test_0(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<2> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_0(LCS_LENGTH_TEST.java:8)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+2) test_2(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<0> but was:<null>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_2(LCS_LENGTH_TEST.java:20)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+3) test_4(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_4(LCS_LENGTH_TEST.java:32)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+4) test_7(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<5>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_7(LCS_LENGTH_TEST.java:50)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+5) test_8(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<6>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_8(LCS_LENGTH_TEST.java:56)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+
+FAILURES!!!
+Tests run: 9,  Failures: 5
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['test_2']
+
+                EXCEPTIONS
+                ['org.junit.Assert.fail', 'java.lang.AssertionError', 'org.junit.runners.model.FrameworkMethod', 'org.junit.runners.model.FrameworkMethod.invokeExplosively', 'org.junit.internal.runners.statements.InvokeMethod.evaluate', 'org.junit.internal.runners.statements.FailOnTimeout', 'org.junit.Assert.assertEquals', 'org.junit.Assert.failNotEquals', 'AssertionError', 'org.junit.internal.runners.model.ReflectiveCallable.run']
+
+
+==================================================
+                Project: LCS_LENGTH
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 3.39 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static Integer lcs_length(String s, String t) {
+    Map<Integer, Map<Integer, Integer>> dp = new HashMap<>();
+    for (int i = 0; i < s.length(); i++) {
+        Map<Integer, Integer> initialize = new HashMap<>();
+        dp.put(i, initialize);
+        for (int j = 0; j < t.length(); j++) {
+            initialize.put(j, 0);
+        }
+    }
+    for (int i = 0; i < s.length(); i++) {
+        for (int j = 0; j < t.length(); j++) {
+            if (s.charAt(i) == t.charAt(j)) {
+                if (i > 0 && j > 0) { // Ensure both i-1 and j-1 are valid indices
+                    Map<Integer, Integer> internal_map = dp.get(i);
+                    int insert_value = dp.get(i - 1).get(j - 1) + 1;
+                    internal_map.put(j, insert_value);
+                } else {
+                    Map<Integer, Integer> internal_map = dp.get(i);
+                    internal_map.put(j, 1);
+                }
+            } else {
+                Map<Integer, Integer> internal_map = dp.get(i);
+                int max_value = 0;
+                if (i > 0) {
+                    max_value = Math.max(max_value, dp.get(i - 1).get(j));
+                }
+                if (j > 0) {
+                    max_value = Math.max(max_value, internal_map.getOrDefault(j - 1, 0));
+                }
+                internal_map.put(j, max_value);
+            }
+        }
+    }
+    if (!dp.isEmpty()) {
+        return dp.get(s.length() - 1).get(t.length() - 1);
+    } else {
+        return 0;
+    }
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+.E..E..E...E.E
+Time: 0.072
+There were 5 failures:
+1) test_0(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<2> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_0(LCS_LENGTH_TEST.java:8)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+2) test_2(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<0> but was:<null>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_2(LCS_LENGTH_TEST.java:20)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+3) test_4(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_4(LCS_LENGTH_TEST.java:32)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+4) test_7(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<5>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_7(LCS_LENGTH_TEST.java:50)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+5) test_8(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<6>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_8(LCS_LENGTH_TEST.java:56)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+
+FAILURES!!!
+Tests run: 9,  Failures: 5
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['test_2']
+
+                EXCEPTIONS
+                ['org.junit.Assert.fail', 'java.lang.AssertionError', 'org.junit.runners.model.FrameworkMethod', 'org.junit.runners.model.FrameworkMethod.invokeExplosively', 'org.junit.internal.runners.statements.InvokeMethod.evaluate', 'org.junit.internal.runners.statements.FailOnTimeout', 'org.junit.Assert.assertEquals', 'org.junit.Assert.failNotEquals', 'AssertionError', 'org.junit.internal.runners.model.ReflectiveCallable.run']
+
+
+==================================================
+                Project: LCS_LENGTH
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 2.87 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public static Integer lcs_length(String s, String t) {
+    Map<Integer, Map<Integer, Integer>> dp = new HashMap<>();
+    for (int i = 0; i <= s.length(); i++) {
+        dp.put(i, new HashMap<>());
+        for (int j = 0; j <= t.length(); j++) {
+            dp.get(i).put(j, 0);
+        }
+    }
+
+    for (int i = 1; i <= s.length(); i++) {
+        for (int j = 1; j <= t.length(); j++) {
+            if (s.charAt(i - 1) == t.charAt(j - 1)) {
+                int insert_value = dp.get(i - 1).get(j - 1) + 1;
+                dp.get(i).put(j, insert_value);
+            } else {
+                int max_value = Math.max(dp.get(i - 1).get(j), dp.get(i).get(j - 1));
+                dp.get(i).put(j, max_value);
+            }
+        }
+    }
+
+    return dp.get(s.length()).get(t.length());
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+.E....E...E.E
+Time: 0.044
+There were 4 failures:
+1) test_0(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<2> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_0(LCS_LENGTH_TEST.java:8)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+2) test_4(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_4(LCS_LENGTH_TEST.java:32)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+3) test_7(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<5>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_7(LCS_LENGTH_TEST.java:50)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+4) test_8(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<6>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_8(LCS_LENGTH_TEST.java:56)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+
+FAILURES!!!
+Tests run: 9,  Failures: 4
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                ['org.junit.Assert.fail', 'java.lang.AssertionError', 'org.junit.runners.model.FrameworkMethod', 'org.junit.runners.model.FrameworkMethod.invokeExplosively', 'org.junit.internal.runners.statements.InvokeMethod.evaluate', 'org.junit.internal.runners.statements.FailOnTimeout', 'org.junit.Assert.assertEquals', 'org.junit.Assert.failNotEquals', 'AssertionError', 'org.junit.internal.runners.model.ReflectiveCallable.run']
+
+
+==================================================
+                Project: LCS_LENGTH
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 2.84 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static Integer lcs_length(String s, String t) {
+    Map<Integer, Map<Integer, Integer>> dp = new HashMap<Integer, Map<Integer, Integer>>();
+    for (int i = 0; i < s.length(); i++) {
+        Map<Integer, Integer> initialize = new HashMap<Integer, Integer>();
+        dp.put(i, initialize);
+        for (int j = 0; j < t.length(); j++) {
+            Map<Integer, Integer> internal_map = dp.get(i);
+            internal_map.put(j, 0);
+            dp.put(i, internal_map);
+        }
+    }
+    for (int i = 0; i < s.length(); i++) {
+        for (int j = 0; j < t.length(); j++) {
+            if (s.charAt(i) == t.charAt(j)) {
+                if (i > 0 && j > 0) { // Corrected condition to check valid indices for i-1 and j-1
+                    Map<Integer, Integer> internal_map = dp.get(i);
+                    int insert_value = dp.get(i - 1).get(j - 1) + 1; // Fixed to use (i-1, j-1)
+                    internal_map.put(j, insert_value);
+                    dp.put(i, internal_map);
+                } else {
+                    Map<Integer, Integer> internal_map = dp.get(i);
+                    internal_map.put(j, 1);
+                    dp.put(i, internal_map);
+                }
+            } else {
+                if (i > 0 && j > 0) { // Handle non-matching case to propagate max value
+                    Map<Integer, Integer> internal_map = dp.get(i);
+                    int max_value = Math.max(dp.get(i - 1).get(j), dp.get(i).get(j - 1));
+                    internal_map.put(j, max_value);
+                    dp.put(i, internal_map);
+                } else if (i > 0) {
+                    Map<Integer, Integer> internal_map = dp.get(i);
+                    int max_value = dp.get(i - 1).get(j);
+                    internal_map.put(j, max_value);
+                    dp.put(i, internal_map);
+                } else if (j > 0) {
+                    Map<Integer, Integer> internal_map = dp.get(i);
+                    int max_value = dp.get(i).get(j - 1);
+                    internal_map.put(j, max_value);
+                    dp.put(i, internal_map);
+                }
+            }
+        }
+    }
+    if (!dp.isEmpty()) {
+        return dp.get(s.length() - 1).get(t.length() - 1); // Directly return the result from last cell
+    } else {
+        return 0;
+    }
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+.E..E..E...E.E
+Time: 0.031
+There were 5 failures:
+1) test_0(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<2> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_0(LCS_LENGTH_TEST.java:8)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+2) test_2(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<0> but was:<null>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_2(LCS_LENGTH_TEST.java:20)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+3) test_4(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_4(LCS_LENGTH_TEST.java:32)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+4) test_7(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<5>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_7(LCS_LENGTH_TEST.java:50)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+5) test_8(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<6>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_8(LCS_LENGTH_TEST.java:56)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+
+FAILURES!!!
+Tests run: 9,  Failures: 5
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['test_2']
+
+                EXCEPTIONS
+                ['org.junit.Assert.fail', 'java.lang.AssertionError', 'org.junit.runners.model.FrameworkMethod', 'org.junit.runners.model.FrameworkMethod.invokeExplosively', 'org.junit.internal.runners.statements.InvokeMethod.evaluate', 'org.junit.internal.runners.statements.FailOnTimeout', 'org.junit.Assert.assertEquals', 'org.junit.Assert.failNotEquals', 'AssertionError', 'org.junit.internal.runners.model.ReflectiveCallable.run']
+
+
+==================================================
+                Project: LCS_LENGTH
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 2.86 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public static Integer lcs_length(String s, String t) {
+    Map<Integer, Map<Integer, Integer>> dp = new HashMap<>();
+    for (int i = 0; i < s.length(); i++) {
+        Map<Integer, Integer> initialize = new HashMap<>();
+        dp.put(i, initialize);
+        for (int j = 0; j < t.length(); j++) {
+            initialize.put(j, 0); // Directly initialize the internal map here
+        }
+    }
+    for (int i = 0; i < s.length(); i++) {
+        for (int j = 0; j < t.length(); j++) {
+            if (s.charAt(i) == t.charAt(j)) {
+                if (i > 0 && j > 0) { // Corrected the condition to check valid indices
+                    Map<Integer, Integer> currentMap = dp.get(i);
+                    int insertValue = dp.get(i - 1).get(j - 1) + 1; // Use (i-1, j-1) for LCS
+                    currentMap.put(j, insertValue);
+                } else {
+                    dp.get(i).put(j, 1); // Initialize to 1 if at start
+                }
+            } else {
+                int valueLeft = (j > 0) ? dp.get(i).get(j - 1) : 0; // Max from left
+                int valueUp = (i > 0) ? dp.get(i - 1).get(j) : 0;   // Max from above
+                dp.get(i).put(j, Math.max(valueLeft, valueUp));     // Take max of left and up
+            }
+        }
+    }
+    return s.isEmpty() || t.isEmpty() ? 0 : dp.get(s.length() - 1).get(t.length() - 1); // Return bottom-right value
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+.E....E...E.E
+Time: 0.057
+There were 4 failures:
+1) test_0(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<2> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_0(LCS_LENGTH_TEST.java:8)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+2) test_4(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_4(LCS_LENGTH_TEST.java:32)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+3) test_7(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<5>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_7(LCS_LENGTH_TEST.java:50)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+4) test_8(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<6>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_8(LCS_LENGTH_TEST.java:56)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+
+FAILURES!!!
+Tests run: 9,  Failures: 4
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                ['org.junit.Assert.fail', 'java.lang.AssertionError', 'org.junit.runners.model.FrameworkMethod', 'org.junit.runners.model.FrameworkMethod.invokeExplosively', 'org.junit.internal.runners.statements.InvokeMethod.evaluate', 'org.junit.internal.runners.statements.FailOnTimeout', 'org.junit.Assert.assertEquals', 'org.junit.Assert.failNotEquals', 'AssertionError', 'org.junit.internal.runners.model.ReflectiveCallable.run']
+
+
+==================================================
+                Project: LCS_LENGTH
+                Rank: 7
+                Correctness: plausible
+                Validation Time: 3.61 seconds
+                Failure reason: None
+
+                PATCH:
+                public static Integer lcs_length(String s, String t) {
+    Map<Integer, Map<Integer,Integer>> dp = new HashMap<Integer,Map<Integer,Integer>>();
+    for (int i=0; i < s.length(); i++) {
+        Map<Integer,Integer> initialize = new HashMap<Integer,Integer>();
+        dp.put(i, initialize);
+        for (int j=0; j < t.length(); j++) {
+            Map<Integer,Integer> internal_map = dp.get(i);
+            internal_map.put(j,0);
+        }
+    }
+    for (int i=0; i < s.length(); i++) {
+        for (int j=0; j < t.length(); j++) {
+            if (s.charAt(i) == t.charAt(j)) {
+                Map<Integer, Integer> internal_map = dp.get(i);
+                if (i > 0 && j > 0) {  // Corrected condition to check bounds for (i-1) and (j-1)
+                    int insert_value = dp.get(i-1).getOrDefault(j-1, 0) + 1;
+                    internal_map.put(j, insert_value);
+                } else {
+                    internal_map.put(j, 1);
+                }
+            }
+        }
+    }
+    if (!dp.isEmpty()) {
+        List<Integer> ret_list = new ArrayList<Integer>();
+        for (int i=0; i<s.length(); i++) {
+            ret_list.add(!dp.get(i).isEmpty() ? Collections.max(dp.get(i).values()) : 0);
+        }
+        return Collections.max(ret_list);
+    } else {
+        return 0;
+    }
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+.........
+Time: 0.04
+
+OK (9 tests)
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: LCS_LENGTH
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 3.26 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static Integer lcs_length(String s, String t) {
+    Map<Integer, Map<Integer, Integer>> dp = new HashMap<>();
+    for (int i = 0; i < s.length(); i++) {
+        Map<Integer, Integer> initialize = new HashMap<>();
+        for (int j = 0; j < t.length(); j++) {
+            initialize.put(j, 0);
+        }
+        dp.put(i, initialize);
+    }
+
+    for (int i = 0; i < s.length(); i++) {
+        for (int j = 0; j < t.length(); j++) {
+            if (s.charAt(i) == t.charAt(j)) {
+                int insert_value = 1;
+                if (i > 0 && j > 0) { // Ensure indices i-1 and j-1 are valid
+                    insert_value = dp.get(i - 1).get(j - 1) + 1;
+                }
+                dp.get(i).put(j, insert_value); // Update the current dp cell
+            } else {
+                int max_value = 0;
+                if (i > 0) {
+                    max_value = Math.max(max_value, dp.get(i - 1).get(j));
+                }
+                if (j > 0) {
+                    max_value = Math.max(max_value, dp.get(i).get(j - 1));
+                }
+                dp.get(i).put(j, max_value); // Store the maximum value for the current cell
+            }
+        }
+    }
+
+    if (!dp.isEmpty()) {
+        return dp.get(s.length() - 1).get(t.length() - 1); // Return the bottom-right cell value
+    } else {
+        return 0;
+    }
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+.E..E..E...E.E
+Time: 0.058
+There were 5 failures:
+1) test_0(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<2> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_0(LCS_LENGTH_TEST.java:8)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+2) test_2(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<0> but was:<null>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_2(LCS_LENGTH_TEST.java:20)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+3) test_4(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_4(LCS_LENGTH_TEST.java:32)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+4) test_7(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<5>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_7(LCS_LENGTH_TEST.java:50)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+5) test_8(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<6>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_8(LCS_LENGTH_TEST.java:56)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+
+FAILURES!!!
+Tests run: 9,  Failures: 5
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['test_2']
+
+                EXCEPTIONS
+                ['org.junit.Assert.fail', 'java.lang.AssertionError', 'org.junit.runners.model.FrameworkMethod', 'org.junit.runners.model.FrameworkMethod.invokeExplosively', 'org.junit.internal.runners.statements.InvokeMethod.evaluate', 'org.junit.internal.runners.statements.FailOnTimeout', 'org.junit.Assert.assertEquals', 'org.junit.Assert.failNotEquals', 'AssertionError', 'org.junit.internal.runners.model.ReflectiveCallable.run']
+
+
+==================================================
+                Project: LCS_LENGTH
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 3.20 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static Integer lcs_length(String s, String t) {
+    Map<Integer, Map<Integer,Integer>> dp = new HashMap<Integer,Map<Integer,Integer>>();
+    for (int i=0; i < s.length(); i++) {
+        Map<Integer,Integer> initialize = new HashMap<Integer,Integer>();
+        dp.put(i, initialize);
+        for (int j=0; j < t.length(); j++) {
+            Map<Integer,Integer> internal_map = dp.get(i);
+            internal_map.put(j,0);
+        }
+    }
+    for (int i=0; i < s.length(); i++) {
+        for (int j=0; j < t.length(); j++) {
+            if (s.charAt(i) == t.charAt(j)) {
+                Map<Integer, Integer> internal_map = dp.get(i);
+                if (i > 0 && j > 0) { // Ensure i-1 and j-1 are within bounds
+                    int insert_value = dp.get(i-1).get(j-1) + 1; // Use j-1 for correct diagonal calculation
+                    internal_map.put(j, insert_value);
+                } else {
+                    internal_map.put(j, 1); // Initialize as 1 for first match
+                }
+                dp.put(i, internal_map);
+            } else {
+                Map<Integer, Integer> internal_map = dp.get(i);
+                int max_value = 0;
+                if (i > 0) max_value = Math.max(max_value, dp.get(i-1).get(j)); // Value from above
+                if (j > 0) max_value = Math.max(max_value, dp.get(i).get(j-1)); // Value from left
+                internal_map.put(j, max_value);
+                dp.put(i, internal_map);
+            }
+        }
+    }
+    if (!dp.isEmpty()) {
+        return dp.get(s.length()-1).get(t.length()-1); // Return bottom-right value as LCS length
+    } else {
+        return 0;
+    }
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+.E..E..E...E.E
+Time: 0.048
+There were 5 failures:
+1) test_0(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<2> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_0(LCS_LENGTH_TEST.java:8)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+2) test_2(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<0> but was:<null>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_2(LCS_LENGTH_TEST.java:20)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+3) test_4(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<4>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_4(LCS_LENGTH_TEST.java:32)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+4) test_7(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<5>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_7(LCS_LENGTH_TEST.java:50)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+5) test_8(java_testcases.junit.LCS_LENGTH_TEST)
+java.lang.AssertionError: expected:<3> but was:<6>
+	at org.junit.Assert.fail(Assert.java:88)
+	at org.junit.Assert.failNotEquals(Assert.java:834)
+	at org.junit.Assert.assertEquals(Assert.java:118)
+	at org.junit.Assert.assertEquals(Assert.java:144)
+	at java_testcases.junit.LCS_LENGTH_TEST.test_8(LCS_LENGTH_TEST.java:56)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:298)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:292)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:750)
+
+FAILURES!!!
+Tests run: 9,  Failures: 5
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['test_2']
+
+                EXCEPTIONS
+                ['org.junit.Assert.fail', 'java.lang.AssertionError', 'org.junit.runners.model.FrameworkMethod', 'org.junit.runners.model.FrameworkMethod.invokeExplosively', 'org.junit.internal.runners.statements.InvokeMethod.evaluate', 'org.junit.internal.runners.statements.FailOnTimeout', 'org.junit.Assert.assertEquals', 'org.junit.Assert.failNotEquals', 'AssertionError', 'org.junit.internal.runners.model.ReflectiveCallable.run']
+
+

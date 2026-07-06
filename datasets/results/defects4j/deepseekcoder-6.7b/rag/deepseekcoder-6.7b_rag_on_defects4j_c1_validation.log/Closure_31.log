@@ -1,0 +1,2361 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 7.50 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public static void fix_buggy_function() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build.xml:252: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build.xml:258: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/InputStreamReader.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/PrintStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collections.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/concurrent/Callable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Level.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Logger.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/regex/Matcher.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/InputStreamReader.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/PrintStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collections.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/concurrent/Callable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Level.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Logger.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/regex/Matcher.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/SuppressWarnings.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/SuppressWarnings.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/FilterOutputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/FilterOutputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/OutputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/OutputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Closeable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Closeable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Flushable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Flushable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Runnable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Runnable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Thread.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Thread.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/sun/misc/Contended.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/sun/misc/Contended.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/ThreadGroup.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/ThreadGroup.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/InterruptedException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:708: error: cannot find symbol
+    [javac]     parseInputs();
+    [javac]     ^
+    [javac]   symbol:   method parseInputs()
+    [javac]   location: class Compiler
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1237: error: non-static variable options cannot be referenced from a static context
+    [javac]   boolean devMode = options.devMode != DevMode.OFF;
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1238: error: non-static variable externsRoot cannot be referenced from a static context
+    [javac]   if (externsRoot != null) {
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1239: error: non-static variable externsRoot cannot be referenced from a static context
+    [javac]     externsRoot.detachChildren();
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1241: error: non-static variable jsRoot cannot be referenced from a static context
+    [javac]   if (jsRoot != null) {
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1242: error: non-static variable jsRoot cannot be referenced from a static context
+    [javac]     jsRoot.detachChildren();
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1244: error: non-static variable jsRoot cannot be referenced from a static context
+    [javac]   jsRoot = IR.block();
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1245: error: non-static variable jsRoot cannot be referenced from a static context
+    [javac]   jsRoot.setIsSyntheticBlock(true);
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1246: error: non-static variable externsRoot cannot be referenced from a static context
+    [javac]   externsRoot = IR.block();
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1247: error: non-static variable externsRoot cannot be referenced from a static context
+    [javac]   externsRoot.setIsSyntheticBlock(true);
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1248: error: non-static variable externAndJsRoot cannot be referenced from a static context
+    [javac]   externAndJsRoot = IR.block(externsRoot, jsRoot);
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1248: error: non-static variable externsRoot cannot be referenced from a static context
+    [javac]   externAndJsRoot = IR.block(externsRoot, jsRoot);
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1248: error: non-static variable jsRoot cannot be referenced from a static context
+    [javac]   externAndJsRoot = IR.block(externsRoot, jsRoot);
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1249: error: non-static variable externAndJsRoot cannot be referenced from a static context
+    [javac]   externAndJsRoot.setIsSyntheticBlock(true);
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1250: error: non-static variable options cannot be referenced from a static context
+    [javac]   if (options.tracer.isOn()) {
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1251: error: non-static variable tracker cannot be referenced from a static context
+    [javac]     tracker = new PerformanceTracker(jsRoot, options.tracer);
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1251: error: non-static variable jsRoot cannot be referenced from a static context
+    [javac]     tracker = new PerformanceTracker(jsRoot, options.tracer);
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1251: error: non-static variable options cannot be referenced from a static context
+    [javac]     tracker = new PerformanceTracker(jsRoot, options.tracer);
+    [javac]                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1252: error: non-static variable tracker cannot be referenced from a static context
+    [javac]     addChangeHandler(tracker.getCodeChangeHandler());
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1252: error: non-static method addChangeHandler(CodeChangeHandler) cannot be referenced from a static context
+    [javac]     addChangeHandler(tracker.getCodeChangeHandler());
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1254: error: non-static method newTracer(String) cannot be referenced from a static context
+    [javac]   Tracer tracer = newTracer("parseInputs");
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1256: error: non-static variable externs cannot be referenced from a static context
+    [javac]     for (CompilerInput input : externs) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1257: error: non-static variable this cannot be referenced from a static context
+    [javac]       Node n = input.getAstRoot(this);
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1258: error: non-static method hasErrors() cannot be referenced from a static context
+    [javac]       if (hasErrors()) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1259: error: cannot return a value from method whose result type is void
+    [javac]         return null;
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1261: error: non-static variable externsRoot cannot be referenced from a static context
+    [javac]       externsRoot.addChildToBack(n);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1263: error: non-static variable options cannot be referenced from a static context
+    [javac]     if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1263: error: non-static variable options cannot be referenced from a static context
+    [javac]     if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1264: error: non-static method processAMDAndCommonJSModules() cannot be referenced from a static context
+    [javac]       processAMDAndCommonJSModules();
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1267: error: non-static variable options cannot be referenced from a static context
+    [javac]     if (options.dependencyOptions.needsManagement() &&
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1268: error: non-static variable options cannot be referenced from a static context
+    [javac]         !options.skipAllPasses &&
+    [javac]          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1269: error: non-static variable options cannot be referenced from a static context
+    [javac]                 options.closurePass) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1270: error: non-static variable inputs cannot be referenced from a static context
+    [javac]       for (CompilerInput input : inputs) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1272: error: non-static method getTypeRegistry() cannot be referenced from a static context
+    [javac]           getTypeRegistry().forwardDeclareType(provide);
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1276: error: non-static variable inputs cannot be referenced from a static context
+    [javac]         inputs =
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1278: error: non-static variable options cannot be referenced from a static context
+    [javac]             .manageDependencies(options.dependencyOptions, inputs);
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1278: error: non-static variable inputs cannot be referenced from a static context
+    [javac]             .manageDependencies(options.dependencyOptions, inputs);
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1277: error: non-static variable moduleGraph cannot be referenced from a static context
+    [javac]             (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+    [javac]              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1277: error: non-static variable modules cannot be referenced from a static context
+    [javac]             (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1277: error: non-static variable moduleGraph cannot be referenced from a static context
+    [javac]             (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+    [javac]                                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1281: error: non-static method report(JSError) cannot be referenced from a static context
+    [javac]         report(JSError.make(
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1283: error: non-static method hasErrors() cannot be referenced from a static context
+    [javac]         if (hasErrors()) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1284: error: cannot return a value from method whose result type is void
+    [javac]           return null;
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1287: error: non-static method report(JSError) cannot be referenced from a static context
+    [javac]         report(JSError.make(
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1289: error: non-static method hasErrors() cannot be referenced from a static context
+    [javac]         if (hasErrors()) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1290: error: cannot return a value from method whose result type is void
+    [javac]           return null;
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1294: error: non-static variable inputs cannot be referenced from a static context
+    [javac]     for (CompilerInput input : inputs) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1295: error: non-static variable this cannot be referenced from a static context
+    [javac]       Node n = input.getAstRoot(this);
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1302: error: non-static variable externsRoot cannot be referenced from a static context
+    [javac]           externsRoot.addChildToBack(n);
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1305: error: non-static variable externs cannot be referenced from a static context
+    [javac]           externs.add(input);
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1314: error: non-static variable modules cannot be referenced from a static context
+    [javac]       fillEmptyModules(modules);
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1315: error: non-static method rebuildInputsFromModules() cannot be referenced from a static context
+    [javac]       rebuildInputsFromModules();
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1317: error: non-static variable inputs cannot be referenced from a static context
+    [javac]     for (CompilerInput input : inputs) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1318: error: non-static variable this cannot be referenced from a static context
+    [javac]       Node n = input.getAstRoot(this);
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1323: error: non-static method runSanityCheck() cannot be referenced from a static context
+    [javac]         runSanityCheck();
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1324: error: non-static method hasErrors() cannot be referenced from a static context
+    [javac]         if (hasErrors()) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1325: error: cannot return a value from method whose result type is void
+    [javac]           return null;
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1328: error: non-static variable options cannot be referenced from a static context
+    [javac]       if (options.sourceMapOutputPath != null ||
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1329: error: non-static variable options cannot be referenced from a static context
+    [javac]           options.nameReferenceReportPath != null) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1332: error: non-static variable options cannot be referenced from a static context
+    [javac]                 input.getName(), options.devMode != DevMode.OFF);
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1333: error: non-static variable this cannot be referenced from a static context
+    [javac]         NodeTraversal.traverse(this, n, sia);
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1335: error: non-static variable jsRoot cannot be referenced from a static context
+    [javac]       jsRoot.addChildToBack(n);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1337: error: non-static method hasErrors() cannot be referenced from a static context
+    [javac]     if (hasErrors()) {
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1338: error: cannot return a value from method whose result type is void
+    [javac]       return null;
+    [javac]              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1340: error: cannot return a value from method whose result type is void
+    [javac]     return externAndJsRoot;
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:1342: error: non-static method stopTracer(Tracer,String) cannot be referenced from a static context
+    [javac]     stopTracer(tracer, "parseInputs");
+    [javac]     ^
+    [javac] 66 errors
+    [javac] 100 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build.xml:258: Compile failed; see the compiler error output for details.
+
+Total time: 5 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 8.07 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public static boolean correct_bracketing(String brackets) {
+        int depth = 0;
+        for (char b : brackets.toCharArray()) {
+            if (b == '<')
+                depth += 1;
+            else
+                depth -= 1;
+        }
+        return depth == 0;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build.xml:252: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build.xml:258: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/InputStreamReader.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/PrintStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collections.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/concurrent/Callable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Level.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Logger.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/regex/Matcher.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/InputStreamReader.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/PrintStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collections.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/concurrent/Callable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Level.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Logger.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/regex/Matcher.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/SuppressWarnings.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/SuppressWarnings.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/FilterOutputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/FilterOutputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/OutputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/OutputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Closeable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Closeable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Flushable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Flushable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Runnable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Runnable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Thread.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Thread.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/sun/misc/Contended.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/sun/misc/Contended.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/ThreadGroup.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/ThreadGroup.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/InterruptedException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:708: error: cannot find symbol
+    [javac]     parseInputs();
+    [javac]     ^
+    [javac]   symbol:   method parseInputs()
+    [javac]   location: class Compiler
+    [javac] 1 error
+    [javac] 100 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build.xml:258: Compile failed; see the compiler error output for details.
+
+Total time: 7 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 8.94 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public static boolean correct_bracketing(String brackets) {
+    int depth = 0;
+    for (char b : brackets.toCharArray()) {
+        if (b == '<')
+            depth += 1;
+        else
+            depth -= 1;
+        if (depth < 0)
+            return false;
+    }
+    return depth == 0;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build.xml:252: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build.xml:258: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/InputStreamReader.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/PrintStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collections.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/concurrent/Callable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Level.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Logger.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/regex/Matcher.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/InputStreamReader.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/PrintStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collections.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/concurrent/Callable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Level.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Logger.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/regex/Matcher.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/SuppressWarnings.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/SuppressWarnings.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/FilterOutputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/FilterOutputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/OutputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/OutputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Closeable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Closeable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Flushable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Flushable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Runnable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Runnable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Thread.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Thread.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/sun/misc/Contended.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/sun/misc/Contended.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/ThreadGroup.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/ThreadGroup.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/InterruptedException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/src/com/google/javascript/jscomp/Compiler.java:708: error: cannot find symbol
+    [javac]     parseInputs();
+    [javac]     ^
+    [javac]   symbol:   method parseInputs()
+    [javac]   location: class Compiler
+    [javac] 1 error
+    [javac] 100 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260603_194856/Closure_31_d2366e320dec4e7f83b3b04b804bac4d/build.xml:258: Compile failed; see the compiler error output for details.
+
+Total time: 7 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 160.62 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 155.85 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 158.16 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 155.94 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      if (input.isExtern()) {
+        externsRoot.addChildToBack(n);
+      } else {
+        jsRoot.addChildToBack(n);
+      }
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 162.96 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 166.15 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+        }
+      }
+    }
+    fillEmptyModules(modules);
+    rebuildInputsFromModules();
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 157.37 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+        options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 157.93 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 159.89 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 154.14 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+        options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

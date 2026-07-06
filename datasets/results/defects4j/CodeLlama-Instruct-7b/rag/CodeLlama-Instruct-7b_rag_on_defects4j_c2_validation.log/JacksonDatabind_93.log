@@ -1,0 +1,422 @@
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 163.45 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void validateSubType(DeserializationContext ctxt, JavaType type) throws JsonMappingException
+{
+    final Class<?> raw = type.getRawClass();
+    String full = raw.getName();
+    main_check:
+    do {
+        if (_cfgIllegalClassNames.contains(full)) {
+            break;
+        }
+// buggy lines start
+        if (full.startsWith(PREFIX_STRING)) {
+            for (Class<?> cls = raw; cls != Object.class; cls = cls.getSuperclass()) {
+// buggy lines end
+                String name = cls.getSimpleName();
+                if ("AbstractPointcutAdvisor".equals(name)
+                        || "AbstractApplicationContext".equals(name)) {
+                    break main_check;
+                }
+            }
+        }
+        return;
+    } while (false);
+    throw JsonMappingException.from(ctxt,
+            String.format("Illegal type (%s) to deserialize: prevented for security reasons", full));
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.interop.IllegalTypesCheckTest::testJDKTypes1872
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 4.20 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public void validateSubType(DeserializationContext ctxt, JavaType type) throws JsonMappingException
+{
+    final Class<?> raw = type.getRawClass();
+    String full = raw.getName();
+    main_check:
+    do {
+        if (_cfgIllegalClassNames.contains(full)) {
+            break;
+        }
+// fixed lines start
+        if (full.startsWith(PREFIX_STRING)) {
+            if (raw.isAssignableFrom(_baseType.getRawClass())) {
+                break main_check;
+            }
+            for (Class<?> cls = raw; cls != Object.class; cls = cls.getSuperclass()) {
+// fixed lines end
+                String name = cls.getSimpleName();
+                if ("AbstractPointcutAdvisor".equals(name)
+                        || "AbstractApplicationContext".equals(name)) {
+                    break main_check;
+                }
+            }
+        }
+        return;
+    } while (false);
+    throw JsonMappingException.from(ctxt,
+            String.format("Illegal type (%s) to deserialize: prevented for security reasons", full));
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/JacksonDatabind_93_21903c013db945d7a66b3a298bd6bb9c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/JacksonDatabind_93_21903c013db945d7a66b3a298bd6bb9c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/JacksonDatabind_93_21903c013db945d7a66b3a298bd6bb9c/maven-build.xml:92: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/JacksonDatabind_93_21903c013db945d7a66b3a298bd6bb9c/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/JacksonDatabind_93_21903c013db945d7a66b3a298bd6bb9c/src/main/java/com/fasterxml/jackson/databind/jsontype/impl/SubTypeValidator.java:78: error: cannot find symbol
+    [javac]             if (raw.isAssignableFrom(_baseType.getRawClass())) {
+    [javac]                                      ^
+    [javac]   symbol:   variable _baseType
+    [javac]   location: class SubTypeValidator
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/JacksonDatabind_93_21903c013db945d7a66b3a298bd6bb9c/maven-build.xml:92: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 113.56 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void validateSubType(DeserializationContext ctxt, JavaType type) throws JsonMappingException
+{
+    final Class<?> raw = type.getRawClass();
+    String full = raw.getName();
+    main_check:
+    do {
+        if (_cfgIllegalClassNames.contains(full)) {
+            break;
+        }
+        return;
+    } while (false);
+    throw JsonMappingException.from(ctxt,
+            String.format("Illegal type (%s) to deserialize: prevented for security reasons", full));
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.interop.IllegalTypesCheckTest::testJDKTypes1855
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.interop.IllegalTypesCheckTest::testJDKTypes1855']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 109.88 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void validateSubType(DeserializationContext ctxt, JavaType type) throws JsonMappingException
+{
+    final Class<?> raw = type.getRawClass();
+    String full = raw.getName();
+    main_check:
+    do {
+        if (_cfgIllegalClassNames.contains(full)) {
+            break;
+        }
+// buggy lines start
+        if (full.startsWith(PREFIX_STRING)) {
+            for (Class<?> cls = raw; cls != Object.class; cls = cls.getSuperclass()) {
+// buggy lines end
+                        String name = cls.getSimpleName();
+                if ("AbstractPointcutAdvisor".equals(name)
+                        || "AbstractApplicationContext".equals(name)) {
+                    break main_check;
+                }
+            }
+        }
+        return;
+    } while (false);
+    throw JsonMappingException.from(ctxt,
+            String.format("Illegal type (%s) to deserialize: prevented for security reasons", full));
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.interop.IllegalTypesCheckTest::testJDKTypes1872
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 105.28 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void validateSubType(DeserializationContext ctxt, JavaType type) throws JsonMappingException
+{
+    final Class<?> raw = type.getRawClass();
+    String full = raw.getName();
+    main_check:
+    do {
+        if (_cfgIllegalClassNames.contains(full)) {
+            break;
+        }
+        if (full.startsWith(PREFIX_STRING)) {
+            for (Class<?> cls = raw; cls != Object.class; cls = cls.getSuperclass()) {
+                String name = cls.getSimpleName();
+                if ("AbstractPointcutAdvisor".equals(name)
+                        || "AbstractApplicationContext".equals(name)) {
+                    break main_check;
+                }
+            }
+        }
+        return;
+    } while (false);
+    throw JsonMappingException.from(ctxt,
+            String.format("Illegal type (%s) to deserialize: prevented for security reasons", full));
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.interop.IllegalTypesCheckTest::testJDKTypes1872
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 101.20 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void validateSubType(DeserializationContext ctxt, JavaType type) throws JsonMappingException
+{
+    final Class<?> raw = type.getRawClass();
+    String full = raw.getName();
+    main_check:
+    do {
+        if (_cfgIllegalClassNames.contains(full)) {
+            break;
+        }
+// buggy lines start
+        if (full.startsWith(PREFIX_STRING)) {
+            for (Class<?> cls = raw; cls != Object.class; cls = cls.getSuperclass()) {
+// buggy lines end
+                        String name = cls.getSimpleName();
+                if ("AbstractPointcutAdvisor".equals(name)
+                        || "AbstractApplicationContext".equals(name)) {
+                    break main_check;
+                }
+            }
+        }
+        // CheckStyle:MagicNumber OFF
+        int index = full.lastIndexOf('.');
+        if (index >= 0 && _cfgIllegalClassNames.contains(full.substring(index + 1))) {
+            break;
+        }
+        // CheckStyle:MagicNumber ON
+        return;
+    } while (false);
+    throw JsonMappingException.from(ctxt,
+            String.format("Illegal type (%s) to deserialize: prevented for security reasons", full));
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.interop.IllegalTypesCheckTest::testJDKTypes1872
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 116.27 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void validateSubType(DeserializationContext ctxt, JavaType type) throws JsonMappingException
+{
+    final Class<?> raw = type.getRawClass();
+    String full = raw.getName();
+    main_check:
+    do {
+        if (_cfgIllegalClassNames.contains(full)) {
+            break;
+        }
+// buggy lines start
+        if (full.startsWith(PREFIX_STRING)) {
+            for (Class<?> cls = raw; cls != Object.class; cls = cls.getSuperclass()) {
+// buggy lines end
+                if (cls.getPackage().getName().startsWith(PREFIX_STRING)) {
+                    break main_check;
+                }
+            }
+        }
+        return;
+    } while (false);
+    throw JsonMappingException.from(ctxt,
+            String.format("Illegal type (%s) to deserialize: prevented for security reasons", full));
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.interop.IllegalTypesCheckTest::testJDKTypes1872
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 118.97 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void validateSubType(DeserializationContext ctxt, JavaType type) throws JsonMappingException
+{
+    final Class<?> raw = type.getRawClass();
+    String full = raw.getName();
+    main_check:
+    do {
+        if (_cfgIllegalClassNames.contains(full)) {
+            break;
+        }
+        // buggy lines start
+        if (full.startsWith(PREFIX_STRING)) {
+            for (Class<?> cls = raw; cls != Object.class; cls = cls.getSuperclass()) {
+                String name = cls.getSimpleName();
+                if ("AbstractPointcutAdvisor".equals(name)
+                        || "AbstractApplicationContext".equals(name)) {
+                    break main_check;
+                }
+            }
+        }
+        return;
+    } while (false);
+    throw JsonMappingException.from(ctxt,
+            String.format("Illegal type (%s) to deserialize: prevented for security reasons", full));
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.interop.IllegalTypesCheckTest::testJDKTypes1872
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

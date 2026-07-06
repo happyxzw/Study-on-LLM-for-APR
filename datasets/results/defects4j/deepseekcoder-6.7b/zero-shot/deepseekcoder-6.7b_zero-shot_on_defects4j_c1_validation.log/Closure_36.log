@@ -1,0 +1,654 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 15.95 seconds
+                Failure reason: Regression
+
+                PATCH:
+                private boolean canInline(
+    Reference declaration,
+    Reference initialization,
+    Reference reference) {
+  if (!isValidDeclaration(declaration)
+      || !isValidInitialization(initialization)
+      || !isValidReference(reference)) {
+    return false;
+  }
+  if (declaration != initialization &&
+      !initialization.getGrandparent().isExprResult()) {
+    return false;
+  }
+  if (declaration.getBasicBlock() != initialization.getBasicBlock()
+      || declaration.getBasicBlock() != reference.getBasicBlock()) {
+    return false;
+  }
+  Node value = initialization.getAssignedValue();
+  Preconditions.checkState(value != null);
+  if (value.isGetProp()
+      && reference.getParent().isCall()
+      && reference.getParent().getFirstChild() == reference.getNode()) {
+    return false;
+  }
+  if (value.isFunction()
+      && reference.getParent().isCall()
+      && reference.getParent().getFirstChild() == reference.getNode()) {
+    return false;
+  }
+  if (value.isFunction()) {
+    Node callNode = reference.getParent();
+    if (reference.getParent().isCall()) {
+      CodingConvention convention = compiler.getCodingConvention();
+      SubclassRelationship relationship =
+          convention.getClassesDefinedByCall(callNode);
+      if (relationship != null) {
+        return false;
+      }
+    }
+  }
+  return canMoveAggressively(value) ||
+      canMoveModerately(initialization, reference);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - com.google.javascript.jscomp.InlineVariablesTest::testCrossFunctionsAsLeftLeaves
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineNamedFunction
+  - com.google.javascript.jscomp.IntegrationTest::testSingletonGetter1
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+  - com.google.javascript.jscomp.IntegrationTest::testInlineVariables
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testCrossFunctionsAsLeftLeaves', 'com.google.javascript.jscomp.IntegrationTest::testInlineVariables', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineNamedFunction', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 16.35 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean canInline(Reference declaration, Reference initialization, Reference reference) {
+    if (!isValidDeclaration(declaration) || !isValidInitialization(initialization) || !isValidReference(reference)) {
+        return false;
+    }
+    if (declaration != initialization && !initialization.getGrandparent().isExprResult()) {
+        return false;
+    }
+    if (declaration.getBasicBlock() != initialization.getBasicBlock() || declaration.getBasicBlock() != reference.getBasicBlock()) {
+        return false;
+    }
+    Node value = initialization.getAssignedValue();
+    Preconditions.checkState(value != null);
+    if (value.isGetProp() && reference.getParent().isCall() && reference.getParent().getFirstChild() == reference.getNode()) {
+        return false;
+    }
+    if (value.isFunction()) {
+        Node callNode = reference.getParent();
+        if (reference.getParent().isCall()) {
+            CodingConvention convention = compiler.getCodingConvention();
+            SubclassRelationship relationship = convention.getClassesDefinedByCall(callNode);
+            if (relationship != null) {
+                return false;
+            }
+        }
+    }
+    return canMoveAggressively(value) || canMoveModerately(initialization, reference);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testSingletonGetter1
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 15.44 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean canInline(
+    Reference declaration,
+    Reference initialization,
+    Reference reference) {
+  if (!isValidDeclaration(declaration) ||
+      !isValidInitialization(initialization) ||
+      !isValidReference(reference)) {
+    return false;
+  }
+
+  if (declaration != initialization &&
+      !initialization.getGrandparent().isExprResult()) {
+    return false;
+  }
+
+  if (declaration.getBasicBlock() != initialization.getBasicBlock() ||
+      declaration.getBasicBlock() != reference.getBasicBlock()) {
+    return false;
+  }
+
+  Node value = initialization.getAssignedValue();
+  Preconditions.checkState(value != null);
+  if (value.isGetProp() &&
+      reference.getParent().isCall() &&
+      reference.getParent().getFirstChild() == reference.getNode()) {
+    return false;
+  }
+
+  if (value.isFunction()) {
+    Node callNode = reference.getParent();
+    if (reference.getParent().isCall()) {
+      CodingConvention convention = compiler.getCodingConvention();
+      SubclassRelationship relationship =
+          convention.getClassesDefinedByCall(callNode);
+      if (relationship != null) {
+        return false;
+      }
+    }
+  }
+
+  return canMoveAggressively(value) ||
+      canMoveModerately(initialization, reference);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testSingletonGetter1
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 17.06 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean canInline(
+    Reference declaration,
+    Reference initialization,
+    Reference reference) {
+  if (!isValidDeclaration(declaration)
+      || !isValidInitialization(initialization)
+      || !isValidReference(reference)) {
+    return false;
+  }
+  if (declaration != initialization &&
+      !initialization.getGrandparent().isExprResult()) {
+    return false;
+  }
+  if (declaration.getBasicBlock() != initialization.getBasicBlock()
+      || declaration.getBasicBlock() != reference.getBasicBlock()) {
+    return false;
+  }
+  Node value = initialization.getAssignedValue();
+  Preconditions.checkState(value != null);
+  if (value.isGetProp()
+      && reference.getParent().isCall()
+      && reference.getParent().getFirstChild() == reference.getNode()) {
+    return false;
+  }
+  if (value.isFunction()) {
+    Node callNode = reference.getParent();
+    if (reference.getParent().isCall()) {
+      CodingConvention convention = compiler.getCodingConvention();
+      SubclassRelationship relationship =
+          convention.getClassesDefinedByCall(callNode);
+      if (relationship != null) {
+        return false;
+      }
+    }
+  }
+  return canMoveAggressively(value) ||
+      canMoveModerately(initialization, reference);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testSingletonGetter1
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 16.55 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean canInline(
+    Reference declaration,
+    Reference initialization,
+    Reference reference) {
+  if (!isValidDeclaration(declaration) || !isValidInitialization(initialization) || !isValidReference(reference)) {
+    return false;
+  }
+  if (declaration != initialization && !initialization.getGrandparent().isExprResult()) {
+    return false;
+  }
+  if (declaration.getBasicBlock() != initialization.getBasicBlock() || declaration.getBasicBlock() != reference.getBasicBlock()) {
+    return false;
+  }
+  Node value = initialization.getAssignedValue();
+  Preconditions.checkState(value != null);
+  if (value.isGetProp() && reference.getParent().isCall() && reference.getParent().getFirstChild() == reference.getNode()) {
+    return false;
+  }
+  if (value.isFunction()) {
+    Node callNode = reference.getParent();
+    if (reference.getParent().isCall()) {
+      CodingConvention convention = compiler.getCodingConvention();
+      SubclassRelationship relationship = convention.getClassesDefinedByCall(callNode);
+      if (relationship != null) {
+        return false;
+      }
+    }
+  }
+  return canMoveAggressively(value) || canMoveModerately(initialization, reference);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testSingletonGetter1
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 16.34 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean canInline(
+    Reference declaration,
+    Reference initialization,
+    Reference reference) {
+  if (!isValidDeclaration(declaration) ||
+      !isValidInitialization(initialization) ||
+      !isValidReference(reference)) {
+    return false;
+  }
+  if (declaration != initialization &&
+      !initialization.getGrandparent().isExprResult()) {
+    return false;
+  }
+  if (declaration.getBasicBlock() != initialization.getBasicBlock() ||
+      declaration.getBasicBlock() != reference.getBasicBlock()) {
+    return false;
+  }
+  Node value = initialization.getAssignedValue();
+  Preconditions.checkState(value != null);
+  if (value.isGetProp() &&
+      reference.getParent().isCall() &&
+      reference.getParent().getFirstChild() == reference.getNode()) {
+    return false;
+  }
+  if (value.isFunction()) {
+    Node callNode = reference.getParent();
+    if (reference.getParent().isCall()) {
+      CodingConvention convention = compiler.getCodingConvention();
+      SubclassRelationship relationship =
+          convention.getClassesDefinedByCall(callNode);
+      if (relationship != null) {
+        return false;
+      }
+    }
+  }
+  return canMoveAggressively(value) ||
+      canMoveModerately(initialization, reference);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testSingletonGetter1
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 15.57 seconds
+                Failure reason: Regression
+
+                PATCH:
+                private boolean canInline(
+    Reference declaration,
+    Reference initialization,
+    Reference reference) {
+  if (!isValidDeclaration(declaration)
+      || !isValidInitialization(initialization)
+      || !isValidReference(reference)) {
+    return false;
+  }
+  if (declaration != initialization &&
+      !initialization.getGrandparent().isExprResult()) {
+    return false;
+  }
+  if (declaration.getBasicBlock() != initialization.getBasicBlock()
+      || declaration.getBasicBlock() != reference.getBasicBlock()) {
+    return false;
+  }
+  Node value = initialization.getAssignedValue();
+  Preconditions.checkState(value != null);
+  if (value.isGetProp()) {
+    Node callNode = reference.getParent();
+    if (reference.getParent().isCall()) {
+      CodingConvention convention = compiler.getCodingConvention();
+      SubclassRelationship relationship =
+          convention.getClassesDefinedByCall(callNode);
+      if (relationship != null) {
+        return false;
+      }
+    }
+  }
+  if (value.isFunction()) {
+    return canMoveAggressively(value) ||
+        canMoveModerately(initialization, reference);
+  }
+  return false;
+}
+
+                TEST STDOUT:
+                Failing tests: 22
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testIssue81
+  - com.google.javascript.jscomp.InlineVariablesTest::testArgumentsModifiedInInnerFunction
+  - com.google.javascript.jscomp.InlineVariablesTest::testOverlappingInlines
+  - com.google.javascript.jscomp.InlineVariablesTest::testInsideHookConditional
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases2b
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases2c
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases2d
+  - com.google.javascript.jscomp.InlineVariablesTest::testSideEffectOrder
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases2
+  - com.google.javascript.jscomp.InlineVariablesTest::testIssue378EscapedArguments3
+  - com.google.javascript.jscomp.InlineVariablesTest::testDoCrossVar
+  - com.google.javascript.jscomp.InlineVariablesTest::testNoInlineGetpropIntoCall
+  - com.google.javascript.jscomp.InlineVariablesTest::testInsideIfConditional
+  - com.google.javascript.jscomp.InlineVariablesTest::testSingleReferenceAfterInitialzation
+  - com.google.javascript.jscomp.InlineVariablesTest::test2388531
+  - com.google.javascript.jscomp.InlineVariablesTest::testIssue378ArgumentsRead1
+  - com.google.javascript.jscomp.InlineVariablesTest::testChainedAssignment
+  - com.google.javascript.jscomp.InlineVariablesTest::testDoCrossNewVariables
+  - com.google.javascript.jscomp.InlineVariablesTest::testInlineInFunction2
+  - com.google.javascript.jscomp.InlineVariablesTest::testInsideAndConditional
+  - com.google.javascript.jscomp.IntegrationTest::testSingletonGetter1
+  - com.google.javascript.jscomp.IntegrationTest::testNamelessParameter
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineVariablesTest::testArgumentsModifiedInInnerFunction', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases2d', 'com.google.javascript.jscomp.InlineVariablesTest::testNoInlineGetpropIntoCall', 'com.google.javascript.jscomp.InlineVariablesTest::testDoCrossNewVariables', 'com.google.javascript.jscomp.InlineVariablesTest::testIssue378ArgumentsRead1', 'com.google.javascript.jscomp.InlineVariablesTest::testInsideHookConditional', 'com.google.javascript.jscomp.InlineVariablesTest::testInsideAndConditional', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases2c', 'com.google.javascript.jscomp.InlineVariablesTest::testInsideIfConditional', 'com.google.javascript.jscomp.InlineVariablesTest::test2388531', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineInFunction2', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases2', 'com.google.javascript.jscomp.InlineVariablesTest::testIssue378EscapedArguments3', 'com.google.javascript.jscomp.InlineVariablesTest::testSideEffectOrder', 'com.google.javascript.jscomp.InlineVariablesTest::testOverlappingInlines', 'com.google.javascript.jscomp.InlineVariablesTest::testDoCrossVar', 'com.google.javascript.jscomp.CommandLineRunnerTest::testIssue81', 'com.google.javascript.jscomp.InlineVariablesTest::testInlineAliases2b', 'com.google.javascript.jscomp.InlineVariablesTest::testChainedAssignment', 'com.google.javascript.jscomp.InlineVariablesTest::testSingleReferenceAfterInitialzation', 'com.google.javascript.jscomp.IntegrationTest::testNamelessParameter']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 16.17 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean canInline(
+    Reference declaration,
+    Reference initialization,
+    Reference reference) {
+  if (!isValidDeclaration(declaration)
+      || !isValidInitialization(initialization)
+      || !isValidReference(reference)) {
+    return false;
+  }
+  if (declaration != initialization
+      && !initialization.getGrandparent().isExprResult()) {
+    return false;
+  }
+  if (declaration.getBasicBlock() != initialization.getBasicBlock()
+      || declaration.getBasicBlock() != reference.getBasicBlock()) {
+    return false;
+  }
+  Node value = initialization.getAssignedValue();
+  Preconditions.checkState(value != null);
+  if (value.isGetProp()
+      && reference.getParent().isCall()
+      && reference.getParent().getFirstChild() == reference.getNode()) {
+    return false;
+  }
+  if (value.isFunction()) {
+    Node callNode = reference.getParent();
+    if (reference.getParent().isCall()) {
+      CodingConvention convention = compiler.getCodingConvention();
+      SubclassRelationship relationship =
+          convention.getClassesDefinedByCall(callNode);
+      if (relationship != null) {
+        return false;
+      }
+    }
+  }
+  return canMoveAggressively(value) ||
+      canMoveModerately(initialization, reference);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testSingletonGetter1
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 16.51 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean canInline(
+    Reference declaration,
+    Reference initialization,
+    Reference reference) {
+  if (!isValidDeclaration(declaration) ||
+      !isValidInitialization(initialization) ||
+      !isValidReference(reference)) {
+    return false;
+  }
+  if (declaration != initialization &&
+      !initialization.getGrandparent().isExprResult()) {
+    return false;
+  }
+  if (declaration.getBasicBlock() != initialization.getBasicBlock() ||
+      declaration.getBasicBlock() != reference.getBasicBlock()) {
+    return false;
+  }
+  Node value = initialization.getAssignedValue();
+  Preconditions.checkState(value != null);
+  if (value.isGetProp() &&
+      reference.getParent().isCall() &&
+      reference.getParent().getFirstChild() == reference.getNode()) {
+    return false;
+  }
+  if (value.isFunction()) {
+    Node callNode = reference.getParent();
+    if (reference.getParent().isCall()) {
+      CodingConvention convention = compiler.getCodingConvention();
+      SubclassRelationship relationship =
+          convention.getClassesDefinedByCall(callNode);
+      if (relationship != null) {
+        return false;
+      }
+    }
+  }
+  return canMoveAggressively(value) ||
+      canMoveModerately(initialization, reference);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testSingletonGetter1
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 16.27 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean canInline(
+    Reference declaration,
+    Reference initialization,
+    Reference reference) {
+  if (!isValidDeclaration(declaration)
+      || !isValidInitialization(initialization)
+      || !isValidReference(reference)) {
+    return false;
+  }
+  if (declaration != initialization &&
+      !initialization.getGrandparent().isExprResult()) {
+    return false;
+  }
+  if (declaration.getBasicBlock() != initialization.getBasicBlock()
+      || declaration.getBasicBlock() != reference.getBasicBlock()) {
+    return false;
+  }
+  Node value = initialization.getAssignedValue();
+  Preconditions.checkState(value != null);
+  if (value.isGetProp()
+      && reference.getParent().isCall()
+      && reference.getParent().getFirstChild() == reference.getNode()) {
+    return false;
+  }
+  if (value.isFunction()) {
+    Node callNode = reference.getParent();
+    if (reference.getParent().isCall()) {
+      CodingConvention convention = compiler.getCodingConvention();
+      SubclassRelationship relationship =
+          convention.getClassesDefinedByCall(callNode);
+      if (relationship != null) {
+        return false;
+      }
+    }
+  }
+  return canMoveAggressively(value) ||
+      canMoveModerately(initialization, reference);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testSingletonGetter1
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

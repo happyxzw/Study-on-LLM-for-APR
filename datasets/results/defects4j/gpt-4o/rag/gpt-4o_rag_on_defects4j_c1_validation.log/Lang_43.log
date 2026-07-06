@@ -1,0 +1,1700 @@
+==================================================
+                Project: Lang
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 8.68 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            i += ESCAPED_QUOTE.length() - 1;
+            pos.setIndex(i + 1);
+            lastHold = pos.getIndex();
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 1
+                Correctness: plausible
+                Validation Time: 12.04 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1; // Adjust loop index after updating pos
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 2
+                Correctness: plausible
+                Validation Time: 9.95 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = start; i < pattern.length(); i++) {
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            if (appendTo != null) {
+                appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            }
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1;
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            if (appendTo != null) {
+                appendTo.append(c, lastHold, i - lastHold);
+            }
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 2.64 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1); // Move position past the quote
+        return appendTo == null ? new StringBuffer().append(QUOTE) : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            if (appendTo == null) {
+                appendTo = new StringBuffer();
+            }
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1; // Adjust loop index
+            continue;
+        }
+        switch (c[i]) {
+        case QUOTE:
+            if (appendTo == null) {
+                appendTo = new StringBuffer();
+            }
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1); // Move position past the quote
+            return appendTo;
+        default:
+            break;
+        }
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+init:
+     [echo] -------- commons-lang 3.0-SNAPSHOT --------
+
+prepare:
+
+static:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/build.xml:65: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.3
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:457: error: illegal start of expression
+    [javac]     private void getQuotedString(String pattern, ParsePosition pos,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:457: error: illegal start of expression
+    [javac]     private void getQuotedString(String pattern, ParsePosition pos,
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:457: error: ';' expected
+    [javac]     private void getQuotedString(String pattern, ParsePosition pos,
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:457: error: ';' expected
+    [javac]     private void getQuotedString(String pattern, ParsePosition pos,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:457: error: not a statement
+    [javac]     private void getQuotedString(String pattern, ParsePosition pos,
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:457: error: ';' expected
+    [javac]     private void getQuotedString(String pattern, ParsePosition pos,
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:458: error: ';' expected
+    [javac]             boolean escapingOn) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:467: error: illegal start of expression
+    [javac]     private boolean containsElements(Collection coll) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:467: error: ';' expected
+    [javac]     private boolean containsElements(Collection coll) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:467: error: ';' expected
+    [javac]     private boolean containsElements(Collection coll) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:478: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 11 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/build.xml:65: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 4
+                Correctness: plausible
+                Validation Time: 7.65 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1; // Adjust loop index after modifying pos
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 5
+                Correctness: plausible
+                Validation Time: 7.02 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? new StringBuffer().append(QUOTE) : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = start; i < pattern.length(); i++) {
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            i += ESCAPED_QUOTE.length() - 1;
+            pos.setIndex(i + 1);
+            lastHold = pos.getIndex();
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 6
+                Correctness: plausible
+                Validation Time: 10.71 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = start; i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            if (appendTo != null) {
+                appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            }
+            i += ESCAPED_QUOTE.length() - 1;
+            pos.setIndex(i + 1);
+            lastHold = pos.getIndex();
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            if (appendTo != null) {
+                appendTo.append(c, lastHold, i - lastHold);
+            }
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 2.59 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        if (appendTo != null) {
+            appendTo.append(QUOTE);
+        }
+        pos.setIndex(start + 1);
+        return appendTo;
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            if (appendTo != null) {
+                appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            }
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1; // Adjust loop index after updating pos
+            continue;
+        }
+        switch (c[pos.getIndex()]) {
+        case QUOTE:
+            if (appendTo != null) {
+                appendTo.append(c, lastHold, pos.getIndex() - lastHold);
+            }
+            pos.setIndex(pos.getIndex() + 1);
+            return appendTo;
+        default:
+            pos.setIndex(pos.getIndex() + 1);
+        }
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+init:
+     [echo] -------- commons-lang 3.0-SNAPSHOT --------
+
+prepare:
+
+static:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/build.xml:65: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.3
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:458: error: illegal start of expression
+    [javac]     private void getQuotedString(String pattern, ParsePosition pos,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:458: error: illegal start of expression
+    [javac]     private void getQuotedString(String pattern, ParsePosition pos,
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:458: error: ';' expected
+    [javac]     private void getQuotedString(String pattern, ParsePosition pos,
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:458: error: ';' expected
+    [javac]     private void getQuotedString(String pattern, ParsePosition pos,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:458: error: not a statement
+    [javac]     private void getQuotedString(String pattern, ParsePosition pos,
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:458: error: ';' expected
+    [javac]     private void getQuotedString(String pattern, ParsePosition pos,
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:459: error: ';' expected
+    [javac]             boolean escapingOn) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:468: error: illegal start of expression
+    [javac]     private boolean containsElements(Collection coll) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:468: error: ';' expected
+    [javac]     private boolean containsElements(Collection coll) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:468: error: ';' expected
+    [javac]     private boolean containsElements(Collection coll) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/src/java/org/apache/commons/lang/text/ExtendedMessageFormat.java:479: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 11 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260609_101742/Lang_43_3b27c9f3e43248259e707d3e9cefd480/build.xml:65: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 8
+                Correctness: plausible
+                Validation Time: 8.01 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(pos.getIndex() + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            i += ESCAPED_QUOTE.length() - 1;
+            pos.setIndex(i + 1);
+            lastHold = pos.getIndex();
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 9.33 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = start; i < pattern.length(); i++) {
+        pos.setIndex(i);
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            i += ESCAPED_QUOTE.length() - 1;
+            lastHold = i + 1;
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 4.54 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1;
+            continue;
+        }
+        switch (c[i]) {
+        case QUOTE:
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        default:
+            break;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 1
+                Correctness: plausible
+                Validation Time: 4.49 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1;
+            continue;
+        }
+        switch (c[i]) {
+        case QUOTE:
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        default:
+            break;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 2
+                Correctness: plausible
+                Validation Time: 4.70 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1;
+            continue;
+        }
+        switch (c[i]) {
+        case QUOTE:
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        default:
+            // continue iterating
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 3
+                Correctness: plausible
+                Validation Time: 4.25 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        pos.setIndex(i);
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1; // adjust for loop increment
+            continue;
+        }
+        switch (c[i]) {
+        case QUOTE:
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        default:
+            break;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 4
+                Correctness: plausible
+                Validation Time: 4.67 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = lastHold - 1;
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 5
+                Correctness: plausible
+                Validation Time: 4.74 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1; // Adjust loop index after update
+            continue;
+        }
+        switch (c[i]) {
+        case QUOTE:
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        default:
+            break;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 6
+                Correctness: plausible
+                Validation Time: 4.33 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = start; i < pattern.length(); i++) {
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            i += ESCAPED_QUOTE.length() - 1;
+            lastHold = i + 1;
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 7
+                Correctness: plausible
+                Validation Time: 4.40 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = start; i < pattern.length(); i++) {
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1;
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 8
+                Correctness: plausible
+                Validation Time: 4.46 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(pos.getIndex() + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1;
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 4.77 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = start; i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1;
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            pos.setIndex(i + 1);
+            return appendTo == null ? null : appendTo.append(c, lastHold, i - lastHold);
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 5.34 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = lastHold - 1; // Adjust loop index to account for updated position
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 1
+                Correctness: plausible
+                Validation Time: 6.05 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = start; i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1; // Adjust for loop increment
+            continue;
+        }
+        if (c[i] == QUOTE) {
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 2
+                Correctness: plausible
+                Validation Time: 6.32 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1; // Adjust for loop increment
+            continue;
+        }
+        switch (c[i]) {
+        case QUOTE:
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        default:
+            // Continue processing the string
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 3
+                Correctness: plausible
+                Validation Time: 6.42 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            continue;
+        }
+        switch (c[i]) {
+        case QUOTE:
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        default:
+            break;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 252.95 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = start; i < pattern.length(); i++) {
+        if (escapingOn && pattern.startsWith(ESCAPED_QUOTE, i)) {
+            if (appendTo != null) {
+                appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            }
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1; // Adjust loop index to account for updated position
+            continue;
+        }
+        switch (c[i]) {
+        case QUOTE:
+            pos.setIndex(i + 1);
+            return appendTo == null ? null : appendTo.append(c, lastHold, i - lastHold);
+        default:
+            pos.setIndex(i + 1);
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.lang.text.ExtendedMessageFormatTest::testEscapedQuote_LANG_477
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 5
+                Correctness: plausible
+                Validation Time: 6.66 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(pos.getIndex() + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1; // Adjust loop index after updating pos
+            continue;
+        }
+        switch (c[i]) {
+        case QUOTE:
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        default:
+            // No action needed, continue processing
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 6
+                Correctness: plausible
+                Validation Time: 5.91 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1;
+            continue;
+        }
+        switch (c[pos.getIndex()]) {
+        case QUOTE:
+            appendTo.append(c, lastHold, pos.getIndex() - lastHold);
+            next(pos);
+            return appendTo;
+        default:
+            next(pos);
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 7
+                Correctness: plausible
+                Validation Time: 6.05 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(pos.getIndex() + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = lastHold - 1; // Adjust loop index after updating lastHold
+            continue;
+        }
+        switch (c[pos.getIndex()]) {
+        case QUOTE:
+            appendTo.append(c, lastHold, pos.getIndex() - lastHold);
+            pos.setIndex(pos.getIndex() + 1);
+            return appendTo;
+        default:
+            pos.setIndex(pos.getIndex() + 1);
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 8
+                Correctness: plausible
+                Validation Time: 6.22 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(start + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = pos.getIndex() - 1;
+            continue;
+        }
+        switch (c[i]) {
+        case QUOTE:
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        default:
+            break;
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Lang
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 6.19 seconds
+                Failure reason: None
+
+                PATCH:
+                private StringBuffer appendQuotedString(String pattern, ParsePosition pos,
+        StringBuffer appendTo, boolean escapingOn) {
+    int start = pos.getIndex();
+    char[] c = pattern.toCharArray();
+    if (escapingOn && c[start] == QUOTE) {
+        pos.setIndex(pos.getIndex() + 1);
+        return appendTo == null ? null : appendTo.append(QUOTE);
+    }
+    int lastHold = start;
+    for (int i = pos.getIndex(); i < pattern.length(); i++) {
+        if (escapingOn && pattern.substring(i).startsWith(ESCAPED_QUOTE)) {
+            appendTo.append(c, lastHold, i - lastHold).append(QUOTE);
+            pos.setIndex(i + ESCAPED_QUOTE.length());
+            lastHold = pos.getIndex();
+            i = lastHold - 1; // Adjust the loop index
+            continue;
+        }
+        switch (c[i]) {
+        case QUOTE:
+            appendTo.append(c, lastHold, i - lastHold);
+            pos.setIndex(i + 1);
+            return appendTo;
+        default:
+            // Move to the next character
+            pos.setIndex(i + 1);
+        }
+    }
+    throw new IllegalArgumentException(
+            "Unterminated quoted string at position " + start);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

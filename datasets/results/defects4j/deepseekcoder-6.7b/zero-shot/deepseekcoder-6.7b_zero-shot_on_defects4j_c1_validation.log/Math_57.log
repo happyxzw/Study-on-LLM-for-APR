@@ -1,0 +1,151 @@
+==================================================
+                Project: Math
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 6.22 seconds
+                Failure reason: Regression
+
+                PATCH:
+                private static <T extends Clusterable<T>> List<Cluster<T>> chooseInitialCenters(final Collection<T> points, final int k, final Random random) {
+    final List<T> pointSet = new ArrayList<T>(points);
+    final List<Cluster<T>> resultSet = new ArrayList<Cluster<T>>();
+    final T firstPoint = pointSet.remove(random.nextInt(pointSet.size()));
+    resultSet.add(new Cluster<T>(firstPoint));
+    while (resultSet.size() < k) {
+        double minDistance = Double.MAX_VALUE;
+        T nearestPoint = null;
+        for (T p : pointSet) {
+            final Cluster<T> nearest = getNearestCluster(resultSet, p);
+            final double distance = p.distanceFrom(nearest.getCenter());
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestPoint = p;
+            }
+        }
+        resultSet.add(new Cluster<T>(nearestPoint));
+        pointSet.remove(nearestPoint);
+    }
+    return resultSet;
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.math.stat.clustering.KMeansPlusPlusClustererTest::testSmallDistances
+  - org.apache.commons.math.stat.clustering.KMeansPlusPlusClustererTest::dimension2
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.clustering.KMeansPlusPlusClustererTest::dimension2']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 6.28 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private static <T extends Clusterable<T>> List<Cluster<T>> chooseInitialCenters(final Collection<T> points, final int k, final Random random) {
+    final List<T> pointSet = new ArrayList<T>(points);
+    final List<Cluster<T>> resultSet = new ArrayList<Cluster<T>>();
+    final T firstPoint = pointSet.remove(random.nextInt(pointSet.size()));
+    resultSet.add(new Cluster<T>(firstPoint));
+    final double[] dx2 = new double[pointSet.size()];
+    while (resultSet.size() < k) {
+        int sum = 0;
+        for (int i = 0; i < pointSet.size(); i++) {
+            final T p = pointSet.get(i);
+            final Cluster<T> nearest = getNearestCluster(resultSet, p);
+            final double d = p.distanceFrom(nearest.getCenter());
+            sum += d * d;
+            dx2[i] = sum;
+        }
+        final double r = random.nextDouble() * sum;
+        for (int i = 0; i < dx2.length; i++) {
+            if (dx2[i] >= r) {
+                final T p = pointSet.remove(i);
+                resultSet.add(new Cluster<T>(p));
+                break;
+            }
+        }
+    }
+    return resultSet;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.stat.clustering.KMeansPlusPlusClustererTest::testSmallDistances
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 2
+                Correctness: plausible
+                Validation Time: 7.17 seconds
+                Failure reason: None
+
+                PATCH:
+                private static <T extends Clusterable<T>> List<Cluster<T>> chooseInitialCenters(Collection<T> points, int k, Random random) {
+    List<T> pointSet = new ArrayList<T>(points);
+    List<Cluster<T>> resultSet = new ArrayList<Cluster<T>>();
+    T firstPoint = pointSet.remove(random.nextInt(pointSet.size()));
+    resultSet.add(new Cluster<T>(firstPoint));
+    double[] dx2 = new double[pointSet.size()];
+    while (resultSet.size() < k) {
+        double sum = 0;
+        for (int i = 0; i < pointSet.size(); i++) {
+            T p = pointSet.get(i);
+            Cluster<T> nearest = getNearestCluster(resultSet, p);
+            double d = p.distanceFrom(nearest.getCenter());
+            sum += d * d;
+            dx2[i] = sum;
+        }
+        double r = random.nextDouble() * sum;
+        for (int i = 0; i < dx2.length; i++) {
+            if (dx2[i] >= r) {
+                T p = pointSet.remove(i);
+                resultSet.add(new Cluster<T>(p));
+                break;
+            }
+        }
+    }
+    return resultSet;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

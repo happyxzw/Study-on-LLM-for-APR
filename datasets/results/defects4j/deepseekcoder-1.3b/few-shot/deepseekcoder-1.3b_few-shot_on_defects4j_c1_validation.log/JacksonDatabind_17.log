@@ -1,0 +1,507 @@
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 81.27 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public boolean useForType(JavaType t)
+{
+    switch (_appliesFor) {
+    case NON_CONCRETE_AND_ARRAYS:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+    case OBJECT_AND_NON_CONCRETE:
+        return (t.getRawClass() == Object.class)
+                || (!t.isConcrete()
+                || TreeNode.class.isAssignableFrom(t.getRawClass()));
+    case NON_FINAL:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+        return t.isFinal() && !TreeNode.class.isAssignableFrom(t.getRawClass());
+    default:
+        return (t.getRawClass() == Object.class);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testNonFinalBean
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testTokenBuffer
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultWithCreators::testWithCreators
+  - com.fasterxml.jackson.databind.jsontype.TestSubtypes::testEmptyBean
+  - com.fasterxml.jackson.databind.node.TestJsonNode::testArrayWithDefaultTyping
+  - com.fasterxml.jackson.databind.struct.TestObjectIdWithPolymorphic::testIssue811
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testNonFinalBean', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays', 'com.fasterxml.jackson.databind.jsontype.TestSubtypes::testEmptyBean', 'com.fasterxml.jackson.databind.struct.TestObjectIdWithPolymorphic::testIssue811', 'com.fasterxml.jackson.databind.jsontype.TestDefaultWithCreators::testWithCreators', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testTokenBuffer']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 85.39 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public boolean useForType(JavaType t)
+{
+    if (t.isArrayType()) {
+        t = t.getContentType();
+    }
+    switch (_appliesFor) {
+    case NON_CONCRETE_AND_ARRAYS:
+        return t.getRawClass() == Object.class
+                || (!t.isConcrete()
+                || TreeNode.class.isAssignableFrom(t.getRawClass()));
+    case OBJECT_AND_NON_CONCRETE:
+        return (t.getRawClass() == Object.class)
+                || (!t.isConcrete()
+                || TreeNode.class.isAssignableFrom(t.getRawClass()));
+    case NON_FINAL:
+        return !t.isFinal() && !TreeNode.class.isAssignableFrom(t.getRawClass());
+    default:
+        return (t.getRawClass() == Object.class);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 9
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForEnums::testSimpleEnumsInObjectArray
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testEnumAsObject
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testBeanAsObject
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testDateScalars
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testScalarArrays
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testMiscScalars
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testNumericScalars
+  - com.fasterxml.jackson.databind.node.TestJsonNode::testArrayWithDefaultTyping
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testEnumAsObject', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForEnums::testSimpleEnumsInObjectArray', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testScalarArrays', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testBeanAsObject', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testDateScalars', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testNumericScalars', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testMiscScalars']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 83.35 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public boolean useForType(JavaType t)
+{
+    switch (_appliesFor) {
+    case NON_CONCRETE_AND_ARRAYS:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+        return t.isConcrete();
+    case OBJECT_AND_NON_CONCRETE:
+        return (t.getRawClass() == Object.class)
+                || (!t.isConcrete()
+                || TreeNode.class.isAssignableFrom(t.getRawClass()));
+    case NON_FINAL:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+        return !t.isFinal() && !TreeNode.class.isAssignableFrom(t.getRawClass());
+    default:
+        return (t.getRawClass() == Object.class);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.node.TestJsonNode::testArrayWithDefaultTyping
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 80.44 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public boolean useForType(JavaType t)
+{
+    switch (_appliesFor) {
+    case NON_CONCRETE_AND_ARRAYS:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+    case OBJECT_AND_NON_CONCRETE:
+        return (t.getRawClass() == Object.class)
+                || (!t.isConcrete()
+                || TreeNode.class.isAssignableFrom(t.getRawClass()));
+    case NON_FINAL:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+        return !t.isFinal() && !TreeNode.class.isAssignableFrom(t.getRawClass());
+    default:
+        return (t.getRawClass() == Object.class);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.node.TestJsonNode::testArrayWithDefaultTyping
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 90.59 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public boolean useForType(JavaType t)
+{
+    switch (_appliesFor) {
+    case NON_CONCRETE_AND_ARRAYS:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+    case OBJECT_AND_NON_CONCRETE:
+        return (t.getRawClass() == Object.class)
+                || (!t.isConcrete()
+                || TreeNode.class.isAssignableFrom(t.getRawClass()));
+    case NON_FINAL:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+        return t.isFinal() && !TreeNode.class.isAssignableFrom(t.getRawClass());
+    default:
+        return (t.getRawClass() == Object.class);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testNonFinalBean
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testTokenBuffer
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultWithCreators::testWithCreators
+  - com.fasterxml.jackson.databind.jsontype.TestSubtypes::testEmptyBean
+  - com.fasterxml.jackson.databind.node.TestJsonNode::testArrayWithDefaultTyping
+  - com.fasterxml.jackson.databind.struct.TestObjectIdWithPolymorphic::testIssue811
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testNonFinalBean', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays', 'com.fasterxml.jackson.databind.jsontype.TestSubtypes::testEmptyBean', 'com.fasterxml.jackson.databind.struct.TestObjectIdWithPolymorphic::testIssue811', 'com.fasterxml.jackson.databind.jsontype.TestDefaultWithCreators::testWithCreators', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testTokenBuffer']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 95.19 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public boolean useForType(JavaType t)
+{
+    switch (_appliesFor) {
+    case NON_CONCRETE_AND_ARRAYS:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+        return t.isConcrete();
+    case OBJECT_AND_NON_CONCRETE:
+        return (t.getRawClass() == Object.class)
+                || (!t.isConcrete()
+                || TreeNode.class.isAssignableFrom(t.getRawClass()));
+    case NON_FINAL:
+        return t.isFinal();
+    default:
+        return (t.getRawClass() == Object.class);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testNonFinalBean
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testTokenBuffer
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultWithCreators::testWithCreators
+  - com.fasterxml.jackson.databind.jsontype.TestSubtypes::testEmptyBean
+  - com.fasterxml.jackson.databind.node.TestJsonNode::testArrayWithDefaultTyping
+  - com.fasterxml.jackson.databind.struct.TestObjectIdWithPolymorphic::testIssue811
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testNonFinalBean', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays', 'com.fasterxml.jackson.databind.jsontype.TestSubtypes::testEmptyBean', 'com.fasterxml.jackson.databind.struct.TestObjectIdWithPolymorphic::testIssue811', 'com.fasterxml.jackson.databind.jsontype.TestDefaultWithCreators::testWithCreators', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testTokenBuffer']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 84.83 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public boolean useForType(JavaType t)
+{
+    switch (_appliesFor) {
+    case NON_CONCRETE_AND_ARRAYS:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+    case OBJECT_AND_NON_CONCRETE:
+        return t.getRawClass() != Object.class
+                || (t.isConcrete() && TreeNode.class.isAssignableFrom(t.getRawClass()));
+    case NON_FINAL:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+        return t.isFinal() && !TreeNode.class.isAssignableFrom(t.getRawClass());
+    default:
+        return t.getRawClass() != Object.class;
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 27
+  - com.fasterxml.jackson.databind.deser.TestUntypedDeserialization::testObjectSerializeWithLong
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArrayTypingNested
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArrayTypingSimple
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testNodeInArray
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForEnums::testSimpleEnumsInObjectArray
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForEnums::testSimpleEnumsAsField
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForLists::testListOfLongs
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForLists::testListOfNumbers
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForLists::testDateTypes
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testEnumMap
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testEnumSet
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testNonFinalBean
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testEnumAsObject
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testFeature432
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testBeanAsObject
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testIssue352
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testTokenBuffer
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testDateScalars
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testScalarArrays
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testMiscScalars
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testNumericScalars
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultWithCreators::testWithCreators
+  - com.fasterxml.jackson.databind.jsontype.TestSubtypes::testEmptyBean
+  - com.fasterxml.jackson.databind.jsontype.TestWithGenerics::testJackson387
+  - com.fasterxml.jackson.databind.node.TestJsonNode::testArrayWithDefaultTyping
+  - com.fasterxml.jackson.databind.struct.TestObjectIdWithPolymorphic::testIssue811
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.jsontype.TestDefaultForLists::testListOfLongs', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testNodeInArray', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForLists::testListOfNumbers', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testScalarArrays', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForEnums::testSimpleEnumsAsField', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testFeature432', 'com.fasterxml.jackson.databind.jsontype.TestSubtypes::testEmptyBean', 'com.fasterxml.jackson.databind.jsontype.TestDefaultWithCreators::testWithCreators', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testMiscScalars', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testTokenBuffer', 'com.fasterxml.jackson.databind.deser.TestUntypedDeserialization::testObjectSerializeWithLong', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArrayTypingNested', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testEnumAsObject', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForEnums::testSimpleEnumsInObjectArray', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testEnumMap', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testNonFinalBean', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testIssue352', 'com.fasterxml.jackson.databind.jsontype.TestWithGenerics::testJackson387', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArrayTypingSimple', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testBeanAsObject', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForLists::testDateTypes', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testDateScalars', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForScalars::testNumericScalars', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testEnumSet', 'com.fasterxml.jackson.databind.struct.TestObjectIdWithPolymorphic::testIssue811']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 84.67 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public boolean useForType(JavaType t)
+{
+    switch (_appliesFor) {
+    case NON_CONCRETE_AND_ARRAYS:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+    case OBJECT_AND_NON_CONCRETE:
+        return (t.getRawClass() == Object.class)
+                || (!t.isConcrete()
+                || TreeNode.class.isAssignableFrom(t.getRawClass()));
+    case NON_FINAL:
+        while (t.isArrayType()) {
+            t = t.getContentType();
+        }
+        return t.isFinal() && !TreeNode.class.isAssignableFrom(t.getRawClass());
+    default:
+        return (t.getRawClass() == Object.class);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testNonFinalBean
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testTokenBuffer
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultWithCreators::testWithCreators
+  - com.fasterxml.jackson.databind.jsontype.TestSubtypes::testEmptyBean
+  - com.fasterxml.jackson.databind.node.TestJsonNode::testArrayWithDefaultTyping
+  - com.fasterxml.jackson.databind.struct.TestObjectIdWithPolymorphic::testIssue811
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testNonFinalBean', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays', 'com.fasterxml.jackson.databind.jsontype.TestSubtypes::testEmptyBean', 'com.fasterxml.jackson.databind.struct.TestObjectIdWithPolymorphic::testIssue811', 'com.fasterxml.jackson.databind.jsontype.TestDefaultWithCreators::testWithCreators', 'com.fasterxml.jackson.databind.jsontype.TestDefaultForObject::testTokenBuffer']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 83.05 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public boolean useForType(JavaType t)
+{
+    switch (_appliesFor) {
+    case NON_CONCRETE_AND_ARRAYS:
+        return (t.isArrayType()) ? t.getContentType().getRawClass() == Object.class : t.getRawClass() == Object.class;
+    case OBJECT_AND_NON_CONCRETE:
+        return (t.getRawClass() == Object.class)
+                || (!t.isConcrete()
+                || TreeNode.class.isAssignableFrom(t.getRawClass()));
+    case NON_FINAL:
+        return (!t.isFinal() && !TreeNode.class.isAssignableFrom(t.getRawClass()));
+    default:
+        return (t.getRawClass() == Object.class);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays
+  - com.fasterxml.jackson.databind.node.TestJsonNode::testArrayWithDefaultTyping
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.jsontype.TestDefaultForArrays::testArraysOfArrays']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 99.01 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public boolean useForType(JavaType t)
+{
+    switch (_appliesFor) {
+    case NON_CONCRETE_AND_ARRAYS:
+        return t.isArrayType() ? useForType(t.getContentType()) : t.isConcrete() && !t.isFinal() && !TreeNode.class.isAssignableFrom(t.getRawClass());
+    case OBJECT_AND_NON_CONCRETE:
+        return (t.getRawClass() == Object.class)
+                || (!t.isConcrete()
+                || TreeNode.class.isAssignableFrom(t.getRawClass()));
+    case NON_FINAL:
+        return t.isArrayType() ? useForType(t.getContentType()) : !t.isFinal() && !TreeNode.class.isAssignableFrom(t.getRawClass());
+    default:
+        return (t.getRawClass() == Object.class);
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.node.TestJsonNode::testArrayWithDefaultTyping
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

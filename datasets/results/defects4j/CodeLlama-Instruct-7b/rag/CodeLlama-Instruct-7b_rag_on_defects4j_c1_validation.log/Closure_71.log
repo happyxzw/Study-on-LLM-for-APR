@@ -1,0 +1,1731 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 3.90 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = parent.getJSDocInfo() != null &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+    }
+    if (objectType == null) {
+      return;
+    }
+    boolean sameInput =
+        t.getInput().getName().equals(docInfo.getSourceName());
+    Visibility visibility = docInfo.getVisibility();
+    JSType ownerType = normalizeClassType(objectType);
+    if (isOverride) {
+      JSDocInfo overridingInfo = parent.getJSDocInfo();
+      Visibility overridingVisibility = overridingInfo == null ?
+          Visibility.INHERITED : overridingInfo.getVisibility();
+      if (visibility == Visibility.PRIVATE && !sameInput) {
+        compiler.report(
+            t.makeError(getprop, PRIVATE_OVERRIDE,
+                objectType.toString()));
+      } else if (overridingVisibility != Visibility.INHERITED &&
+          overridingVisibility != visibility) {
+        compiler.report(
+            t.makeError(getprop, VISIBILITY_MISMATCH,
+                visibility.name(), objectType.toString(),
+                overridingVisibility.name()));
+      }
+    } else {
+      if (sameInput) {
+        return;
+      } else if (visibility == Visibility.PRIVATE &&
+          (currentClass == null || ownerType.differsFrom(currentClass))) {
+        if (docInfo.isConstructor() &&
+            isValidPrivateConstructorAccess(parent)) {
+          return;
+        }
+        compiler.report(
+            t.makeError(getprop,
+                BAD_PRIVATE_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      } else if (visibility == Visibility.PROTECTED) {
+        if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+          compiler.report(
+              t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                  propertyName,
+                  validator.getReadableJSTypeName(
+                      getprop.getFirstChild(), true)));
+        }
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: ')' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                      ^
+    [javac] 6 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: plausible
+                Validation Time: 260.84 seconds
+                Failure reason: None
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+
+  if (objectType != null) {
+    // Is this a normal property access, or are we trying to override
+    // an existing property?
+    boolean isOverride = parent.getJSDocInfo() != null &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+
+    // Find the lowest property defined on a class with visibility
+    // information.
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+      }
+    }
+    if (objectType == null) {
+      return;
+    }
+    boolean sameInput =
+        t.getInput().getName().equals(docInfo.getSourceName());
+    Visibility visibility = docInfo.getVisibility();
+    JSType ownerType = normalizeClassType(objectType);
+    if (isOverride) {
+      JSDocInfo overridingInfo = parent.getJSDocInfo();
+      Visibility overridingVisibility = overridingInfo == null ?
+          Visibility.INHERITED : overridingInfo.getVisibility();
+      if (visibility == Visibility.PRIVATE && !sameInput) {
+        compiler.report(
+            t.makeError(getprop, PRIVATE_OVERRIDE,
+                objectType.toString()));
+      } else if (overridingVisibility != Visibility.INHERITED &&
+          overridingVisibility != visibility) {
+        compiler.report(
+            t.makeError(getprop, VISIBILITY_MISMATCH,
+                visibility.name(), objectType.toString(),
+                overridingVisibility.name()));
+      }
+    } else {
+      if (sameInput) {
+        return;
+      } else if (visibility == Visibility.PRIVATE &&
+          (currentClass == null || ownerType.differsFrom(currentClass))) {
+        if (docInfo.isConstructor() &&
+            isValidPrivateConstructorAccess(parent)) {
+          return;
+        }
+        compiler.report(
+            t.makeError(getprop,
+                BAD_PRIVATE_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      } else if (visibility == Visibility.PROTECTED) {
+        if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+          compiler.report(
+              t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                  propertyName,
+                  validator.getReadableJSTypeName(
+                      getprop.getFirstChild(), true)));
+        }
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: plausible
+                Validation Time: 251.57 seconds
+                Failure reason: None
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = parent.getJSDocInfo() != null &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+      }
+    }
+    if (objectType == null) {
+      return;
+    }
+    boolean sameInput =
+        t.getInput().getName().equals(docInfo.getSourceName());
+    Visibility visibility = docInfo.getVisibility();
+    JSType ownerType = normalizeClassType(objectType);
+    if (isOverride) {
+      JSDocInfo overridingInfo = parent.getJSDocInfo();
+      Visibility overridingVisibility = overridingInfo == null ?
+          Visibility.INHERITED : overridingInfo.getVisibility();
+      if (visibility == Visibility.PRIVATE && !sameInput) {
+        compiler.report(
+            t.makeError(getprop, PRIVATE_OVERRIDE,
+                objectType.toString()));
+      } else if (overridingVisibility != Visibility.INHERITED &&
+          overridingVisibility != visibility) {
+        compiler.report(
+            t.makeError(getprop, VISIBILITY_MISMATCH,
+                visibility.name(), objectType.toString(),
+                overridingVisibility.name()));
+      }
+    } else {
+      if (sameInput) {
+        return;
+      } else if (visibility == Visibility.PRIVATE &&
+          (currentClass == null || ownerType.differsFrom(currentClass))) {
+        if (docInfo.isConstructor() &&
+            isValidPrivateConstructorAccess(parent)) {
+          return;
+        }
+        compiler.report(
+            t.makeError(getprop,
+                BAD_PRIVATE_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      } else if (visibility == Visibility.PROTECTED) {
+        if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+          compiler.report(
+              t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                  propertyName,
+                  validator.getReadableJSTypeName(
+                      getprop.getFirstChild(), true)));
+        }
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: plausible
+                Validation Time: 259.89 seconds
+                Failure reason: None
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    // Is this a normal property access, or are we trying to override
+    // an existing property?
+    boolean isOverride = parent.getJSDocInfo() != null &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+
+    // Find the lowest property defined on a class with visibility
+    // information.
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+    }
+  }
+  if (objectType == null) {
+    return;
+  }
+  boolean sameInput =
+      t.getInput().getName().equals(docInfo.getSourceName());
+  Visibility visibility = docInfo.getVisibility();
+  JSType ownerType = normalizeClassType(objectType);
+  if (isOverride) {
+    JSDocInfo overridingInfo = parent.getJSDocInfo();
+    Visibility overridingVisibility = overridingInfo == null ?
+        Visibility.INHERITED : overridingInfo.getVisibility();
+    if (visibility == Visibility.PRIVATE && !sameInput) {
+      compiler.report(
+          t.makeError(getprop, PRIVATE_OVERRIDE,
+              objectType.toString()));
+    } else if (overridingVisibility != Visibility.INHERITED &&
+        overridingVisibility != visibility) {
+      compiler.report(
+          t.makeError(getprop, VISIBILITY_MISMATCH,
+              visibility.name(), objectType.toString(),
+              overridingVisibility.name()));
+    }
+  } else {
+    if (sameInput) {
+      return;
+    } else if (visibility == Visibility.PRIVATE &&
+        (currentClass == null || ownerType.differsFrom(currentClass))) {
+      if (docInfo.isConstructor() &&
+          isValidPrivateConstructorAccess(parent)) {
+        return;
+      }
+      compiler.report(
+          t.makeError(getprop,
+              BAD_PRIVATE_PROPERTY_ACCESS,
+              propertyName,
+              validator.getReadableJSTypeName(
+                  getprop.getFirstChild(), true)));
+    } else if (visibility == Visibility.PROTECTED) {
+      if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+        compiler.report(
+            t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      }
+    }
+  }
+}
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 3.13 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                Here's the fixed version of the `checkPropertyVisibility` function:
+
+```
+private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = t.inGlobalScope() &&
+            parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+      }
+    }
+    if (objectType == null) {
+      return;
+    }
+    boolean sameInput =
+        t.getInput().getName().equals(docInfo.getSourceName());
+    Visibility visibility = docInfo.getVisibility();
+    JSType ownerType = normalizeClassType(objectType);
+    if (isOverride) {
+      JSDocInfo overridingInfo = parent.getJSDocInfo();
+      Visibility overridingVisibility = overridingInfo == null ?
+          Visibility.INHERITED : overridingInfo.getVisibility();
+      if (visibility == Visibility.PRIVATE && !sameInput) {
+        compiler.report(
+            t.makeError(getprop, PRIVATE_OVERRIDE,
+                objectType.toString()));
+      } else if (overridingVisibility != Visibility.INHERITED &&
+          overridingVisibility != visibility) {
+        compiler.report(
+            t.makeError(getprop, VISIBILITY_MISMATCH,
+                visibility.name(), objectType.toString(),
+                overridingVisibility.name()));
+      }
+    } else {
+      if (sameInput) {
+        return;
+      } else if (visibility == Visibility.PRIVATE &&
+          (currentClass == null || ownerType.differsFrom(currentClass))) {
+        if (docInfo.isConstructor() &&
+            isValidPrivateConstructorAccess(parent)) {
+          return;
+        }
+        compiler.report(
+            t.makeError(getprop,
+                BAD_PRIVATE_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      } else if (visibility == Visibility.PROTECTED) {
+        if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+          compiler.report(
+              t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                  propertyName,
+                  validator.getReadableJSTypeName(
+                      getprop.getFirstChild(), true)));
+        }
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:407: error: unclosed character literal
+    [javac] Here's the fixed version of the `checkPropertyVisibility` function:
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:407: error: ';' expected
+    [javac] Here's the fixed version of the `checkPropertyVisibility` function:
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:407: error: ';' expected
+    [javac] Here's the fixed version of the `checkPropertyVisibility` function:
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:407: error: illegal character: \96
+    [javac] Here's the fixed version of the `checkPropertyVisibility` function:
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:407: error: illegal character: \96
+    [javac] Here's the fixed version of the `checkPropertyVisibility` function:
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:407: error: <identifier> expected
+    [javac] Here's the fixed version of the `checkPropertyVisibility` function:
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:409: error: illegal character: \96
+    [javac] ```
+    [javac] ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:409: error: illegal character: \96
+    [javac] ```
+    [javac]  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:409: error: illegal character: \96
+    [javac] ```
+    [javac]   ^
+    [javac] 9 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 4.45 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = parent.getJSDocInfo() != null &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+    }
+    if (objectType == null) {
+      return;
+    }
+    boolean sameInput =
+        t.getInput().getName().equals(docInfo.getSourceName());
+    Visibility visibility = docInfo.getVisibility();
+    JSType ownerType = normalizeClassType(objectType);
+    if (isOverride) {
+      JSDocInfo overridingInfo = parent.getJSDocInfo();
+      Visibility overridingVisibility = overridingInfo == null ?
+          Visibility.INHERITED : overridingInfo.getVisibility();
+      if (visibility == Visibility.PRIVATE && !sameInput) {
+        compiler.report(
+            t.makeError(getprop, PRIVATE_OVERRIDE,
+                objectType.toString()));
+      } else if (overridingVisibility != Visibility.INHERITED &&
+          overridingVisibility != visibility) {
+        compiler.report(
+            t.makeError(getprop, VISIBILITY_MISMATCH,
+                visibility.name(), objectType.toString(),
+                overridingVisibility.name()));
+      }
+    } else {
+      if (sameInput) {
+        return;
+      } else if (visibility == Visibility.PRIVATE &&
+          (currentClass == null || ownerType.differsFrom(currentClass))) {
+        if (docInfo.isConstructor() &&
+            isValidPrivateConstructorAccess(parent)) {
+          return;
+        }
+        compiler.report(
+            t.makeError(getprop,
+                BAD_PRIVATE_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      } else if (visibility == Visibility.PROTECTED) {
+        if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+          compiler.report(
+              t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                  propertyName,
+                  validator.getReadableJSTypeName(
+                      getprop.getFirstChild(), true)));
+        }
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: ')' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                      ^
+    [javac] 6 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_71_e10c0420dcba4811b7aca0f582b89aa1/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 3.08 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = parent.getJSDocInfo() != null &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+    }
+    if (objectType == null) {
+      return;
+    }
+    boolean sameInput =
+        t.getInput().getName().equals(docInfo.getSourceName());
+    Visibility visibility = docInfo.getVisibility();
+    JSType ownerType = normalizeClassType(objectType);
+    if (isOverride) {
+      JSDocInfo overridingInfo = parent.getJSDocInfo();
+      Visibility overridingVisibility = overridingInfo == null ?
+          Visibility.INHERITED : overridingInfo.getVisibility();
+      if (visibility == Visibility.PRIVATE && !sameInput) {
+        compiler.report(
+            t.makeError(getprop, PRIVATE_OVERRIDE,
+                objectType.toString()));
+      } else if (overridingVisibility != Visibility.INHERITED &&
+          overridingVisibility != visibility) {
+        compiler.report(
+            t.makeError(getprop, VISIBILITY_MISMATCH,
+                visibility.name(), objectType.toString(),
+                overridingVisibility.name()));
+      }
+    } else {
+      if (sameInput) {
+        return;
+      } else if (visibility == Visibility.PRIVATE &&
+          (currentClass == null || ownerType.differsFrom(currentClass))) {
+        if (docInfo.isConstructor() &&
+            isValidPrivateConstructorAccess(parent)) {
+          return;
+        }
+        compiler.report(
+            t.makeError(getprop,
+                BAD_PRIVATE_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      } else if (visibility == Visibility.PROTECTED) {
+        if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+          compiler.report(
+              t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                  propertyName,
+                  validator.getReadableJSTypeName(
+                      getprop.getFirstChild(), true)));
+        }
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: ')' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                      ^
+    [javac] 6 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: plausible
+                Validation Time: 186.02 seconds
+                Failure reason: None
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = parent.getJSDocInfo() != null &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+      }
+    }
+    if (objectType == null) {
+      return;
+    }
+    boolean sameInput =
+        t.getInput().getName().equals(docInfo.getSourceName());
+    Visibility visibility = docInfo.getVisibility();
+    JSType ownerType = normalizeClassType(objectType);
+    if (isOverride) {
+      JSDocInfo overridingInfo = parent.getJSDocInfo();
+      Visibility overridingVisibility = overridingInfo == null ?
+          Visibility.INHERITED : overridingInfo.getVisibility();
+      if (visibility == Visibility.PRIVATE && !sameInput) {
+        compiler.report(
+            t.makeError(getprop, PRIVATE_OVERRIDE,
+                objectType.toString()));
+      } else if (overridingVisibility != Visibility.INHERITED &&
+          overridingVisibility != visibility) {
+        compiler.report(
+            t.makeError(getprop, VISIBILITY_MISMATCH,
+                visibility.name(), objectType.toString(),
+                overridingVisibility.name()));
+      }
+    } else {
+      if (sameInput) {
+        return;
+      } else if (visibility == Visibility.PRIVATE &&
+          (currentClass == null || ownerType.differsFrom(currentClass))) {
+        if (docInfo.isConstructor() &&
+            isValidPrivateConstructorAccess(parent)) {
+          return;
+        }
+        compiler.report(
+            t.makeError(getprop,
+                BAD_PRIVATE_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      } else if (visibility == Visibility.PROTECTED) {
+        if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+          compiler.report(
+              t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                  propertyName,
+                  validator.getReadableJSTypeName(
+                      getprop.getFirstChild(), true)));
+        }
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: plausible
+                Validation Time: 190.38 seconds
+                Failure reason: None
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    // Is this a normal property access, or are we trying to override
+    // an existing property?
+    boolean isOverride = parent.getJSDocInfo() != null &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+
+    // Find the lowest property defined on a class with visibility
+    // information.
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+    }
+  }
+  if (objectType == null) {
+    return;
+  }
+  boolean sameInput =
+      t.getInput().getName().equals(docInfo.getSourceName());
+  Visibility visibility = docInfo.getVisibility();
+  JSType ownerType = normalizeClassType(objectType);
+  if (isOverride) {
+    JSDocInfo overridingInfo = parent.getJSDocInfo();
+    Visibility overridingVisibility = overridingInfo == null ?
+        Visibility.INHERITED : overridingInfo.getVisibility();
+    if (visibility == Visibility.PRIVATE && !sameInput) {
+      compiler.report(
+          t.makeError(getprop, PRIVATE_OVERRIDE,
+              objectType.toString()));
+    } else if (overridingVisibility != Visibility.INHERITED &&
+        overridingVisibility != visibility) {
+      compiler.report(
+          t.makeError(getprop, VISIBILITY_MISMATCH,
+              visibility.name(), objectType.toString(),
+              overridingVisibility.name()));
+    }
+  } else {
+    if (sameInput) {
+      return;
+    } else if (visibility == Visibility.PRIVATE &&
+        (currentClass == null || ownerType.differsFrom(currentClass))) {
+      if (docInfo.isConstructor() &&
+          isValidPrivateConstructorAccess(parent)) {
+        return;
+      }
+      compiler.report(
+          t.makeError(getprop,
+              BAD_PRIVATE_PROPERTY_ACCESS,
+              propertyName,
+              validator.getReadableJSTypeName(
+                  getprop.getFirstChild(), true)));
+    } else if (visibility == Visibility.PROTECTED) {
+      if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+        compiler.report(
+            t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      }
+    }
+  }
+}
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 3.41 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = parent.getJSDocInfo() != null &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+    }
+    if (objectType == null) {
+      return;
+    }
+    boolean sameInput =
+        t.getInput().getName().equals(docInfo.getSourceName());
+    Visibility visibility = docInfo.getVisibility();
+    JSType ownerType = normalizeClassType(objectType);
+    if (isOverride) {
+      JSDocInfo overridingInfo = parent.getJSDocInfo();
+      Visibility overridingVisibility = overridingInfo == null ?
+          Visibility.INHERITED : overridingInfo.getVisibility();
+      if (visibility == Visibility.PRIVATE && !sameInput) {
+        compiler.report(
+            t.makeError(getprop, PRIVATE_OVERRIDE,
+                objectType.toString()));
+      } else if (overridingVisibility != Visibility.INHERITED &&
+          overridingVisibility != visibility) {
+        compiler.report(
+            t.makeError(getprop, VISIBILITY_MISMATCH,
+                visibility.name(), objectType.toString(),
+                overridingVisibility.name()));
+      }
+    } else {
+      if (sameInput) {
+        return;
+      } else if (visibility == Visibility.PRIVATE &&
+          (currentClass == null || ownerType.differsFrom(currentClass))) {
+        if (docInfo.isConstructor() &&
+            isValidPrivateConstructorAccess(parent)) {
+          return;
+        }
+        compiler.report(
+            t.makeError(getprop,
+                BAD_PRIVATE_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      } else if (visibility == Visibility.PROTECTED) {
+        if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+          compiler.report(
+              t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                  propertyName,
+                  validator.getReadableJSTypeName(
+                      getprop.getFirstChild(), true)));
+        }
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: ')' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                      ^
+    [javac] 6 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_71_7d81a417bd4a4da69fde8f8d324938ad/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 235.81 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+        Node getprop, Node parent) {
+      ObjectType objectType = ObjectType.cast(
+          dereference(getprop.getFirstChild().getJSType()));
+      String propertyName = getprop.getLastChild().getString();
+      if (objectType != null) {
+        boolean isOverride = t.inGlobalScope() &&
+            parent.getType() == Token.ASSIGN &&
+            parent.getFirstChild() == getprop;
+        if (isOverride) {
+          objectType = objectType.getImplicitPrototype();
+        }
+        JSDocInfo docInfo = null;
+        for (; objectType != null;
+             objectType = objectType.getImplicitPrototype()) {
+          docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+          if (docInfo != null &&
+              docInfo.getVisibility() != Visibility.INHERITED) {
+            break;
+          }
+        }
+        if (objectType == null) {
+          return;
+        }
+        boolean sameInput =
+            t.getInput().getName().equals(docInfo.getSourceName());
+        Visibility visibility = docInfo.getVisibility();
+        JSType ownerType = normalizeClassType(objectType);
+        if (isOverride) {
+          JSDocInfo overridingInfo = parent.getJSDocInfo();
+          Visibility overridingVisibility = overridingInfo == null ?
+              Visibility.INHERITED : overridingInfo.getVisibility();
+          if (visibility == Visibility.PRIVATE && !sameInput) {
+            compiler.report(
+                t.makeError(getprop, PRIVATE_OVERRIDE,
+                    objectType.toString()));
+          } else if (overridingVisibility != Visibility.INHERITED &&
+              overridingVisibility != visibility) {
+            compiler.report(
+                t.makeError(getprop, VISIBILITY_MISMATCH,
+                    visibility.name(), objectType.toString(),
+                    overridingVisibility.name()));
+          }
+        } else {
+          if (sameInput) {
+            return;
+          } else if (visibility == Visibility.PRIVATE &&
+              (currentClass == null || ownerType.differsFrom(currentClass))) {
+            if (docInfo.isConstructor() &&
+                isValidPrivateConstructorAccess(parent)) {
+              return;
+            }
+            compiler.report(
+                t.makeError(getprop,
+                    BAD_PRIVATE_PROPERTY_ACCESS,
+                    propertyName,
+                    validator.getReadableJSTypeName(
+                        getprop.getFirstChild(), true)));
+          } else if (visibility == Visibility.PROTECTED) {
+            if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+              compiler.report(
+                  t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                      propertyName,
+                      validator.getReadableJSTypeName(
+                          getprop.getFirstChild(), true)));
+            }
+          }
+        }
+      }
+    }
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties6
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties8
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 218.44 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+      Node getprop, Node parent) {
+    ObjectType objectType = ObjectType.cast(dereference(
+        getprop.getFirstChild().getJSType()));
+    String propertyName = getprop.getLastChild().getString();
+    if (objectType != null) {
+      boolean isOverride = t.inGlobalScope() &&
+              parent.getType() == Token.ASSIGN &&
+          parent.getFirstChild() == getprop;
+      if (isOverride) {
+        objectType = objectType.getImplicitPrototype();
+      }
+      JSDocInfo docInfo = null;
+      for (; objectType != null;
+           objectType = objectType.getImplicitPrototype()) {
+        docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+        if (docInfo != null &&
+            docInfo.getVisibility() != Visibility.INHERITED) {
+          break;
+        }
+      }
+      if (objectType == null) {
+        return;
+      }
+      boolean sameInput =
+          t.getInput().getName().equals(docInfo.getSourceName());
+      Visibility visibility = docInfo.getVisibility();
+      JSType ownerType = normalizeClassType(objectType);
+      if (isOverride) {
+        JSDocInfo overridingInfo = parent.getJSDocInfo();
+        Visibility overridingVisibility =
+            overridingInfo == null ?
+                Visibility.INHERITED : overridingInfo.getVisibility();
+        if (visibility == Visibility.PRIVATE && !sameInput) {
+          compiler.report(
+              t.makeError(getprop, PRIVATE_OVERRIDE,
+                  objectType.toString()));
+        } else if (overridingVisibility != Visibility.INHERITED &&
+            overridingVisibility != visibility) {
+          compiler.report(
+              t.makeError(getprop, VISIBILITY_MISMATCH,
+                  visibility.name(), objectType.toString(),
+                  overridingVisibility.name()));
+        }
+      } else {
+        if (sameInput) {
+          return;
+        } else if (visibility == Visibility.PRIVATE &&
+            (currentClass == null || ownerType.differsFrom(currentClass))) {
+          if (docInfo.isConstructor() &&
+              isValidPrivateConstructorAccess(parent)) {
+            return;
+          }
+          compiler.report(
+              t.makeError(getprop,
+                  BAD_PRIVATE_PROPERTY_ACCESS,
+                  propertyName,
+                  validator.getReadableJSTypeName(
+                      getprop.getFirstChild(), true)));
+        } else if (visibility == Visibility.PROTECTED) {
+          if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+            compiler.report(
+                t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                    propertyName,
+                    validator.getReadableJSTypeName(
+                        getprop.getFirstChild(), true)));
+          }
+        }
+      }
+    }
+  }
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties6
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties8
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 3.55 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                int pType = parent.getType();
+    if (!(pType == Token.BLOCK ||
+          pType == Token.SCRIPT ||
+          pType == Token.NAME ||
+          pType == Token.ASSIGN ||
+
+          // object literal keys
+          pType == Token.STRING ||
+          pType == Token.NUMBER)) {
+      return false;
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: illegal start of type
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: illegal start of type
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: ')' expected
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: ';' expected
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: illegal start of type
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: ';' expected
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: <identifier> expected
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:409: error: <identifier> expected
+    [javac]           pType == Token.SCRIPT ||
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:409: error: <identifier> expected
+    [javac]           pType == Token.SCRIPT ||
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:410: error: <identifier> expected
+    [javac]           pType == Token.NAME ||
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:410: error: <identifier> expected
+    [javac]           pType == Token.NAME ||
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:411: error: <identifier> expected
+    [javac]           pType == Token.ASSIGN ||
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:411: error: <identifier> expected
+    [javac]           pType == Token.ASSIGN ||
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:414: error: <identifier> expected
+    [javac]           pType == Token.STRING ||
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:414: error: <identifier> expected
+    [javac]           pType == Token.STRING ||
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:415: error: <identifier> expected
+    [javac]           pType == Token.NUMBER)) {
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:415: error: <identifier> expected
+    [javac]           pType == Token.NUMBER)) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:415: error: illegal start of type
+    [javac]           pType == Token.NUMBER)) {
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:415: error: <identifier> expected
+    [javac]           pType == Token.NUMBER)) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:415: error: ';' expected
+    [javac]           pType == Token.NUMBER)) {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:416: error: illegal start of type
+    [javac]       return false;
+    [javac]              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:416: error: <identifier> expected
+    [javac]       return false;
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:416: error: ';' expected
+    [javac]       return false;
+    [javac]                    ^
+    [javac] 23 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 4.28 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                int resultLength = getLeftChildLength() + getRightChildLength() + 1;
+    result.setLength(resultLength);
+  }
+
+  return result;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: <identifier> expected
+    [javac]     result.setLength(resultLength);
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: <identifier> expected
+    [javac]     result.setLength(resultLength);
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:411: error: class, interface, or enum expected
+    [javac]   return result;
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:412: error: class, interface, or enum expected
+    [javac] }
+    [javac] ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:430: error: class, interface, or enum expected
+    [javac]   }
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:449: error: class, interface, or enum expected
+    [javac]       }
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:456: error: class, interface, or enum expected
+    [javac]     }
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: class, interface, or enum expected
+    [javac]   }
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:473: error: class, interface, or enum expected
+    [javac]     Node scopeRootParent = scopeRoot.getParent();
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:474: error: class, interface, or enum expected
+    [javac]     return
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:483: error: class, interface, or enum expected
+    [javac]   }
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:491: error: class, interface, or enum expected
+    [javac]       if (type != null) {
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:493: error: class, interface, or enum expected
+    [javac]       }
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:497: error: class, interface, or enum expected
+    [javac]   }
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:507: error: class, interface, or enum expected
+    [javac]     }
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:510: error: class, interface, or enum expected
+    [javac]     if (info != null && info.isDeprecated()) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:513: error: class, interface, or enum expected
+    [javac]       }
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:515: error: class, interface, or enum expected
+    [javac]     }
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:517: error: class, interface, or enum expected
+    [javac]     if (objType != null) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: class, interface, or enum expected
+    [javac]       if (implicitProto != null) {
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:521: error: class, interface, or enum expected
+    [javac]       }
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:524: error: class, interface, or enum expected
+    [javac]   }
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:534: error: class, interface, or enum expected
+    [javac]     if (info != null && info.isDeprecated()) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:537: error: class, interface, or enum expected
+    [javac]       }
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:540: error: class, interface, or enum expected
+    [javac]     }
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:542: error: class, interface, or enum expected
+    [javac]     if (implicitProto != null) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:544: error: class, interface, or enum expected
+    [javac]     }
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:546: error: class, interface, or enum expected
+    [javac]   }
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:553: error: class, interface, or enum expected
+    [javac]   }
+    [javac]   ^
+    [javac] 29 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 3.10 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                int pType = parent.getType();
+    if (!(pType == Token.BLOCK ||
+          pType == Token.SCRIPT ||
+          pType == Token.NAME ||
+          pType == Token.ASSIGN ||
+
+          // object literal keys
+          pType == Token.STRING ||
+          pType == Token.NUMBER)) {
+      return false;
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: illegal start of type
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: illegal start of type
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: ')' expected
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: ';' expected
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: illegal start of type
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: ';' expected
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:408: error: <identifier> expected
+    [javac]     if (!(pType == Token.BLOCK ||
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:409: error: <identifier> expected
+    [javac]           pType == Token.SCRIPT ||
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:409: error: <identifier> expected
+    [javac]           pType == Token.SCRIPT ||
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:410: error: <identifier> expected
+    [javac]           pType == Token.NAME ||
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:410: error: <identifier> expected
+    [javac]           pType == Token.NAME ||
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:411: error: <identifier> expected
+    [javac]           pType == Token.ASSIGN ||
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:411: error: <identifier> expected
+    [javac]           pType == Token.ASSIGN ||
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:414: error: <identifier> expected
+    [javac]           pType == Token.STRING ||
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:414: error: <identifier> expected
+    [javac]           pType == Token.STRING ||
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:415: error: <identifier> expected
+    [javac]           pType == Token.NUMBER)) {
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:415: error: <identifier> expected
+    [javac]           pType == Token.NUMBER)) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:415: error: illegal start of type
+    [javac]           pType == Token.NUMBER)) {
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:415: error: <identifier> expected
+    [javac]           pType == Token.NUMBER)) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:415: error: ';' expected
+    [javac]           pType == Token.NUMBER)) {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:416: error: illegal start of type
+    [javac]       return false;
+    [javac]              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:416: error: <identifier> expected
+    [javac]       return false;
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/src/com/google/javascript/jscomp/CheckAccessControls.java:416: error: ';' expected
+    [javac]       return false;
+    [javac]                    ^
+    [javac] 23 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_71_bb7093b90ada49c1897657d76ad021dd/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

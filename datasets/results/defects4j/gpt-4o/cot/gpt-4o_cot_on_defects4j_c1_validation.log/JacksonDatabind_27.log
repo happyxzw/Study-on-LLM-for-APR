@@ -1,0 +1,1539 @@
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 3.69 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt); // Fixed: Added 'ctxt' parameter to TokenBuffer constructor
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                // No-op
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        p.nextToken(); 
+                        tokens.copyCurrentStructure(p);
+                        t = p.nextToken();
+                    }
+                    if (bean.getClass() != _beanType.getRawClass()) {
+                        throw ctxt.mappingException("Cannot create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:827: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 3.02 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                // No-op
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        p.nextToken(); 
+                        tokens.copyCurrentStructure(p);
+                        t = p.nextToken();
+                    }
+                    if (bean.getClass() != _beanType.getRawClass()) {
+                        throw ctxt.mappingException("Cannot create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:831: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 3.27 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                // External type ID handled, continue processing
+                continue;
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    // Process remaining fields
+                    t = p.nextToken();
+                    while (t == JsonToken.FIELD_NAME) {
+                        p.nextToken(); 
+                        tokens.copyCurrentStructure(p);
+                        t = p.nextToken();
+                    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:806: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 3.39 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                // Do nothing
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        p.nextToken(); 
+                        tokens.copyCurrentStructure(p);
+                        t = p.nextToken();
+                    }
+                    if (!bean.getClass().isAssignableFrom(_beanType.getRawClass())) {
+                        throw ctxt.mappingException("Cannot create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:831: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260616_102008/JacksonDatabind_27_0e57ee936e894b69b2f34b0adddd7bcb/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 0.85 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt); // Fixed: Added ctxt as a second argument to TokenBuffer constructor
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                            ;
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        p.nextToken(); 
+                        tokens.copyCurrentStructure(p);
+                        t = p.nextToken();
+                    }
+                    if (bean.getClass() != _beanType.getRawClass()) {
+                        throw ctxt.mappingException("Cannot create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    try {
+        return ext.complete(p, ctxt, buffer, creator);
+    } catch (Exception e) {
+        wrapInstantiationProblem(e, ctxt);
+        return null; 
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:779: error: no suitable constructor found for TokenBuffer(JsonParser,DeserializationContext)
+    [javac]     TokenBuffer tokens = new TokenBuffer(p, ctxt); // Fixed: Added ctxt as a second argument to TokenBuffer constructor
+    [javac]                          ^
+    [javac]     constructor TokenBuffer.TokenBuffer(JsonParser) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec,boolean) is not applicable
+    [javac]       (actual argument JsonParser cannot be converted to ObjectCodec by method invocation conversion)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 0.83 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt); // Fix: Pass the DeserializationContext to the TokenBuffer constructor
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                            ;
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        p.nextToken(); 
+                        tokens.copyCurrentStructure(p);
+                        t = p.nextToken();
+                    }
+                    if (bean.getClass() != _beanType.getRawClass()) {
+                        throw ctxt.mappingException("Can not create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    try {
+        return ext.complete(p, ctxt, buffer, creator);
+    } catch (Exception e) {
+        wrapInstantiationProblem(e, ctxt);
+        return null; 
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:779: error: no suitable constructor found for TokenBuffer(JsonParser,DeserializationContext)
+    [javac]     TokenBuffer tokens = new TokenBuffer(p, ctxt); // Fix: Pass the DeserializationContext to the TokenBuffer constructor
+    [javac]                          ^
+    [javac]     constructor TokenBuffer.TokenBuffer(JsonParser) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec,boolean) is not applicable
+    [javac]       (actual argument JsonParser cannot be converted to ObjectCodec by method invocation conversion)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 0.85 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt); // FIXED: Added "ctxt" as the second argument to TokenBuffer constructor
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                            ;
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        tokens.copyCurrentStructure(p); // FIXED: Removed the unnecessary call to `p.nextToken()` here
+                        t = p.nextToken();
+                    }
+                    if (bean.getClass() != _beanType.getRawClass()) {
+                        throw ctxt.mappingException("Can not create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    try {
+        return ext.complete(p, ctxt, buffer, creator);
+    } catch (Exception e) {
+        wrapInstantiationProblem(e, ctxt);
+        return null; 
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:779: error: no suitable constructor found for TokenBuffer(JsonParser,DeserializationContext)
+    [javac]     TokenBuffer tokens = new TokenBuffer(p, ctxt); // FIXED: Added "ctxt" as the second argument to TokenBuffer constructor
+    [javac]                          ^
+    [javac]     constructor TokenBuffer.TokenBuffer(JsonParser) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec,boolean) is not applicable
+    [javac]       (actual argument JsonParser cannot be converted to ObjectCodec by method invocation conversion)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 0.83 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt); // Pass ctxt to TokenBuffer for proper context handling
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                continue; // Corrected from empty statement to "continue" for clarity
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        p.nextToken(); 
+                        tokens.copyCurrentStructure(p);
+                        t = p.nextToken();
+                    }
+                    if (bean.getClass() != _beanType.getRawClass()) {
+                        throw ctxt.mappingException("Cannot create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    try {
+        return ext.complete(p, ctxt, buffer, creator);
+    } catch (Exception e) {
+        wrapInstantiationProblem(e, ctxt);
+        return null; 
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:779: error: no suitable constructor found for TokenBuffer(JsonParser,DeserializationContext)
+    [javac]     TokenBuffer tokens = new TokenBuffer(p, ctxt); // Pass ctxt to TokenBuffer for proper context handling
+    [javac]                          ^
+    [javac]     constructor TokenBuffer.TokenBuffer(JsonParser) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec,boolean) is not applicable
+    [javac]       (actual argument JsonParser cannot be converted to ObjectCodec by method invocation conversion)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 0.84 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt); // Fix: Added 'ctxt' parameter for compatibility with TokenBuffer constructor
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                            ;
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        p.nextToken(); 
+                        tokens.copyCurrentStructure(p);
+                        t = p.nextToken();
+                    }
+                    if (bean.getClass() != _beanType.getRawClass()) {
+                        throw ctxt.mappingException("Can not create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    try {
+        return ext.complete(p, ctxt, buffer, creator);
+    } catch (Exception e) {
+        wrapInstantiationProblem(e, ctxt);
+        return null; 
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:779: error: no suitable constructor found for TokenBuffer(JsonParser,DeserializationContext)
+    [javac]     TokenBuffer tokens = new TokenBuffer(p, ctxt); // Fix: Added 'ctxt' parameter for compatibility with TokenBuffer constructor
+    [javac]                          ^
+    [javac]     constructor TokenBuffer.TokenBuffer(JsonParser) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec,boolean) is not applicable
+    [javac]       (actual argument JsonParser cannot be converted to ObjectCodec by method invocation conversion)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 0.80 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt); // Updated to include the 'ctxt' parameter
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                // No-op
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        tokens.copyCurrentStructure(p); // Fixed ordering of copying structure before advancing the token
+                        t = p.nextToken();
+                    }
+                    if (bean.getClass() != _beanType.getRawClass()) {
+                        throw ctxt.mappingException("Can not create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    try {
+        return ext.complete(p, ctxt, buffer, creator);
+    } catch (Exception e) {
+        wrapInstantiationProblem(e, ctxt);
+        return null; 
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:779: error: no suitable constructor found for TokenBuffer(JsonParser,DeserializationContext)
+    [javac]     TokenBuffer tokens = new TokenBuffer(p, ctxt); // Updated to include the 'ctxt' parameter
+    [javac]                          ^
+    [javac]     constructor TokenBuffer.TokenBuffer(JsonParser) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec,boolean) is not applicable
+    [javac]       (actual argument JsonParser cannot be converted to ObjectCodec by method invocation conversion)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 0.80 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt); // Fixed constructor for TokenBuffer
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                            ;
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        tokens.copyCurrentStructure(p); // Ensure copying before moving to next token
+                        t = p.nextToken(); 
+                    }
+                    if (bean.getClass() != _beanType.getRawClass()) {
+                        throw ctxt.mappingException("Can not create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    try {
+        return ext.complete(p, ctxt, buffer, creator);
+    } catch (Exception e) {
+        wrapInstantiationProblem(e, ctxt);
+        return null; 
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:779: error: no suitable constructor found for TokenBuffer(JsonParser,DeserializationContext)
+    [javac]     TokenBuffer tokens = new TokenBuffer(p, ctxt); // Fixed constructor for TokenBuffer
+    [javac]                          ^
+    [javac]     constructor TokenBuffer.TokenBuffer(JsonParser) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec,boolean) is not applicable
+    [javac]       (actual argument JsonParser cannot be converted to ObjectCodec by method invocation conversion)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 0.84 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt); // Pass 'ctxt' as the second argument
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                            ;
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        p.nextToken(); 
+                        tokens.copyCurrentStructure(p);
+                        t = p.nextToken();
+                    }
+                    if (bean.getClass() != _beanType.getRawClass()) {
+                        throw ctxt.mappingException("Can not create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    try {
+        return ext.complete(p, ctxt, buffer, creator);
+    } catch (Exception e) {
+        wrapInstantiationProblem(e, ctxt);
+        return null; 
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:779: error: no suitable constructor found for TokenBuffer(JsonParser,DeserializationContext)
+    [javac]     TokenBuffer tokens = new TokenBuffer(p, ctxt); // Pass 'ctxt' as the second argument
+    [javac]                          ^
+    [javac]     constructor TokenBuffer.TokenBuffer(JsonParser) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec,boolean) is not applicable
+    [javac]       (actual argument JsonParser cannot be converted to ObjectCodec by method invocation conversion)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 0.95 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                continue;
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        tokens.copyCurrentStructure(p);
+                        t = p.nextToken(); 
+                    }
+                    if (bean.getClass() != _beanType.getRawClass()) {
+                        throw ctxt.mappingException("Cannot create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    try {
+        return ext.complete(p, ctxt, buffer, creator);
+    } catch (Exception e) {
+        wrapInstantiationProblem(e, ctxt);
+        return null; 
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:779: error: no suitable constructor found for TokenBuffer(JsonParser,DeserializationContext)
+    [javac]     TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    [javac]                          ^
+    [javac]     constructor TokenBuffer.TokenBuffer(JsonParser) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec,boolean) is not applicable
+    [javac]       (actual argument JsonParser cannot be converted to ObjectCodec by method invocation conversion)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 0.78 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt)
+    throws IOException
+{
+    final ExternalTypeHandler ext = _externalTypeIdHandler.start();
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt); // Pass DeserializationContext to TokenBuffer constructor
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (ext.handlePropertyValue(p, ctxt, propName, buffer)) {
+                            ;
+            } else {
+                if (buffer.assignParameter(creatorProp, _deserializeWithErrorWrapping(p, ctxt, creatorProp))) {
+                    t = p.nextToken(); 
+                    Object bean;
+                    try {
+                        bean = creator.build(ctxt, buffer);
+                    } catch (Exception e) {
+                        wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                        continue; 
+                    }
+                    while (t == JsonToken.FIELD_NAME) {
+                        p.nextToken(); 
+                        tokens.copyCurrentStructure(p);
+                        t = p.nextToken();
+                    }
+                    if (!bean.getClass().isAssignableFrom(_beanType.getRawClass())) { // Corrected type-check logic
+                        throw ctxt.mappingException("Can not create polymorphic instances with unwrapped values");
+                    }
+                    return ext.complete(p, ctxt, bean);
+                }
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (ext.handlePropertyValue(p, ctxt, propName, null)) {
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    try {
+        return ext.complete(p, ctxt, buffer, creator);
+    } catch (Exception e) {
+        wrapInstantiationProblem(e, ctxt);
+        return null; 
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializer.java:779: error: no suitable constructor found for TokenBuffer(JsonParser,DeserializationContext)
+    [javac]     TokenBuffer tokens = new TokenBuffer(p, ctxt); // Pass DeserializationContext to TokenBuffer constructor
+    [javac]                          ^
+    [javac]     constructor TokenBuffer.TokenBuffer(JsonParser) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec,boolean) is not applicable
+    [javac]       (actual argument JsonParser cannot be converted to ObjectCodec by method invocation conversion)
+    [javac]     constructor TokenBuffer.TokenBuffer(ObjectCodec) is not applicable
+    [javac]       (actual and formal argument lists differ in length)
+    [javac] 1 error
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260628_160430/JacksonDatabind_27_94bc569c93e44574b344f2fa1fcd2202/maven-build.xml:89: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

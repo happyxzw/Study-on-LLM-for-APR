@@ -1,0 +1,815 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 19.71 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 19.97 seconds
+                Failure reason: Regression
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+      ret = true;
+    }
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject26
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testBug545
+  - com.google.javascript.jscomp.IntegrationTest::testCollapseObjectLiteral2
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject26', 'com.google.javascript.jscomp.IntegrationTest::testCollapseObjectLiteral2', 'com.google.javascript.jscomp.InlineObjectLiteralsTest::testBug545']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 19.33 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 19.97 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 20.97 seconds
+                Failure reason: Regression
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+      ret = true;
+    }
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject26
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testBug545
+  - com.google.javascript.jscomp.IntegrationTest::testCollapseObjectLiteral2
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.InlineObjectLiteralsTest::testObject26', 'com.google.javascript.jscomp.IntegrationTest::testCollapseObjectLiteral2', 'com.google.javascript.jscomp.InlineObjectLiteralsTest::testBug545']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 22.12 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 20.08 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 20.40 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 18.06 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = true;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 19.15 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

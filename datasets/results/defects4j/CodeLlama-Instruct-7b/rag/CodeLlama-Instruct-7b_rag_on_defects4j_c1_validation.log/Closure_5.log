@@ -1,0 +1,1128 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 17.04 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 4.26 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      break;
+    } else {
+      if (!isVarOrAssignExprLhs(name)) {
+        return false;
+      }
+      Node val = ref.getAssignedValue();
+      if (val == null) {
+        continue;
+      }
+      if (!val.isObjectLit()) {
+        return false;
+      }
+      for (Node child = val.getFirstChild(); child != null;
+           child = child.getNext()) {
+        if (child.isGetterDef() ||
+            child.isSetterDef()) {
+          return false;
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:195: error: illegal start of expression
+    [javac]     private boolean isVarOrAssignExprLhs(Node n) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:195: error: ';' expected
+    [javac]     private boolean isVarOrAssignExprLhs(Node n) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:195: error: ';' expected
+    [javac]     private boolean isVarOrAssignExprLhs(Node n) {
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:208: error: illegal start of expression
+    [javac]     private Map<String, String> computeVarList(
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:208: error: ';' expected
+    [javac]     private Map<String, String> computeVarList(
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:209: error: ';' expected
+    [javac]         Var v, ReferenceCollection referenceInfo) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:209: error: not a statement
+    [javac]         Var v, ReferenceCollection referenceInfo) {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:209: error: ';' expected
+    [javac]         Var v, ReferenceCollection referenceInfo) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: illegal start of expression
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: illegal start of expression
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: ';' expected
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: ';' expected
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: illegal start of expression
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: illegal start of expression
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: ';' expected
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:268: error: illegal start of expression
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:268: error: illegal start of expression
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:268: error: ';' expected
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:268: error: ';' expected
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:268: error: not a statement
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:268: error: ';' expected
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:269: error: ';' expected
+    [javac]                                              Map<String, String> varmap) {
+    [javac]                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:336: error: illegal start of expression
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:336: error: illegal start of expression
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:336: error: ';' expected
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:336: error: ';' expected
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:336: error: not a statement
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:336: error: ';' expected
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:338: error: ';' expected
+    [javac]                              ReferenceCollection referenceInfo) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:338: error: not a statement
+    [javac]                              ReferenceCollection referenceInfo) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:338: error: ';' expected
+    [javac]                              ReferenceCollection referenceInfo) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:409: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 32 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 3.80 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+
+    if (!val.isObjectLit()) {
+      return false;
+    }
+
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:206: error: illegal start of expression
+    [javac]     private boolean isVarOrAssignExprLhs(Node n) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:206: error: ';' expected
+    [javac]     private boolean isVarOrAssignExprLhs(Node n) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:206: error: ';' expected
+    [javac]     private boolean isVarOrAssignExprLhs(Node n) {
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:219: error: illegal start of expression
+    [javac]     private Map<String, String> computeVarList(
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:219: error: ';' expected
+    [javac]     private Map<String, String> computeVarList(
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:220: error: ';' expected
+    [javac]         Var v, ReferenceCollection referenceInfo) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:220: error: not a statement
+    [javac]         Var v, ReferenceCollection referenceInfo) {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:220: error: ';' expected
+    [javac]         Var v, ReferenceCollection referenceInfo) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:265: error: illegal start of expression
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:265: error: illegal start of expression
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:265: error: ';' expected
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:265: error: ';' expected
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:265: error: illegal start of expression
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:265: error: illegal start of expression
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:265: error: ';' expected
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:279: error: illegal start of expression
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:279: error: illegal start of expression
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:279: error: ';' expected
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:279: error: ';' expected
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:279: error: not a statement
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:279: error: ';' expected
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:280: error: ';' expected
+    [javac]                                              Map<String, String> varmap) {
+    [javac]                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:347: error: illegal start of expression
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:347: error: illegal start of expression
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:347: error: ';' expected
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:347: error: ';' expected
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:347: error: not a statement
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:347: error: ';' expected
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:349: error: ';' expected
+    [javac]                              ReferenceCollection referenceInfo) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:349: error: not a statement
+    [javac]                              ReferenceCollection referenceInfo) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:349: error: ';' expected
+    [javac]                              ReferenceCollection referenceInfo) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/src/com/google/javascript/jscomp/InlineObjectLiterals.java:420: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 32 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_5_e57695ec1688405782d09b9e1d01440f/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 20.84 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 6.85 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      break;
+    } else {
+      if (!isVarOrAssignExprLhs(name)) {
+        return false;
+      }
+      Node val = ref.getAssignedValue();
+      if (val == null) {
+        continue;
+      }
+      if (!val.isObjectLit()) {
+        return false;
+      }
+      for (Node child = val.getFirstChild(); child != null;
+           child = child.getNext()) {
+        if (child.isGetterDef() ||
+            child.isSetterDef()) {
+          return false;
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/build.xml:256: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/build.xml:262: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:195: error: illegal start of expression
+    [javac]     private boolean isVarOrAssignExprLhs(Node n) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:195: error: ';' expected
+    [javac]     private boolean isVarOrAssignExprLhs(Node n) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:195: error: ';' expected
+    [javac]     private boolean isVarOrAssignExprLhs(Node n) {
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:208: error: illegal start of expression
+    [javac]     private Map<String, String> computeVarList(
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:208: error: ';' expected
+    [javac]     private Map<String, String> computeVarList(
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:209: error: ';' expected
+    [javac]         Var v, ReferenceCollection referenceInfo) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:209: error: not a statement
+    [javac]         Var v, ReferenceCollection referenceInfo) {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:209: error: ';' expected
+    [javac]         Var v, ReferenceCollection referenceInfo) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: illegal start of expression
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: illegal start of expression
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: ';' expected
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: ';' expected
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: illegal start of expression
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: illegal start of expression
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:254: error: ';' expected
+    [javac]     private void fillInitialValues(Reference init, Map<String, Node> initvals) {
+    [javac]                                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:268: error: illegal start of expression
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:268: error: illegal start of expression
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:268: error: ';' expected
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:268: error: ';' expected
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:268: error: not a statement
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:268: error: ';' expected
+    [javac]     private void replaceAssignmentExpression(Var v, Reference ref,
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:269: error: ';' expected
+    [javac]                                              Map<String, String> varmap) {
+    [javac]                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:336: error: illegal start of expression
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:336: error: illegal start of expression
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:336: error: ';' expected
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:336: error: ';' expected
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:336: error: not a statement
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:336: error: ';' expected
+    [javac]     private void splitObject(Var v, Reference declaration,
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:338: error: ';' expected
+    [javac]                              ReferenceCollection referenceInfo) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:338: error: not a statement
+    [javac]                              ReferenceCollection referenceInfo) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:338: error: ';' expected
+    [javac]                              ReferenceCollection referenceInfo) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/src/com/google/javascript/jscomp/InlineObjectLiterals.java:409: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 32 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_5_fe01bbaad6d445f89fe0e15c3b65f50a/build.xml:262: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 27.30 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall() && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+      if (child.isGetterDef() || child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 28.34 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+
+    // Ignore indirect references, like x.y (except x.y(), since
+    // the function referenced by y might reference 'this').
+    //
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      // A call target maybe using the object as a 'this' value.
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 23.66 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+    boolean ret = false;
+    Set<String> validProperties = Sets.newHashSet();
+    for (Reference ref : refs) {
+        Node name = ref.getNode();
+        Node parent = ref.getParent();
+        Node gramps = ref.getGrandparent();
+        if (parent.isGetProp()) {
+            Preconditions.checkState(parent.getFirstChild() == name);
+            if (gramps.isCall()
+                    && gramps.getFirstChild() == parent) {
+                return false;
+            }
+            String propName = parent.getLastChild().getString();
+            if (!validProperties.contains(propName)) {
+                if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+                    validProperties.add(propName);
+                } else {
+                    return false;
+                }
+            }
+            continue;
+        }
+        if (!isVarOrAssignExprLhs(name)) {
+            return false;
+        }
+        Node val = ref.getAssignedValue();
+        if (val == null) {
+            continue;
+        }
+        if (!val.isObjectLit()) {
+            return false;
+        }
+        for (Node child = val.getFirstChild(); child != null; child = child.getNext()) {
+            if (child.isGetterDef() ||
+                    child.isSetterDef()) {
+                return false;
+            }
+            validProperties.add(child.getString());
+            Node childVal = child.getFirstChild();
+            for (Reference t : refs) {
+                Node refNode = t.getParent();
+                while (!NodeUtil.isStatementBlock(refNode)) {
+                    if (refNode == childVal) {
+                        return false;
+                    }
+                    refNode = refNode.getParent();
+                }
+            }
+        }
+        ret = true;
+    }
+    return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 29.31 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+      String propName = parent.getLastChild().getString();
+      if (!validProperties.contains(propName)) {
+        if (NodeUtil.isVarOrSimpleAssignLhs(parent, gramps)) {
+          validProperties.add(propName);
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    if (!isVarOrAssignExprLhs(name)) {
+       return false;
+    }
+    Node val = ref.getAssignedValue();
+    if (val == null) {
+      continue;
+    }
+    if (!val.isObjectLit()) {
+      return false;
+    }
+    for (Node child = val.getFirstChild(); child != null;
+         child = child.getNext()) {
+      if (child.isGetterDef() ||
+          child.isSetterDef()) {
+        return false;
+      }
+      validProperties.add(child.getString());
+      Node childVal = child.getFirstChild();
+      for (Reference t : refs) {
+        Node refNode = t.getParent();
+        while (!NodeUtil.isStatementBlock(refNode)) {
+          if (refNode == childVal) {
+            return false;
+          }
+          refNode = refNode.getParent();
+        }
+      }
+    }
+    ret = true;
+  }
+  return ret;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.InlineObjectLiteralsTest::testNoInlineDeletedProperties
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

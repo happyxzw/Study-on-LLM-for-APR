@@ -1,0 +1,1093 @@
+==================================================
+                Project: Chart
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 19.26 seconds
+                Failure reason: None
+
+                PATCH:
+                public Range getDataRange(ValueAxis axis) {
+    Range result = null;
+    List mappedDatasets = new ArrayList();
+    List includedAnnotations = new ArrayList();
+    boolean isDomainAxis = true;
+    int domainIndex = getDomainAxisIndex(axis);
+    if (domainIndex >= 0) {
+        isDomainAxis = true;
+        mappedDatasets.addAll(getDatasetsMappedToDomainAxis(
+                new Integer(domainIndex)));
+        if (domainIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    int rangeIndex = getRangeAxisIndex(axis);
+    if (rangeIndex >= 0) {
+        isDomainAxis = false;
+        mappedDatasets.addAll(getDatasetsMappedToRangeAxis(
+                new Integer(rangeIndex)));
+        if (rangeIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    Iterator iterator = mappedDatasets.iterator();
+    while (iterator.hasNext()) {
+        XYDataset d = (XYDataset) iterator.next();
+        if (d != null) {
+            XYItemRenderer r = getRendererForDataset(d);
+            if (isDomainAxis) {
+                if (r != null) {
+                    result = Range.combine(result, r.findDomainBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findDomainBounds(d));
+                }
+            }
+            else {
+                if (r != null) {
+                    result = Range.combine(result, r.findRangeBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findRangeBounds(d));
+                }
+            }
+            if (r != null) { // Fix: Check if the renderer is not null before accessing its methods
+                Collection c = r.getAnnotations();
+                Iterator i = c.iterator();
+                while (i.hasNext()) {
+                    XYAnnotation a = (XYAnnotation) i.next();
+                    if (a instanceof XYAnnotationBoundsInfo) {
+                        includedAnnotations.add(a);
+                    }
+                }
+            }
+        }
+    }
+    Iterator it = includedAnnotations.iterator();
+    while (it.hasNext()) {
+        XYAnnotationBoundsInfo xyabi = (XYAnnotationBoundsInfo) it.next();
+        if (xyabi.getIncludeInDataBounds()) {
+            if (isDomainAxis) {
+                result = Range.combine(result, xyabi.getXRange());
+            }
+            else {
+                result = Range.combine(result, xyabi.getYRange());
+            }
+        }
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 1
+                Correctness: plausible
+                Validation Time: 23.94 seconds
+                Failure reason: None
+
+                PATCH:
+                public Range getDataRange(ValueAxis axis) {
+    Range result = null;
+    List mappedDatasets = new ArrayList();
+    List includedAnnotations = new ArrayList();
+    boolean isDomainAxis = true;
+    int domainIndex = getDomainAxisIndex(axis);
+    if (domainIndex >= 0) {
+        isDomainAxis = true;
+        mappedDatasets.addAll(getDatasetsMappedToDomainAxis(
+                new Integer(domainIndex)));
+        if (domainIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    int rangeIndex = getRangeAxisIndex(axis);
+    if (rangeIndex >= 0) {
+        isDomainAxis = false;
+        mappedDatasets.addAll(getDatasetsMappedToRangeAxis(
+                new Integer(rangeIndex)));
+        if (rangeIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    Iterator iterator = mappedDatasets.iterator();
+    while (iterator.hasNext()) {
+        XYDataset d = (XYDataset) iterator.next();
+        if (d != null) {
+            XYItemRenderer r = getRendererForDataset(d);
+            if (isDomainAxis) {
+                if (r != null) {
+                    result = Range.combine(result, r.findDomainBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findDomainBounds(d));
+                }
+            }
+            else {
+                if (r != null) {
+                    result = Range.combine(result, r.findRangeBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findRangeBounds(d));
+                }
+            }
+            if (r != null) { // Fixed: Added null check for the renderer
+                Collection c = r.getAnnotations();
+                Iterator i = c.iterator();
+                while (i.hasNext()) {
+                    XYAnnotation a = (XYAnnotation) i.next();
+                    if (a instanceof XYAnnotationBoundsInfo) {
+                        includedAnnotations.add(a);
+                    }
+                }
+            }
+        }
+    }
+    Iterator it = includedAnnotations.iterator();
+    while (it.hasNext()) {
+        XYAnnotationBoundsInfo xyabi = (XYAnnotationBoundsInfo) it.next();
+        if (xyabi.getIncludeInDataBounds()) {
+            if (isDomainAxis) {
+                result = Range.combine(result, xyabi.getXRange());
+            }
+            else {
+                result = Range.combine(result, xyabi.getYRange());
+            }
+        }
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 2
+                Correctness: plausible
+                Validation Time: 21.98 seconds
+                Failure reason: None
+
+                PATCH:
+                public Range getDataRange(ValueAxis axis) {
+    Range result = null;
+    List mappedDatasets = new ArrayList();
+    List includedAnnotations = new ArrayList();
+    boolean isDomainAxis = true;
+    int domainIndex = getDomainAxisIndex(axis);
+    if (domainIndex >= 0) {
+        isDomainAxis = true;
+        mappedDatasets.addAll(getDatasetsMappedToDomainAxis(
+                new Integer(domainIndex)));
+        if (domainIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    int rangeIndex = getRangeAxisIndex(axis);
+    if (rangeIndex >= 0) {
+        isDomainAxis = false;
+        mappedDatasets.addAll(getDatasetsMappedToRangeAxis(
+                new Integer(rangeIndex)));
+        if (rangeIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    Iterator iterator = mappedDatasets.iterator();
+    while (iterator.hasNext()) {
+        XYDataset d = (XYDataset) iterator.next();
+        if (d != null) {
+            XYItemRenderer r = getRendererForDataset(d);
+            if (isDomainAxis) {
+                if (r != null) {
+                    result = Range.combine(result, r.findDomainBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findDomainBounds(d));
+                }
+            }
+            else {
+                if (r != null) {
+                    result = Range.combine(result, r.findRangeBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findRangeBounds(d));
+                }
+            }
+            if (r != null) { // Bug fix: Ensure the renderer is not null before accessing its annotations
+                Collection c = r.getAnnotations();
+                Iterator i = c.iterator();
+                while (i.hasNext()) {
+                    XYAnnotation a = (XYAnnotation) i.next();
+                    if (a instanceof XYAnnotationBoundsInfo) {
+                        includedAnnotations.add(a);
+                    }
+                }
+            }
+        }
+    }
+    Iterator it = includedAnnotations.iterator();
+    while (it.hasNext()) {
+        XYAnnotationBoundsInfo xyabi = (XYAnnotationBoundsInfo) it.next();
+        if (xyabi.getIncludeInDataBounds()) {
+            if (isDomainAxis) {
+                result = Range.combine(result, xyabi.getXRange());
+            }
+            else {
+                result = Range.combine(result, xyabi.getYRange());
+            }
+        }
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 3
+                Correctness: plausible
+                Validation Time: 21.42 seconds
+                Failure reason: None
+
+                PATCH:
+                public Range getDataRange(ValueAxis axis) {
+    Range result = null;
+    List mappedDatasets = new ArrayList();
+    List includedAnnotations = new ArrayList();
+    boolean isDomainAxis = true;
+    int domainIndex = getDomainAxisIndex(axis);
+    if (domainIndex >= 0) {
+        isDomainAxis = true;
+        mappedDatasets.addAll(getDatasetsMappedToDomainAxis(
+                new Integer(domainIndex)));
+        if (domainIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    int rangeIndex = getRangeAxisIndex(axis);
+    if (rangeIndex >= 0) {
+        isDomainAxis = false;
+        mappedDatasets.addAll(getDatasetsMappedToRangeAxis(
+                new Integer(rangeIndex)));
+        if (rangeIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    Iterator iterator = mappedDatasets.iterator();
+    while (iterator.hasNext()) {
+        XYDataset d = (XYDataset) iterator.next();
+        if (d != null) {
+            XYItemRenderer r = getRendererForDataset(d);
+            if (isDomainAxis) {
+                if (r != null) {
+                    result = Range.combine(result, r.findDomainBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findDomainBounds(d));
+                }
+            }
+            else {
+                if (r != null) {
+                    result = Range.combine(result, r.findRangeBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findRangeBounds(d));
+                }
+            }
+            if (r != null) {  // Ensure the renderer is not null
+                Collection c = r.getAnnotations();
+                Iterator i = c.iterator();
+                while (i.hasNext()) {
+                    XYAnnotation a = (XYAnnotation) i.next();
+                    if (a instanceof XYAnnotationBoundsInfo) {
+                        includedAnnotations.add(a);
+                    }
+                }
+            }
+        }
+    }
+    Iterator it = includedAnnotations.iterator();
+    while (it.hasNext()) {
+        XYAnnotationBoundsInfo xyabi = (XYAnnotationBoundsInfo) it.next();
+        if (xyabi.getIncludeInDataBounds()) {
+            if (isDomainAxis) {
+                result = Range.combine(result, xyabi.getXRange());
+            }
+            else {
+                result = Range.combine(result, xyabi.getYRange());
+            }
+        }
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 4
+                Correctness: plausible
+                Validation Time: 20.68 seconds
+                Failure reason: None
+
+                PATCH:
+                public Range getDataRange(ValueAxis axis) {
+    Range result = null;
+    List mappedDatasets = new ArrayList();
+    List includedAnnotations = new ArrayList();
+    boolean isDomainAxis = true;
+    int domainIndex = getDomainAxisIndex(axis);
+    if (domainIndex >= 0) {
+        isDomainAxis = true;
+        mappedDatasets.addAll(getDatasetsMappedToDomainAxis(
+                new Integer(domainIndex)));
+        if (domainIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    int rangeIndex = getRangeAxisIndex(axis);
+    if (rangeIndex >= 0) {
+        isDomainAxis = false;
+        mappedDatasets.addAll(getDatasetsMappedToRangeAxis(
+                new Integer(rangeIndex)));
+        if (rangeIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    Iterator iterator = mappedDatasets.iterator();
+    while (iterator.hasNext()) {
+        XYDataset d = (XYDataset) iterator.next();
+        if (d != null) {
+            XYItemRenderer r = getRendererForDataset(d);
+            if (isDomainAxis) {
+                if (r != null) {
+                    result = Range.combine(result, r.findDomainBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findDomainBounds(d));
+                }
+            }
+            else {
+                if (r != null) {
+                    result = Range.combine(result, r.findRangeBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findRangeBounds(d));
+                }
+            }
+// Fix starts here
+            if (r != null) { // Ensure renderer is not null before accessing annotations
+                Collection c = r.getAnnotations();
+                Iterator i = c.iterator();
+                while (i.hasNext()) {
+                    XYAnnotation a = (XYAnnotation) i.next();
+                    if (a instanceof XYAnnotationBoundsInfo) {
+                        includedAnnotations.add(a);
+                    }
+                }
+            }
+// Fix ends here
+        }
+    }
+    Iterator it = includedAnnotations.iterator();
+    while (it.hasNext()) {
+        XYAnnotationBoundsInfo xyabi = (XYAnnotationBoundsInfo) it.next();
+        if (xyabi.getIncludeInDataBounds()) {
+            if (isDomainAxis) {
+                result = Range.combine(result, xyabi.getXRange());
+            }
+            else {
+                result = Range.combine(result, xyabi.getYRange());
+            }
+        }
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 5
+                Correctness: plausible
+                Validation Time: 23.10 seconds
+                Failure reason: None
+
+                PATCH:
+                public Range getDataRange(ValueAxis axis) {
+    Range result = null;
+    List mappedDatasets = new ArrayList();
+    List includedAnnotations = new ArrayList();
+    boolean isDomainAxis = true;
+    int domainIndex = getDomainAxisIndex(axis);
+    if (domainIndex >= 0) {
+        isDomainAxis = true;
+        mappedDatasets.addAll(getDatasetsMappedToDomainAxis(
+                new Integer(domainIndex)));
+        if (domainIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    int rangeIndex = getRangeAxisIndex(axis);
+    if (rangeIndex >= 0) {
+        isDomainAxis = false;
+        mappedDatasets.addAll(getDatasetsMappedToRangeAxis(
+                new Integer(rangeIndex)));
+        if (rangeIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    Iterator iterator = mappedDatasets.iterator();
+    while (iterator.hasNext()) {
+        XYDataset d = (XYDataset) iterator.next();
+        if (d != null) {
+            XYItemRenderer r = getRendererForDataset(d);
+            if (isDomainAxis) {
+                if (r != null) {
+                    result = Range.combine(result, r.findDomainBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findDomainBounds(d));
+                }
+            }
+            else {
+                if (r != null) {
+                    result = Range.combine(result, r.findRangeBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findRangeBounds(d));
+                }
+            }
+            if (r != null) { // Bug fix: Ensure renderer is not null before accessing its annotations
+                Collection c = r.getAnnotations();
+                Iterator i = c.iterator();
+                while (i.hasNext()) {
+                    XYAnnotation a = (XYAnnotation) i.next();
+                    if (a instanceof XYAnnotationBoundsInfo) {
+                        includedAnnotations.add(a);
+                    }
+                }
+            }
+        }
+    }
+    Iterator it = includedAnnotations.iterator();
+    while (it.hasNext()) {
+        XYAnnotationBoundsInfo xyabi = (XYAnnotationBoundsInfo) it.next();
+        if (xyabi.getIncludeInDataBounds()) {
+            if (isDomainAxis) {
+                result = Range.combine(result, xyabi.getXRange());
+            }
+            else {
+                result = Range.combine(result, xyabi.getYRange());
+            }
+        }
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 6
+                Correctness: plausible
+                Validation Time: 22.52 seconds
+                Failure reason: None
+
+                PATCH:
+                public Range getDataRange(ValueAxis axis) {
+    Range result = null;
+    List mappedDatasets = new ArrayList();
+    List includedAnnotations = new ArrayList();
+    boolean isDomainAxis = true;
+    int domainIndex = getDomainAxisIndex(axis);
+    if (domainIndex >= 0) {
+        isDomainAxis = true;
+        mappedDatasets.addAll(getDatasetsMappedToDomainAxis(
+                new Integer(domainIndex)));
+        if (domainIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    int rangeIndex = getRangeAxisIndex(axis);
+    if (rangeIndex >= 0) {
+        isDomainAxis = false;
+        mappedDatasets.addAll(getDatasetsMappedToRangeAxis(
+                new Integer(rangeIndex)));
+        if (rangeIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    Iterator iterator = mappedDatasets.iterator();
+    while (iterator.hasNext()) {
+        XYDataset d = (XYDataset) iterator.next();
+        if (d != null) {
+            XYItemRenderer r = getRendererForDataset(d);
+            if (isDomainAxis) {
+                if (r != null) {
+                    result = Range.combine(result, r.findDomainBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findDomainBounds(d));
+                }
+            }
+            else {
+                if (r != null) {
+                    result = Range.combine(result, r.findRangeBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findRangeBounds(d));
+                }
+            }
+            // Fixed the buggy code here
+            if (r != null) { // Ensure the renderer is not null before accessing its annotations
+                Collection c = r.getAnnotations();
+                Iterator i = c.iterator();
+                while (i.hasNext()) {
+                    XYAnnotation a = (XYAnnotation) i.next();
+                    if (a instanceof XYAnnotationBoundsInfo) {
+                        includedAnnotations.add(a);
+                    }
+                }
+            }
+        }
+    }
+    Iterator it = includedAnnotations.iterator();
+    while (it.hasNext()) {
+        XYAnnotationBoundsInfo xyabi = (XYAnnotationBoundsInfo) it.next();
+        if (xyabi.getIncludeInDataBounds()) {
+            if (isDomainAxis) {
+                result = Range.combine(result, xyabi.getXRange());
+            }
+            else {
+                result = Range.combine(result, xyabi.getYRange());
+            }
+        }
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 7
+                Correctness: plausible
+                Validation Time: 25.24 seconds
+                Failure reason: None
+
+                PATCH:
+                public Range getDataRange(ValueAxis axis) {
+    Range result = null;
+    List mappedDatasets = new ArrayList();
+    List includedAnnotations = new ArrayList();
+    boolean isDomainAxis = true;
+    int domainIndex = getDomainAxisIndex(axis);
+    if (domainIndex >= 0) {
+        isDomainAxis = true;
+        mappedDatasets.addAll(getDatasetsMappedToDomainAxis(
+                new Integer(domainIndex)));
+        if (domainIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    int rangeIndex = getRangeAxisIndex(axis);
+    if (rangeIndex >= 0) {
+        isDomainAxis = false;
+        mappedDatasets.addAll(getDatasetsMappedToRangeAxis(
+                new Integer(rangeIndex)));
+        if (rangeIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    Iterator iterator = mappedDatasets.iterator();
+    while (iterator.hasNext()) {
+        XYDataset d = (XYDataset) iterator.next();
+        if (d != null) {
+            XYItemRenderer r = getRendererForDataset(d);
+            if (isDomainAxis) {
+                if (r != null) {
+                    result = Range.combine(result, r.findDomainBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findDomainBounds(d));
+                }
+            }
+            else {
+                if (r != null) {
+                    result = Range.combine(result, r.findRangeBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findRangeBounds(d));
+                }
+            }
+            if (r != null) { // Fixed: Check if renderer is not null before accessing its annotations
+                Collection c = r.getAnnotations();
+                Iterator i = c.iterator();
+                while (i.hasNext()) {
+                    XYAnnotation a = (XYAnnotation) i.next();
+                    if (a instanceof XYAnnotationBoundsInfo) {
+                        includedAnnotations.add(a);
+                    }
+                }
+            }
+        }
+    }
+    Iterator it = includedAnnotations.iterator();
+    while (it.hasNext()) {
+        XYAnnotationBoundsInfo xyabi = (XYAnnotationBoundsInfo) it.next();
+        if (xyabi.getIncludeInDataBounds()) {
+            if (isDomainAxis) {
+                result = Range.combine(result, xyabi.getXRange());
+            }
+            else {
+                result = Range.combine(result, xyabi.getYRange());
+            }
+        }
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 8
+                Correctness: plausible
+                Validation Time: 23.42 seconds
+                Failure reason: None
+
+                PATCH:
+                public Range getDataRange(ValueAxis axis) {
+    Range result = null;
+    List mappedDatasets = new ArrayList();
+    List includedAnnotations = new ArrayList();
+    boolean isDomainAxis = true;
+    int domainIndex = getDomainAxisIndex(axis);
+    if (domainIndex >= 0) {
+        isDomainAxis = true;
+        mappedDatasets.addAll(getDatasetsMappedToDomainAxis(
+                new Integer(domainIndex)));
+        if (domainIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    int rangeIndex = getRangeAxisIndex(axis);
+    if (rangeIndex >= 0) {
+        isDomainAxis = false;
+        mappedDatasets.addAll(getDatasetsMappedToRangeAxis(
+                new Integer(rangeIndex)));
+        if (rangeIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    Iterator iterator = mappedDatasets.iterator();
+    while (iterator.hasNext()) {
+        XYDataset d = (XYDataset) iterator.next();
+        if (d != null) {
+            XYItemRenderer r = getRendererForDataset(d);
+            if (isDomainAxis) {
+                if (r != null) {
+                    result = Range.combine(result, r.findDomainBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findDomainBounds(d));
+                }
+            }
+            else {
+                if (r != null) {
+                    result = Range.combine(result, r.findRangeBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findRangeBounds(d));
+                }
+            }
+            if (r != null) { // Ensure renderer is not null
+                Collection c = r.getAnnotations();
+                Iterator i = c.iterator();
+                while (i.hasNext()) {
+                    XYAnnotation a = (XYAnnotation) i.next();
+                    if (a instanceof XYAnnotationBoundsInfo) {
+                        includedAnnotations.add(a);
+                    }
+                }
+            }
+        }
+    }
+    Iterator it = includedAnnotations.iterator();
+    while (it.hasNext()) {
+        XYAnnotationBoundsInfo xyabi = (XYAnnotationBoundsInfo) it.next();
+        if (xyabi.getIncludeInDataBounds()) {
+            if (isDomainAxis) {
+                result = Range.combine(result, xyabi.getXRange());
+            }
+            else {
+                result = Range.combine(result, xyabi.getYRange());
+            }
+        }
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 20.45 seconds
+                Failure reason: None
+
+                PATCH:
+                public Range getDataRange(ValueAxis axis) {
+    Range result = null;
+    List mappedDatasets = new ArrayList();
+    List includedAnnotations = new ArrayList();
+    boolean isDomainAxis = true;
+    int domainIndex = getDomainAxisIndex(axis);
+    if (domainIndex >= 0) {
+        isDomainAxis = true;
+        mappedDatasets.addAll(getDatasetsMappedToDomainAxis(
+                new Integer(domainIndex)));
+        if (domainIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    int rangeIndex = getRangeAxisIndex(axis);
+    if (rangeIndex >= 0) {
+        isDomainAxis = false;
+        mappedDatasets.addAll(getDatasetsMappedToRangeAxis(
+                new Integer(rangeIndex)));
+        if (rangeIndex == 0) {
+            Iterator iterator = this.annotations.iterator();
+            while (iterator.hasNext()) {
+                XYAnnotation annotation = (XYAnnotation) iterator.next();
+                if (annotation instanceof XYAnnotationBoundsInfo) {
+                    includedAnnotations.add(annotation);
+                }
+            }
+        }
+    }
+    Iterator iterator = mappedDatasets.iterator();
+    while (iterator.hasNext()) {
+        XYDataset d = (XYDataset) iterator.next();
+        if (d != null) {
+            XYItemRenderer r = getRendererForDataset(d);
+            if (isDomainAxis) {
+                if (r != null) {
+                    result = Range.combine(result, r.findDomainBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findDomainBounds(d));
+                }
+            }
+            else {
+                if (r != null) {
+                    result = Range.combine(result, r.findRangeBounds(d));
+                }
+                else {
+                    result = Range.combine(result,
+                            DatasetUtilities.findRangeBounds(d));
+                }
+            }
+            if (r != null) { // Fixed null pointer exception
+                Collection c = r.getAnnotations();
+                Iterator i = c.iterator();
+                while (i.hasNext()) {
+                    XYAnnotation a = (XYAnnotation) i.next();
+                    if (a instanceof XYAnnotationBoundsInfo) {
+                        includedAnnotations.add(a);
+                    }
+                }
+            }
+        }
+    }
+    Iterator it = includedAnnotations.iterator();
+    while (it.hasNext()) {
+        XYAnnotationBoundsInfo xyabi = (XYAnnotationBoundsInfo) it.next();
+        if (xyabi.getIncludeInDataBounds()) {
+            if (isDomainAxis) {
+                result = Range.combine(result, xyabi.getXRange());
+            }
+            else {
+                result = Range.combine(result, xyabi.getYRange());
+            }
+        }
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

@@ -1,0 +1,265 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 2.85 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private static Type resolve(Type context, Class<?> contextRawType, Type toResolve,
+                            Collection<TypeVariable> visitedTypeVariables) {
+  // this implementation is made a little more complicated in an attempt to avoid object-creation
+  while (true) {
+    if (toResolve instanceof TypeVariable) {
+      TypeVariable<?> typeVariable = (TypeVariable<?>) toResolve;
+      if (visitedTypeVariables.contains(typeVariable)) {
+        // cannot reduce due to infinite recursion
+        return toResolve;
+      } else {
+        visitedTypeVariables.add(typeVariable);
+      }
+      toResolve = resolveTypeVariable(context, contextRawType, typeVariable);
+      if (toResolve == typeVariable) {
+        return toResolve;
+      }
+
+    } else if (toResolve instanceof Class && ((Class<?>) toResolve).isArray()) {
+      Class<?> original = (Class<?>) toResolve;
+      Type componentType = original.getComponentType();
+      Type newComponentType = resolve(context, contextRawType, componentType, visitedTypeVariables);
+      return componentType == newComponentType
+          ? original
+          : arrayOf(newComponentType);
+
+    } else if (toResolve instanceof GenericArrayType) {
+      GenericArrayType original = (GenericArrayType) toResolve;
+
+      Type componentType = original.getGenericComponentType();
+      Type newComponentType = resolve(context, contextRawType, componentType, visitedTypeVariables);
+      return componentType == newComponentType
+          ? original
+          : new GenericArrayTypeImpl(newComponentType);
+
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/build.xml:60: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/build.xml:66: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/build/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:898: error: ';' expected
+    [javac]   public String toDebugHashCodeString() {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:930: error: illegal start of expression
+    [javac]   private String getDebugHashCodeStringOf(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:930: error: ';' expected
+    [javac]   private String getDebugHashCodeStringOf(JSType type) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:930: error: ';' expected
+    [javac]   private String getDebugHashCodeStringOf(JSType type) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:937: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/build.xml:66: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 2.56 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private static Type resolve(Type context, Class<?> contextRawType, Type toResolve,
+                            Collection<TypeVariable> visitedTypeVariables) {
+  while (true) {
+    if (toResolve instanceof TypeVariable) {
+      TypeVariable<?> typeVariable = (TypeVariable<?>) toResolve;
+      if (visitedTypeVariables.contains(typeVariable)) {
+        // cannot reduce due to infinite recursion
+        return toResolve;
+      } else {
+        visitedTypeVariables.add(typeVariable);
+      }
+      toResolve = resolveTypeVariable(context, contextRawType, typeVariable);
+      if (toResolve == typeVariable) {
+        return toResolve;
+      }
+
+    } else if (toResolve instanceof Class && ((Class<?>) toResolve).isArray()) {
+      Class<?> original = (Class<?>) toResolve;
+      Type componentType = original.getComponentType();
+      Type newComponentType = resolve(context, contextRawType, componentType, visitedTypeVariables);
+      return componentType == newComponentType
+          ? original
+          : arrayOf(newComponentType);
+
+    } else if (toResolve instanceof GenericArrayType) {
+      GenericArrayType original = (GenericArrayType) toResolve;
+      Type componentType = original.getGenericComponentType();
+      Type newComponentType = resolve(context, contextRawType, componentType, visitedTypeVariables);
+      return componentType == newComponentType
+          ? original
+          : arrayOf(newComponentType);
+
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/build.xml:60: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/build.xml:66: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/build/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:896: error: ';' expected
+    [javac]   public String toDebugHashCodeString() {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:928: error: illegal start of expression
+    [javac]   private String getDebugHashCodeStringOf(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:928: error: ';' expected
+    [javac]   private String getDebugHashCodeStringOf(JSType type) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:928: error: ';' expected
+    [javac]   private String getDebugHashCodeStringOf(JSType type) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:935: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/build.xml:66: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 2.35 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private static Type resolve(Type context, Class<?> contextRawType, Type toResolve,
+                            Collection<TypeVariable> visitedTypeVariables) {
+  // this implementation is made a little more complicated in an attempt to avoid object-creation
+  while (true) {
+    if (toResolve instanceof TypeVariable) {
+      TypeVariable<?> typeVariable = (TypeVariable<?>) toResolve;
+      if (visitedTypeVariables.contains(typeVariable)) {
+        // cannot reduce due to infinite recursion
+        return toResolve;
+      } else {
+        visitedTypeVariables.add(typeVariable);
+      }
+      toResolve = resolveTypeVariable(context, contextRawType, typeVariable);
+      if (toResolve == typeVariable) {
+        return toResolve;
+      }
+
+    } else if (toResolve instanceof Class && ((Class<?>) toResolve).isArray()) {
+      Class<?> original = (Class<?>) toResolve;
+      Type componentType = original.getComponentType();
+      Type newComponentType = resolve(context, contextRawType, componentType, visitedTypeVariables);
+      return componentType == newComponentType
+          ? original
+          : arrayOf(newComponentType);
+
+    } else if (toResolve instanceof GenericArrayType) {
+      GenericArrayType original = (GenericArrayType) toResolve;
+
+      Type componentType = original.getGenericComponentType();
+      Type newComponentType = resolve(context, contextRawType, componentType, visitedTypeVariables);
+      return componentType == newComponentType
+          ? original
+          : arrayOf(newComponentType);
+
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/build.xml:60: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/build.xml:66: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/build/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:898: error: ';' expected
+    [javac]   public String toDebugHashCodeString() {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:930: error: illegal start of expression
+    [javac]   private String getDebugHashCodeStringOf(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:930: error: ';' expected
+    [javac]   private String getDebugHashCodeStringOf(JSType type) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:930: error: ';' expected
+    [javac]   private String getDebugHashCodeStringOf(JSType type) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/src/com/google/javascript/rhino/jstype/FunctionType.java:937: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 5 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_152_9d2d3d7cdac641c4b92c7c2f33750f5d/build.xml:66: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

@@ -1,0 +1,1734 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 2.72 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  if (matchingExitNode(n, exitType, labelName)) {
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+  if (n.isIf()) {
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isTry()) {
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isLabel()) {
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+    return;
+  }
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+  for (Node c : n.children()) {
+    if (c.isIf()) {
+      Node ifTree = c;
+      Node trueBlock = ifTree.getFirstChild().getNext();
+      Node falseBlock = trueBlock.getNext();
+      tryMinimizeIfBlockExits(trueBlock, falseBlock, ifTree, exitType, labelName);
+      if (falseBlock != null) {
+        tryMinimizeIfBlockExits(falseBlock, trueBlock, ifTree, exitType, labelName);
+      }
+    }
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: not a statement
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: <identifier> expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: not a statement
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ')' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: not a statement
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: ';' expected
+    [javac]   private static void moveAllFollowing(
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ')' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: illegal start of expression
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: not a statement
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:269: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 3.16 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  if (matchingExitNode(n, exitType, labelName)) {
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+  if (n.isIf()) {
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isTry()) {
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isLabel()) {
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+    return;
+  }
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+  for (Node c : n.children()) {
+    if (c.isIf()) {
+      Node ifTree = c;
+      Node trueBlock = ifTree.getFirstChild().getNext();
+      Node falseBlock = trueBlock.getNext();
+      tryMinimizeIfBlockExits(trueBlock, falseBlock, ifTree, exitType, labelName);
+      if (falseBlock != null) {
+        tryMinimizeIfBlockExits(falseBlock, trueBlock, ifTree, exitType, labelName);
+      }
+    }
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: not a statement
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: <identifier> expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: not a statement
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ')' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: not a statement
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: ';' expected
+    [javac]   private static void moveAllFollowing(
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ')' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: illegal start of expression
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: not a statement
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:269: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 2.46 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+    if (matchingExitNode(n, exitType, labelName)) {
+        NodeUtil.removeChild(n.getParent(), n);
+        compiler.reportCodeChange();
+        return;
+    }
+    if (n.isIf()) {
+        Node ifBlock = n.getFirstChild().getNext();
+        tryMinimizeExits(ifBlock, exitType, labelName);
+        Node elseBlock = ifBlock.getNext();
+        if (elseBlock != null) {
+            tryMinimizeExits(elseBlock, exitType, labelName);
+        }
+        return;
+    }
+    if (n.isTry()) {
+        Node tryBlock = n.getFirstChild();
+        tryMinimizeExits(tryBlock, exitType, labelName);
+        Node allCatchNodes = NodeUtil.getCatchBlock(n);
+        if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+            Preconditions.checkState(allCatchNodes.hasOneChild());
+            Node catchNode = allCatchNodes.getFirstChild();
+            Node catchCodeBlock = catchNode.getLastChild();
+            tryMinimizeExits(catchCodeBlock, exitType, labelName);
+        }
+        if (NodeUtil.hasFinally(n)) {
+            Node finallyBlock = n.getLastChild();
+            tryMinimizeExits(finallyBlock, exitType, labelName);
+        }
+        return;
+    }
+    if (n.isLabel()) {
+        Node labelBlock = n.getLastChild();
+        tryMinimizeExits(labelBlock, exitType, labelName);
+        return;
+    }
+    if (!n.isBlock() || n.getLastChild() == null) {
+        return;
+    }
+    for (Node c : n.children()) {
+        if (c.isIf()) {
+            Node ifTree = c;
+            Node trueBlock = ifTree.getFirstChild().getNext();
+            Node falseBlock = trueBlock.getNext();
+            tryMinimizeIfBlockExits(trueBlock, falseBlock, ifTree, exitType, labelName);
+            if (falseBlock != null) {
+                tryMinimizeIfBlockExits(falseBlock, trueBlock, ifTree, exitType, labelName);
+            }
+        }
+        if (c == n.getLastChild()) {
+            break;
+        }
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: not a statement
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: <identifier> expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: not a statement
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ')' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: not a statement
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: ';' expected
+    [javac]   private static void moveAllFollowing(
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ')' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: illegal start of expression
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: not a statement
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:269: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: timeout
+                Validation Time: 40.04 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  if (matchingExitNode(n, exitType, labelName)) {
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+  if (n.isIf()) {
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isTry()) {
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isLabel()) {
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+    return;
+  }
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+  for (Node c : n.children()) {
+    if (c.isIf()) {
+      Node ifTree = c;
+      Node trueBlock = ifTree.getFirstChild().getNext();
+      Node falseBlock = trueBlock.getNext();
+      tryMinimizeIfBlockExits(trueBlock, falseBlock, ifTree, exitType, labelName);
+      if (falseBlock != null) {
+        tryMinimizeIfBlockExits(falseBlock, trueBlock, ifTree, exitType, labelName);
+      }
+    }
+  }
+  while (n.getLastChild() != null) {
+    Node c = n.getLastChild();
+    tryMinimizeExits(c, exitType, labelName);
+  }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 2.64 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  if (matchingExitNode(n, exitType, labelName)) {
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+  if (n.isIf()) {
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isTry()) {
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isLabel()) {
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+    return;
+  }
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+  for (Node c : n.children()) {
+    if (c.isIf()) {
+      Node ifTree = c;
+      Node trueBlock = ifTree.getFirstChild().getNext();
+      Node falseBlock = trueBlock.getNext();
+      tryMinimizeIfBlockExits(trueBlock, falseBlock, ifTree, exitType, labelName);
+      if (falseBlock != null) {
+        tryMinimizeIfBlockExits(falseBlock, trueBlock, ifTree, exitType, labelName);
+      }
+    }
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: not a statement
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: <identifier> expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: not a statement
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ')' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: not a statement
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: ';' expected
+    [javac]   private static void moveAllFollowing(
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ')' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: illegal start of expression
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: not a statement
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:269: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: timeout
+                Validation Time: 40.04 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+    if (matchingExitNode(n, exitType, labelName)) {
+        NodeUtil.removeChild(n.getParent(), n);
+        compiler.reportCodeChange();
+        return;
+    }
+    if (n.isIf()) {
+        Node ifBlock = n.getFirstChild().getNext();
+        tryMinimizeExits(ifBlock, exitType, labelName);
+        Node elseBlock = ifBlock.getNext();
+        if (elseBlock != null) {
+            tryMinimizeExits(elseBlock, exitType, labelName);
+        }
+        return;
+    }
+    if (n.isTry()) {
+        Node tryBlock = n.getFirstChild();
+        tryMinimizeExits(tryBlock, exitType, labelName);
+        Node allCatchNodes = NodeUtil.getCatchBlock(n);
+        if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+            Preconditions.checkState(allCatchNodes.hasOneChild());
+            Node catchNode = allCatchNodes.getFirstChild();
+            Node catchCodeBlock = catchNode.getLastChild();
+            tryMinimizeExits(catchCodeBlock, exitType, labelName);
+        }
+        if (NodeUtil.hasFinally(n)) {
+            Node finallyBlock = n.getLastChild();
+            tryMinimizeExits(finallyBlock, exitType, labelName);
+        }
+        return;
+    }
+    if (n.isLabel()) {
+        Node labelBlock = n.getLastChild();
+        tryMinimizeExits(labelBlock, exitType, labelName);
+        return;
+    }
+    if (!n.isBlock() || n.getLastChild() == null) {
+        return;
+    }
+    for (Node c : n.children()) {
+        if (c.isIf()) {
+            Node ifTree = c;
+            Node trueBlock = ifTree.getFirstChild().getNext();
+            Node falseBlock = trueBlock.getNext();
+            tryMinimizeIfBlockExits(trueBlock, falseBlock, ifTree, exitType, labelName);
+        }
+        if (c == n.getLastChild()) {
+            break;
+        }
+    }
+    Node lastChild;
+    while ((lastChild = n.getLastChild()) != null) {
+        tryMinimizeExits(lastChild, exitType, labelName);
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 3.53 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  if (matchingExitNode(n, exitType, labelName)) {
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+  if (n.isIf()) {
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isTry()) {
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isLabel()) {
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+    return;
+  }
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+  for (Node c : n.children()) {
+    if (c.isIf()) {
+      Node ifTree = c;
+      Node trueBlock, falseBlock;
+      trueBlock = ifTree.getFirstChild().getNext();
+      falseBlock = trueBlock.getNext();
+      tryMinimizeIfBlockExits(trueBlock, falseBlock, ifTree, exitType, labelName);
+      if (falseBlock != null) {
+        tryMinimizeIfBlockExits(falseBlock, trueBlock, ifTree, exitType, labelName);
+      }
+    }
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: not a statement
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:175: error: <identifier> expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:175: error: not a statement
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:175: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:175: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:234: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:234: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:234: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:234: error: ')' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:234: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:234: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:234: error: not a statement
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:234: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:234: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]   private static void moveAllFollowing(
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:259: error: ')' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:259: error: illegal start of expression
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:259: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:259: error: not a statement
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:259: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:259: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:270: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: timeout
+                Validation Time: 40.04 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+    if (matchingExitNode(n, exitType, labelName)) {
+        NodeUtil.removeChild(n.getParent(), n);
+        compiler.reportCodeChange();
+        return;
+    }
+    if (n.isIf()) {
+        Node ifBlock = n.getFirstChild().getNext();
+        tryMinimizeExits(ifBlock, exitType, labelName);
+        Node elseBlock = ifBlock.getNext();
+        if (elseBlock != null) {
+            tryMinimizeExits(elseBlock, exitType, labelName);
+        }
+        return;
+    }
+    if (n.isTry()) {
+        Node tryBlock = n.getFirstChild();
+        tryMinimizeExits(tryBlock, exitType, labelName);
+        Node allCatchNodes = NodeUtil.getCatchBlock(n);
+        if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+            Preconditions.checkState(allCatchNodes.hasOneChild());
+            Node catchNode = allCatchNodes.getFirstChild();
+            Node catchCodeBlock = catchNode.getLastChild();
+            tryMinimizeExits(catchCodeBlock, exitType, labelName);
+        }
+        if (NodeUtil.hasFinally(n)) {
+            Node finallyBlock = n.getLastChild();
+            tryMinimizeExits(finallyBlock, exitType, labelName);
+        }
+        return;
+    }
+    if (n.isLabel()) {
+        Node labelBlock = n.getLastChild();
+        tryMinimizeExits(labelBlock, exitType, labelName);
+        return;
+    }
+    if (!n.isBlock() || n.getLastChild() == null) {
+        return;
+    }
+    for (Node c : n.children()) {
+        if (c.isIf()) {
+            Node ifTree = c;
+            Node trueBlock = ifTree.getFirstChild().getNext();
+            Node falseBlock = trueBlock.getNext();
+            tryMinimizeIfBlockExits(trueBlock, falseBlock, ifTree, exitType, labelName);
+            if (falseBlock != null) {
+                tryMinimizeIfBlockExits(falseBlock, trueBlock, ifTree, exitType, labelName);
+            }
+        }
+    }
+    while (n.getLastChild() != null) {
+        Node c = n.getLastChild();
+        tryMinimizeExits(c, exitType, labelName);
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 3.67 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  if (matchingExitNode(n, exitType, labelName)) {
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+  if (n.isIf()) {
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isTry()) {
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isLabel()) {
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+    return;
+  }
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+  for (Node c = n.getFirstChild(); c != null; c = c.getNext()) {
+    if (c.isIf()) {
+      Node ifTree = c;
+      Node trueBlock = ifTree.getFirstChild().getNext();
+      Node falseBlock = trueBlock.getNext();
+      tryMinimizeIfBlockExits(trueBlock, falseBlock, ifTree, exitType, labelName);
+      if (falseBlock != null) {
+        tryMinimizeIfBlockExits(falseBlock, trueBlock, ifTree, exitType, labelName);
+      }
+    }
+  }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:170: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:170: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:170: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:170: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:170: error: not a statement
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:170: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:171: error: <identifier> expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:171: error: not a statement
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:171: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:171: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:230: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:230: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:230: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:230: error: ')' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:230: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:230: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:230: error: not a statement
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:230: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:230: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:254: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:254: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:254: error: ';' expected
+    [javac]   private static void moveAllFollowing(
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:255: error: ')' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:255: error: illegal start of expression
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:255: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:255: error: not a statement
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:255: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:255: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:266: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 3.11 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                void tryMinimizeExits(Node n, int exitType, String labelName) {
+  if (matchingExitNode(n, exitType, labelName)) {
+    NodeUtil.removeChild(n.getParent(), n);
+    compiler.reportCodeChange();
+    return;
+  }
+  if (n.isIf()) {
+    Node ifBlock = n.getFirstChild().getNext();
+    tryMinimizeExits(ifBlock, exitType, labelName);
+    Node elseBlock = ifBlock.getNext();
+    if (elseBlock != null) {
+      tryMinimizeExits(elseBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isTry()) {
+    Node tryBlock = n.getFirstChild();
+    tryMinimizeExits(tryBlock, exitType, labelName);
+    Node allCatchNodes = NodeUtil.getCatchBlock(n);
+    if (NodeUtil.hasCatchHandler(allCatchNodes)) {
+      Preconditions.checkState(allCatchNodes.hasOneChild());
+      Node catchNode = allCatchNodes.getFirstChild();
+      Node catchCodeBlock = catchNode.getLastChild();
+      tryMinimizeExits(catchCodeBlock, exitType, labelName);
+    }
+    if (NodeUtil.hasFinally(n)) {
+      Node finallyBlock = n.getLastChild();
+      tryMinimizeExits(finallyBlock, exitType, labelName);
+    }
+    return;
+  }
+  if (n.isLabel()) {
+    Node labelBlock = n.getLastChild();
+    tryMinimizeExits(labelBlock, exitType, labelName);
+    return;
+  }
+  if (!n.isBlock() || n.getLastChild() == null) {
+    return;
+  }
+  for (Node c : n.children()) {
+    if (c.isIf()) {
+      Node ifTree = c;
+      Node trueBlock = ifTree.getFirstChild().getNext();
+      Node falseBlock = trueBlock.getNext();
+      tryMinimizeIfBlockExits(trueBlock, falseBlock, ifTree, exitType, labelName);
+      if (falseBlock != null) {
+        tryMinimizeIfBlockExits(falseBlock, trueBlock, ifTree, exitType, labelName);
+      }
+    }
+    if (c == n.getLastChild()) {
+      break;
+    }
+  }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: illegal start of expression
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: not a statement
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:173: error: ';' expected
+    [javac]   private void tryMinimizeIfBlockExits(Node srcBlock, Node destBlock,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: <identifier> expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: not a statement
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:174: error: ';' expected
+    [javac]       Node ifNode, int exitType, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ')' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: illegal start of expression
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: not a statement
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:233: error: ';' expected
+    [javac]   private static boolean matchingExitNode(Node n, int type, String labelName) {
+    [javac]                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: illegal start of expression
+    [javac]   private static void moveAllFollowing(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:257: error: ';' expected
+    [javac]   private static void moveAllFollowing(
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ')' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: illegal start of expression
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: not a statement
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:258: error: ';' expected
+    [javac]       Node start, Node srcParent, Node destParent) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/src/com/google/javascript/jscomp/MinimizeExitPoints.java:269: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 29 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Closure_126_dac7e30336cd41dcbc15c28bcf4ceaa5/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

@@ -1,0 +1,1435 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 44.08 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 43.72 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            // Ensure both Token.INC and Token.DEC cases are handled correctly
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 50.98 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC: // Fixed indentation
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 58.45 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            // FIX: Remove setting isSet = true for increment/decrement operations
+            // Increment and decrement operations do not constitute 'set' operations for global name references.
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testInlineAliasWithModifications
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CollapsePropertiesTest::testInlineAliasWithModifications']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 47.37 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 42.56 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC: // Fixed indentation to align correctly and group cases consistently
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 47.70 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = false; // Fixed bug: INC and DEC should not be treated as "isSet".
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = false; // Fixed bug: INC and DEC should not be treated as "isSet".
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testInlineAliasWithModifications
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CollapsePropertiesTest::testInlineAliasWithModifications']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 44.59 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 44.21 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = false; // Fixed bug: These operations modify the value but do not "set" it explicitly.
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = false; // Fixed bug: These operations modify the value but do not "set" it explicitly.
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testInlineAliasWithModifications
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CollapsePropertiesTest::testInlineAliasWithModifications']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 43.49 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC: // Fixed: Moved `case Token.DEC` into the same block as `case Token.INC`
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

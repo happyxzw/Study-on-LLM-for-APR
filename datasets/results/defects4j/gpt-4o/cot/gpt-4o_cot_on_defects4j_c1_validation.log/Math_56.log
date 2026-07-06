@@ -1,0 +1,485 @@
+==================================================
+                Project: Math
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 2.42 seconds
+                Failure reason: None
+
+                PATCH:
+                public int[] getCounts(int index) {
+    if (index < 0 || index >= totalSize) {
+        throw new OutOfRangeException(index, 0, totalSize);
+    }
+    final int[] indices = new int[dimension];
+    int count = 0;
+    for (int i = 0; i < last; i++) {
+        int idx = 0;
+        final int offset = uniCounterOffset[i];
+        while (count + offset <= index) {
+            count += offset;
+            ++idx;
+        }
+        indices[i] = idx;
+    }
+    int idx = 0;
+    while (count < index) {
+        count++;
+        idx++;
+    }
+    indices[last] = idx;
+    return indices;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 1
+                Correctness: plausible
+                Validation Time: 2.60 seconds
+                Failure reason: None
+
+                PATCH:
+                public int[] getCounts(int index) {
+    if (index < 0 || index >= totalSize) {
+        throw new OutOfRangeException(index, 0, totalSize);
+    }
+    final int[] indices = new int[dimension];
+    int count = 0;
+    for (int i = 0; i < last; i++) {
+        int idx = 0;
+        final int offset = uniCounterOffset[i];
+        while (count + offset <= index) { // Fixed condition to ensure count + offset <= index
+            count += offset;
+            ++idx;
+        }
+        indices[i] = idx;
+    }
+    int idx = 0; // Fixed initialization to 0 (was 1 previously, causing an off-by-one error)
+    while (count < index) {
+        ++idx; // Increment idx first (to align correctly with actual index)
+        ++count;
+    }
+    indices[last] = idx;
+    return indices;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 2.39 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int[] getCounts(int index) {
+    if (index < 0 || index >= totalSize) {
+        throw new OutOfRangeException(index, 0, totalSize);
+    }
+    final int[] indices = new int[dimension];
+    int count = 0;
+    for (int i = 0; i < last; i++) {
+        int idx = 0;
+        final int offset = uniCounterOffset[i];
+        while (count + offset <= index) { // Changed "count <= index" to "count + offset <= index"
+            count += offset;
+            ++idx;
+        }
+        indices[i] = idx;
+    }
+    int idx = 0; // Changed initialization from 1 to 0
+    while (count < index) {
+        ++idx; // Moved increment to the beginning of the loop
+        count += idx;
+    }
+    indices[last] = idx;
+    return indices;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MultidimensionalCounterTest::testIterationConsistency
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 2.50 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int[] getCounts(int index) {
+    if (index < 0 || index >= totalSize) {
+        throw new OutOfRangeException(index, 0, totalSize);
+    }
+    final int[] indices = new int[dimension];
+    int count = 0;
+    for (int i = 0; i < last; i++) {
+        int idx = 0;
+        final int offset = uniCounterOffset[i];
+        while (count + offset <= index) { // Fixed condition to prevent overshooting count
+            count += offset;
+            ++idx;
+        }
+        indices[i] = idx;
+    }
+    int idx = 0; // Changed initial value of idx to 0 to ensure proper calculation
+    while (count < index) {
+        ++idx; // Increment first before adding to count
+        count += idx;
+    }
+    indices[last] = idx;
+    return indices;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MultidimensionalCounterTest::testIterationConsistency
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 4
+                Correctness: plausible
+                Validation Time: 2.35 seconds
+                Failure reason: None
+
+                PATCH:
+                public int[] getCounts(int index) {
+    if (index < 0 ||
+        index >= totalSize) {
+        throw new OutOfRangeException(index, 0, totalSize);
+    }
+    final int[] indices = new int[dimension];
+    int count = 0;
+    for (int i = 0; i < last; i++) {
+        int idx = 0;
+        final int offset = uniCounterOffset[i];
+        while (count + offset <= index) { // Fixed condition to correctly determine when to stop
+            count += offset;
+            ++idx;
+        }
+        indices[i] = idx; // No need to decrement idx as the while loop now stops correctly
+    }
+    int idx = 0; // Fixed initialization of idx to 0 instead of 1
+    while (count < index) {
+        ++idx;
+        count += 1; // Fixed increment to match the unit increase in count
+    }
+    indices[last] = idx; // Assign idx to indices[last] after the loop completes
+    return indices;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 5
+                Correctness: plausible
+                Validation Time: 2.68 seconds
+                Failure reason: None
+
+                PATCH:
+                public int[] getCounts(int index) {
+    if (index < 0 ||
+        index >= totalSize) {
+        throw new OutOfRangeException(index, 0, totalSize);
+    }
+    final int[] indices = new int[dimension];
+    int count = 0;
+    for (int i = 0; i < last; i++) {
+        int idx = 0;
+        final int offset = uniCounterOffset[i];
+        while (count + offset <= index) { // Fixed condition to ensure proper counting
+            count += offset;
+            ++idx;
+        }
+        indices[i] = idx; // Assign idx directly without decrementing
+    }
+    int idx = 0; // Fixed initialization to 0 instead of 1
+    while (count < index) {
+        ++idx;
+        ++count; // Increment count after incrementing idx
+    }
+    indices[last] = idx;
+    return indices;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 2.48 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int[] getCounts(int index) {
+    if (index < 0 || index >= totalSize) {
+        throw new OutOfRangeException(index, 0, totalSize);
+    }
+    final int[] indices = new int[dimension];
+    int count = 0;
+    for (int i = 0; i < last; i++) {
+        int idx = 0;
+        final int offset = uniCounterOffset[i];
+        while (count + offset <= index) { // Fixed condition to include offset in comparison
+            count += offset;
+            ++idx;
+        }
+        indices[i] = idx;
+    }
+    int idx = 0; // Changed initial value from 1 to 0
+    while (count < index) {
+        ++idx; // Increment before adding to count
+        count += idx;
+    }
+    indices[last] = idx;
+    return indices;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MultidimensionalCounterTest::testIterationConsistency
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 7
+                Correctness: plausible
+                Validation Time: 2.55 seconds
+                Failure reason: None
+
+                PATCH:
+                public int[] getCounts(int index) {
+    if (index < 0 || index >= totalSize) {
+        throw new OutOfRangeException(index, 0, totalSize);
+    }
+    final int[] indices = new int[dimension];
+    int count = 0;
+    for (int i = 0; i < last; i++) {
+        int idx = 0;
+        final int offset = uniCounterOffset[i];
+        while (count + offset <= index) { // Fixed condition
+            count += offset;
+            ++idx;
+        }
+        indices[i] = idx; // Set index directly without decrementing
+    }
+    int idx = 0; // Initialize idx to 0
+    while (count < index) {
+        ++idx;
+        ++count;
+    }
+    indices[last] = idx; // Correctly assign idx to indices[last]
+    return indices;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 8
+                Correctness: plausible
+                Validation Time: 2.34 seconds
+                Failure reason: None
+
+                PATCH:
+                public int[] getCounts(int index) {
+    if (index < 0 || index >= totalSize) {
+        throw new OutOfRangeException(index, 0, totalSize);
+    }
+    final int[] indices = new int[dimension];
+    int count = 0;
+    for (int i = 0; i < last; i++) {
+        int idx = 0;
+        final int offset = uniCounterOffset[i];
+        while (count + offset <= index) {  // Fixed condition
+            count += offset;
+            ++idx;
+        }
+        indices[i] = idx;
+    }
+    int idx = 0;  // Start idx at 0 instead of 1
+    while (count < index) {
+        count += 1;  // Increment count by 1 instead of idx
+        ++idx;
+    }
+    indices[last] = idx;
+    return indices;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 2.45 seconds
+                Failure reason: None
+
+                PATCH:
+                public int[] getCounts(int index) {
+    if (index < 0 || index >= totalSize) {
+        throw new OutOfRangeException(index, 0, totalSize);
+    }
+    final int[] indices = new int[dimension];
+    int count = 0;
+    for (int i = 0; i < last; i++) {
+        int idx = 0;
+        final int offset = uniCounterOffset[i];
+        while (count + offset <= index) { // Fixed condition to ensure count + offset <= index
+            count += offset;
+            ++idx;
+        }
+        indices[i] = idx;
+    }
+    int idx = 0; // Changed initialization from 1 to 0
+    while (count < index) {
+        ++idx;
+        count += 1; // Adjusted increment to align with the loop's condition
+    }
+    indices[last] = idx;
+    return indices;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

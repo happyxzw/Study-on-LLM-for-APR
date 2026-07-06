@@ -1,0 +1,1386 @@
+==================================================
+                Project: Math
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 12.23 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    if (c == '-') {
+        sign = -1;
+    } else if (c == '+') {
+        sign = 1;
+    } else {
+        pos.setIndex(initialIndex);
+        if (c != Character.MIN_VALUE) { // check if c is not the end of the string
+            pos.setErrorIndex(startIndex);
+        }
+        return new Complex(re.doubleValue(), 0.0);
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (
+            endIndex > source.length() || // Ensure we don't go out of bounds
+            !source.substring(startIndex, endIndex).equals(getImaginaryCharacter())) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.math.complex.ComplexFormatTest::testParseZeroImaginary
+  - org.apache.commons.math.complex.FrenchComplexFormatTest::testParseZeroImaginary
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.complex.FrenchComplexFormatTest::testParseZeroImaginary', 'org.apache.commons.math.complex.ComplexFormatTest::testParseZeroImaginary']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 12.44 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    if (c == '-') {
+        sign = -1;
+    } else if (c == '+') {
+        sign = 1;
+    } else if (c == 0) {
+        return new Complex(re.doubleValue(), 0.0);
+    } else {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (
+            source.substring(startIndex, endIndex).compareTo(
+        getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.math.complex.ComplexFormatTest::testForgottenImaginaryCharacter
+  - org.apache.commons.math.complex.FrenchComplexFormatTest::testForgottenImaginaryCharacter
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 10.77 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    if (c == 0) { // This case is invalid; assume we want to check for the end of input or no imaginary part.
+        return new Complex(re.doubleValue(), 0.0);
+    } else if (c == '-') {
+        sign = -1;
+    } else if (c == '+') {
+        sign = 1;
+    } else {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (
+            source.substring(startIndex, endIndex).compareTo(
+        getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.math.complex.ComplexFormatTest::testForgottenImaginaryCharacter
+  - org.apache.commons.math.complex.FrenchComplexFormatTest::testForgottenImaginaryCharacter
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 3
+                Correctness: plausible
+                Validation Time: 12.92 seconds
+                Failure reason: None
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    switch (c) {
+    case 0 :
+        return new Complex(re.doubleValue(), 0.0);
+    case '-' :
+        sign = -1;
+        break;
+    case '+' :
+        sign = 1;
+        break;
+    default :
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (endIndex > source.length() || 
+        source.substring(startIndex, endIndex).compareTo(getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 11.75 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    switch (c) {
+    case '0':
+        return new Complex(re.doubleValue(), 0.0);
+    case '-':
+        sign = -1;
+        break;
+    case '+':
+        sign = 1;
+        break;
+    default:
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    String imaginaryCharacter = getImaginaryCharacter();
+    int n = imaginaryCharacter.length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (endIndex > source.length() || 
+        !source.substring(startIndex, endIndex).equals(imaginaryCharacter)) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.math.complex.ComplexFormatTest::testParseZeroImaginary
+  - org.apache.commons.math.complex.FrenchComplexFormatTest::testParseZeroImaginary
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.complex.FrenchComplexFormatTest::testParseZeroImaginary', 'org.apache.commons.math.complex.ComplexFormatTest::testParseZeroImaginary']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 12.12 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    switch (c) {
+    case '0' :
+        return new Complex(re.doubleValue(), 0.0);
+    case '-' :
+        sign = -1;
+        break;
+    case '+' :
+        sign = 1;
+        break;
+    default :
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (
+            source.substring(startIndex, endIndex).compareTo(
+        getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - org.apache.commons.math.complex.ComplexFormatTest::testForgottenImaginaryCharacter
+  - org.apache.commons.math.complex.ComplexFormatTest::testParseZeroImaginary
+  - org.apache.commons.math.complex.FrenchComplexFormatTest::testForgottenImaginaryCharacter
+  - org.apache.commons.math.complex.FrenchComplexFormatTest::testParseZeroImaginary
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.complex.FrenchComplexFormatTest::testParseZeroImaginary', 'org.apache.commons.math.complex.ComplexFormatTest::testParseZeroImaginary']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 12.45 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    switch (c) {
+    case 'i': // Assuming 'i' is the end character for real part
+        return new Complex(re.doubleValue(), 0.0);
+    case '-':
+        sign = -1;
+        break;
+    case '+':
+        sign = 1;
+        break;
+    default:
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (
+            endIndex > source.length() || // Ensure endIndex does not exceed length
+            !source.substring(startIndex, endIndex).equals(getImaginaryCharacter())) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.math.complex.ComplexFormatTest::testParseZeroImaginary
+  - org.apache.commons.math.complex.FrenchComplexFormatTest::testParseZeroImaginary
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.complex.FrenchComplexFormatTest::testParseZeroImaginary', 'org.apache.commons.math.complex.ComplexFormatTest::testParseZeroImaginary']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 11.76 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    if (c == '\0') {
+        return new Complex(re.doubleValue(), 0.0);
+    } else if (c == '-') {
+        sign = -1;
+    } else if (c == '+') {
+        sign = 1;
+    } else {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (
+            source.substring(startIndex, endIndex).compareTo(
+        getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.math.complex.ComplexFormatTest::testForgottenImaginaryCharacter
+  - org.apache.commons.math.complex.FrenchComplexFormatTest::testForgottenImaginaryCharacter
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 8
+                Correctness: plausible
+                Validation Time: 14.06 seconds
+                Failure reason: None
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    switch (c) {
+    case 0 :
+        return new Complex(re.doubleValue(), 0.0);
+    case '-' :
+        sign = -1;
+        break;
+    case '+' :
+        sign = 1;
+        break;
+    default :
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+
+    // Check if endIndex exceeds the length of the source
+    if (endIndex > source.length() || 
+        !source.substring(startIndex, endIndex).equals(getImaginaryCharacter())) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 12.00 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    switch (c) {
+    case 0 :
+        return new Complex(re.doubleValue(), 0.0);
+    case '-' :
+        sign = -1;
+        break;
+    case '+' :
+        sign = 1;
+        break;
+    default :
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (!source.substring(startIndex, endIndex).equals(getImaginaryCharacter())) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.math.complex.ComplexFormatTest::testForgottenImaginaryCharacter
+  - org.apache.commons.math.complex.FrenchComplexFormatTest::testForgottenImaginaryCharacter
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 8.06 seconds
+                Failure reason: None
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    switch (c) {
+    case '\0' : // Changed from 0 to '\0' to represent the null character
+        return new Complex(re.doubleValue(), 0.0);
+    case '-' :
+        sign = -1;
+        break;
+    case '+' :
+        sign = 1;
+        break;
+    default :
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (
+            startIndex + n > source.length() || // Added check to prevent StringIndexOutOfBoundsException
+            source.substring(startIndex, endIndex).compareTo(
+        getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 1
+                Correctness: plausible
+                Validation Time: 8.61 seconds
+                Failure reason: None
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 1; // Changed default sign to 1 for the case of no sign specified
+    switch (c) {
+    case 0 :
+        return new Complex(re.doubleValue(), 0.0);
+    case '-' :
+        sign = -1;
+        break;
+    case '+' :
+        sign = 1;
+        break;
+    default :
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (
+            endIndex > source.length() || // Added check to ensure endIndex does not exceed source length
+            source.substring(startIndex, endIndex).compareTo(
+        getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 2
+                Correctness: plausible
+                Validation Time: 8.57 seconds
+                Failure reason: None
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 1; // Corrected the default sign to 1 for positive case
+    switch (c) {
+    case 0 :
+        return new Complex(re.doubleValue(), 0.0);
+    case '-' :
+        sign = -1;
+        break;
+    case '+' :
+        sign = 1;
+        break;
+    default :
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (
+            startIndex + n > source.length() || // Added check to avoid StringIndexOutOfBoundsException
+            source.substring(startIndex, endIndex).compareTo(
+        getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 3
+                Correctness: plausible
+                Validation Time: 9.20 seconds
+                Failure reason: None
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 1; // Fix: Default the sign to 1 instead of 0 to handle positive numbers.
+    switch (c) {
+    case 0:
+        return new Complex(re.doubleValue(), 0.0);
+    case '-':
+        sign = -1;
+        break;
+    case '+':
+        sign = 1; // This case is redundant but retained for clarity.
+        break;
+    default:
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (endIndex > source.length() || 
+        source.substring(startIndex, endIndex).compareTo(getImaginaryCharacter()) != 0) { // Fix: Added check to prevent substring index out of bounds.
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 4
+                Correctness: plausible
+                Validation Time: 8.50 seconds
+                Failure reason: None
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 1; // Changed initial sign from 0 to 1 to handle the case of positive numbers
+    switch (c) {
+    case 0 :
+        return new Complex(re.doubleValue(), 0.0);
+    case '-' :
+        sign = -1;
+        break;
+    case '+' :
+        sign = 1;
+        break;
+    default :
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (
+            source.length() < endIndex || // Added check to avoid StringIndexOutOfBoundsException
+            source.substring(startIndex, endIndex).compareTo(
+        getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 5
+                Correctness: plausible
+                Validation Time: 9.29 seconds
+                Failure reason: None
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    switch (c) {
+    case '\0': // Changed from 0 to '\0' to represent the null character correctly
+        return new Complex(re.doubleValue(), 0.0);
+    case '-':
+        sign = -1;
+        break;
+    case '+':
+        sign = 1;
+        break;
+    default:
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (endIndex > source.length() || // Added check to ensure the substring does not exceed source length
+        source.substring(startIndex, endIndex).compareTo(
+        getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 6
+                Correctness: plausible
+                Validation Time: 8.07 seconds
+                Failure reason: None
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 1; // Changed default sign to 1 to handle the case of no sign
+    if (c == 0) {
+        return new Complex(re.doubleValue(), 0.0);
+    } else if (c == '-') {
+        sign = -1;
+    } else if (c == '+') {
+        // sign remains 1
+    } else {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (endIndex > source.length() || 
+        !source.substring(startIndex, endIndex).equals(getImaginaryCharacter())) { // Changed to equals to avoid compareTo issues
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 7
+                Correctness: plausible
+                Validation Time: 9.04 seconds
+                Failure reason: None
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 1; // Initialize sign to 1 to handle the case where there is no sign character
+    switch (c) {
+    case 0 :
+        return new Complex(re.doubleValue(), 0.0);
+    case '-' :
+        sign = -1;
+        break;
+    case '+' :
+        sign = 1;
+        break;
+    default :
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (
+            endIndex > source.length() || // Check if endIndex is within bounds
+            source.substring(startIndex, endIndex).compareTo(
+        getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 8
+                Correctness: plausible
+                Validation Time: 8.72 seconds
+                Failure reason: None
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 1; // Corrected the default sign to 1 for positive
+    switch (c) {
+    case 0 :
+        return new Complex(re.doubleValue(), 0.0);
+    case '-' :
+        sign = -1;
+        break;
+    case '+' :
+        sign = 1;
+        break;
+    default :
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (
+            startIndex + n > source.length() || // Added boundary check
+            source.substring(startIndex, endIndex).compareTo(
+        getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 9.13 seconds
+                Failure reason: None
+
+                PATCH:
+                public Complex parse(String source, ParsePosition pos) {
+    int initialIndex = pos.getIndex();
+    parseAndIgnoreWhitespace(source, pos);
+    Number re = parseNumber(source, getRealFormat(), pos);
+    if (re == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int startIndex = pos.getIndex();
+    char c = parseNextCharacter(source, pos);
+    int sign = 0;
+    switch (c) {
+    case '\0': // Fix: Use the null character constant instead of 0
+        return new Complex(re.doubleValue(), 0.0);
+    case '-' :
+        sign = -1;
+        break;
+    case '+' :
+        sign = 1;
+        break;
+    default :
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    parseAndIgnoreWhitespace(source, pos);
+    Number im = parseNumber(source, getRealFormat(), pos);
+    if (im == null) {
+        pos.setIndex(initialIndex);
+        return null;
+    }
+    int n = getImaginaryCharacter().length();
+    startIndex = pos.getIndex();
+    int endIndex = startIndex + n;
+    if (endIndex > source.length() || // Fix: Check to prevent substring index out of bounds
+            source.substring(startIndex, endIndex).compareTo(
+        getImaginaryCharacter()) != 0) {
+        pos.setIndex(initialIndex);
+        pos.setErrorIndex(startIndex);
+        return null;
+    }
+    pos.setIndex(endIndex);
+    return new Complex(re.doubleValue(), im.doubleValue() * sign);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

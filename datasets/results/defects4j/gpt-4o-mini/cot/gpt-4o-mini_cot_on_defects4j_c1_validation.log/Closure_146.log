@@ -1,0 +1,981 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 128.90 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = this.getTypesUnderInequality(that); // Fixed the order of parameters
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 6
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality2
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality2', 'com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 132.34 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = that.getTypesUnderInequality(this);
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+      return new TypePair(this, that);
+    case UNKNOWN:
+      return new TypePair(this, that); // Added handling for UNKNOWN case
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 134.39 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (this instanceof UnionType) {
+    TypePair result = null;
+    for (JSType type : ((UnionType) this).getAlternates()) {
+      TypePair p = type.getTypesUnderInequality(that);
+      if (result == null) {
+        result = p;
+      } else {
+        result = new TypePair(result.typeB, p.typeA);
+      }
+    }
+    return result != null ? result : new TypePair(null, null);
+  }
+  if (that instanceof UnionType) {
+    TypePair p = that.getTypesUnderInequality(this);
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 3.90 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (this instanceof UnionType) {
+    UnionType unionThis = (UnionType) this;
+    TypePair resultPair = null;
+    for (JSType type : unionThis.getTypes()) {
+      TypePair p = type.getTypesUnderInequality(that);
+      if (resultPair == null) {
+        resultPair = p;
+      } else {
+        // Combine results if needed; depends on logic requirements
+        resultPair = new TypePair(resultPair.typeB, p.typeA);
+      }
+    }
+    return resultPair;
+  }
+
+  if (that instanceof UnionType) {
+    TypePair p = that.getTypesUnderInequality(this);
+    return new TypePair(p.typeB, p.typeA);
+  }
+
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_146_c6b8e8158a444f649cecc040ca487662 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_146_c6b8e8158a444f649cecc040ca487662 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_146_c6b8e8158a444f649cecc040ca487662/build.xml:51: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_146_c6b8e8158a444f649cecc040ca487662/build.xml:56: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_146_c6b8e8158a444f649cecc040ca487662/build/classes
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Comparator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Comparator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/function/Function.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/function/Function.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Byte.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Byte.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Character.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Character.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Short.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Short.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Integer.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Integer.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Long.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Long.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Float.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Float.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Double.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Double.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Boolean.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Boolean.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Void.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Void.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalStateException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalStateException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_146_c6b8e8158a444f649cecc040ca487662/src/com/google/javascript/rhino/jstype/JSType.java:700: error: cannot find symbol
+    [javac]     for (JSType type : unionThis.getTypes()) {
+    [javac]                                 ^
+    [javac]   symbol:   method getTypes()
+    [javac]   location: variable unionThis of type UnionType
+    [javac] 1 error
+    [javac] 60 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_146_c6b8e8158a444f649cecc040ca487662/build.xml:56: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 143.13 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = that.getTypesUnderInequality(this);
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 132.27 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = that.getTypesUnderInequality(this);
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(that, this);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 14
+  - com.google.javascript.jscomp.LooseTypeCheckTest::testHookRestrictsType4
+  - com.google.javascript.jscomp.LooseTypeCheckTest::testHookRestrictsType6
+  - com.google.javascript.jscomp.LooseTypeCheckTest::testHookRestrictsType7
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition1
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition3
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+  - com.google.javascript.jscomp.TypeCheckTest::testHookRestrictsType4
+  - com.google.javascript.jscomp.TypeCheckTest::testHookRestrictsType6
+  - com.google.javascript.jscomp.TypeCheckTest::testHookRestrictsType7
+  - com.google.javascript.jscomp.TypeInferenceTest::testThrow
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1', 'com.google.javascript.jscomp.LooseTypeCheckTest::testHookRestrictsType6', 'com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition3', 'com.google.javascript.jscomp.TypeCheckTest::testHookRestrictsType7', 'com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition1', 'com.google.javascript.jscomp.LooseTypeCheckTest::testHookRestrictsType7', 'com.google.javascript.jscomp.TypeCheckTest::testHookRestrictsType4', 'com.google.javascript.jscomp.TypeInferenceTest::testThrow', 'com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2', 'com.google.javascript.jscomp.TypeCheckTest::testHookRestrictsType6', 'com.google.javascript.jscomp.LooseTypeCheckTest::testHookRestrictsType4', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 154.54 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = that.getTypesUnderInequality(this);
+    return new TypePair(p.typeA, p.typeB); // Changed the order of p.typeA and p.typeB
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4', 'com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 145.79 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = that.getTypesUnderInequality(this);
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+      return new TypePair(this, that);
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 131.29 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = that.getTypesUnderInequality(this);
+    return new TypePair(p.typeA, p.typeB); // Fixed the order of the types
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4', 'com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 134.79 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = ((UnionType) that).getTypesUnderInequality(this);
+    return new TypePair(p.typeA, p.typeB); // Fixed reversal
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4', 'com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 109.11 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = ((UnionType) that).getTypesUnderInequality(this); // Cast to UnionType before calling method
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 105.39 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = ((UnionType) that).getTypesUnderInequality(this); // Cast 'that' to UnionType
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 105.54 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = ((UnionType) that).getTypesUnderInequality(this); // Cast `that` to UnionType
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 107.25 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = ((UnionType) that).getTypesUnderInequality(this); // Cast 'that' to UnionType
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 102.87 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = that.getTypesUnderInequality(this);
+    return new TypePair(p.typeA, p.typeB); // Corrected the order of typeA and typeB
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 111.98 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = that.getTypesUnderInequality(this);
+    return new TypePair(p.typeA, p.typeB); // Corrected the order of typeA and typeB
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 104.06 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = ((UnionType) that).getTypesUnderInequality(this); // Cast 'that' to UnionType
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 108.87 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = that.getTypesUnderInequality(this);
+    return new TypePair(p.typeA, p.typeB); // Fixed the order of typeA and typeB
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3
+  - com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition2', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality3', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality1', 'com.google.javascript.rhino.jstype.JSTypeTest::testGetTypesUnderInequality4']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 100.39 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = ((UnionType) that).getTypesUnderInequality(this); // Cast 'that' to UnionType
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 124.19 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public TypePair getTypesUnderInequality(JSType that) {
+  if (that instanceof UnionType) {
+    TypePair p = ((UnionType) that).getTypesUnderInequality(this); // Cast 'that' to UnionType
+    return new TypePair(p.typeB, p.typeA);
+  }
+  switch (this.testForEquality(that)) {
+    case TRUE:
+      return new TypePair(null, null);
+    case FALSE:
+    case UNKNOWN:
+      return new TypePair(this, that);
+  }
+  throw new IllegalStateException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.SemanticReverseAbstractInterpreterTest::testEqCondition4
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

@@ -1,0 +1,1293 @@
+==================================================
+                Project: Compress
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 4.95 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 1) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 1");
+    }
+    while (start < end && (buffer[start] == 0 || buffer[start] == ' ')) {
+        start++;
+    }
+    while (start < end && (buffer[end - 1] == 0 || buffer[end - 1] == ' ')) {
+        end--;
+    }
+    if (start == end) {
+        throw new IllegalArgumentException("Buffer does not contain valid octal digits");
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException("Invalid octal digit: " + (char) currentByte);
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 16
+  - org.apache.commons.compress.ChainingTestCase::testTarGzip
+  - org.apache.commons.compress.ChainingTestCase::testTarBzip2
+  - org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117
+  - org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive
+  - org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114
+  - org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldConsumeArchiveCompletely
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::readsArchiveCompletely_COMPRESS245
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::datePriorToEpochInGNUFormat
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldUseSpecifiedEncodingWhenReadingGNULongNames
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::testCompress197
+  - org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongDirectoryNameGnuMode
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldConsumeArchiveCompletely', 'org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldUseSpecifiedEncodingWhenReadingGNULongNames', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader', 'org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongDirectoryNameGnuMode', 'org.apache.commons.compress.ChainingTestCase::testTarBzip2', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::datePriorToEpochInGNUFormat', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::readsArchiveCompletely_COMPRESS245', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::testCompress197', 'org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar', 'org.apache.commons.compress.ChainingTestCase::testTarGzip', 'org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive', 'org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU', 'org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 4.35 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 1) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 1");
+    }
+    while (start < end && (buffer[start] == ' ' || buffer[start] == 0)) {
+        start++;
+    }
+    if (start >= end) {
+        return 0L;
+    }
+    while (end > start && (buffer[end - 1] == ' ' || buffer[end - 1] == 0)) {
+        end--;
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader', 'org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 4.93 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 1) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 1");
+    }
+    while (start < end && (buffer[start] == 0 || buffer[start] == ' ')) {
+        start++;
+    }
+    while (start < end && (buffer[end - 1] == 0 || buffer[end - 1] == ' ')) {
+        end--;
+    }
+    if (start == end) {
+        throw new IllegalArgumentException("Invalid octal value: empty or whitespace only");
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException("Invalid octal digit at position " + start + ": " + currentByte);
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 16
+  - org.apache.commons.compress.ChainingTestCase::testTarGzip
+  - org.apache.commons.compress.ChainingTestCase::testTarBzip2
+  - org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117
+  - org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive
+  - org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114
+  - org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldConsumeArchiveCompletely
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::readsArchiveCompletely_COMPRESS245
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::datePriorToEpochInGNUFormat
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldUseSpecifiedEncodingWhenReadingGNULongNames
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::testCompress197
+  - org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongDirectoryNameGnuMode
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldConsumeArchiveCompletely', 'org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldUseSpecifiedEncodingWhenReadingGNULongNames', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader', 'org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongDirectoryNameGnuMode', 'org.apache.commons.compress.ChainingTestCase::testTarBzip2', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::datePriorToEpochInGNUFormat', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::readsArchiveCompletely_COMPRESS245', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::testCompress197', 'org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar', 'org.apache.commons.compress.ChainingTestCase::testTarGzip', 'org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive', 'org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU', 'org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 4.90 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 1) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 1");
+    }
+    if (buffer[start] == 0) {
+        return 0L;
+    }
+    while (start < end && (buffer[start] == ' ' || buffer[start] == 0)) {
+        start++;
+    }
+    while (start < end && (buffer[end - 1] == ' ' || buffer[end - 1] == 0)) {
+        end--;
+    }
+    if (start >= end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, buffer[start]));
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 5.10 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    if (buffer[start] == 0) {
+        return 0L;
+    }
+
+    while (start < end && (buffer[start] == ' ' || buffer[start] == 0)) {
+        start++;
+    }
+
+    while (start < end && (buffer[end - 1] == ' ' || buffer[end - 1] == 0)) {
+        end--;
+    }
+
+    if (start == end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, buffer[end - 1]));
+    }
+
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 4.95 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 1) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 1");
+    }
+    while (start < end && (buffer[start] == 0 || buffer[start] == ' ')) {
+        start++;
+    }
+    while (start < end && (buffer[end - 1] == 0 || buffer[end - 1] == ' ')) {
+        end--;
+    }
+    if (start >= end) {
+        throw new IllegalArgumentException("Invalid octal value");
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException("Invalid character in octal value: " + (char) currentByte);
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 16
+  - org.apache.commons.compress.ChainingTestCase::testTarGzip
+  - org.apache.commons.compress.ChainingTestCase::testTarBzip2
+  - org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117
+  - org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive
+  - org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114
+  - org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldConsumeArchiveCompletely
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::readsArchiveCompletely_COMPRESS245
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::datePriorToEpochInGNUFormat
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldUseSpecifiedEncodingWhenReadingGNULongNames
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::testCompress197
+  - org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongDirectoryNameGnuMode
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldConsumeArchiveCompletely', 'org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldUseSpecifiedEncodingWhenReadingGNULongNames', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader', 'org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongDirectoryNameGnuMode', 'org.apache.commons.compress.ChainingTestCase::testTarBzip2', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::datePriorToEpochInGNUFormat', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::readsArchiveCompletely_COMPRESS245', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::testCompress197', 'org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar', 'org.apache.commons.compress.ChainingTestCase::testTarGzip', 'org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive', 'org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU', 'org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 4.36 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 1) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 1");
+    }
+    while (start < end && (buffer[start] == 0 || buffer[start] == ' ')) {
+        start++;
+    }
+    while (start < end && (buffer[end - 1] == 0 || buffer[end - 1] == ' ')) {
+        end--;
+    }
+    if (start >= end) {
+        throw new IllegalArgumentException("Invalid octal value in buffer");
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException("Invalid character in octal value: " + currentByte);
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 16
+  - org.apache.commons.compress.ChainingTestCase::testTarGzip
+  - org.apache.commons.compress.ChainingTestCase::testTarBzip2
+  - org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117
+  - org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive
+  - org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114
+  - org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldConsumeArchiveCompletely
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::readsArchiveCompletely_COMPRESS245
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::datePriorToEpochInGNUFormat
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldUseSpecifiedEncodingWhenReadingGNULongNames
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::testCompress197
+  - org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongDirectoryNameGnuMode
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldConsumeArchiveCompletely', 'org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldUseSpecifiedEncodingWhenReadingGNULongNames', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader', 'org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongDirectoryNameGnuMode', 'org.apache.commons.compress.ChainingTestCase::testTarBzip2', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::datePriorToEpochInGNUFormat', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::readsArchiveCompletely_COMPRESS245', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::testCompress197', 'org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar', 'org.apache.commons.compress.ChainingTestCase::testTarGzip', 'org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive', 'org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU', 'org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 4.85 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 1) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 1");
+    }
+    while (start < end && (buffer[start] == 0 || buffer[start] == ' ')) {
+        start++;
+    }
+    if (start == end) {
+        return 0L;
+    }
+    byte trailer = buffer[end - 1];
+    while (start < end && (trailer == 0 || trailer == ' ')) {
+        end--;
+        if (end > start) {
+            trailer = buffer[end - 1];
+        }
+    }
+    if (start == end) {
+        throw new IllegalArgumentException("Invalid octal value in the buffer");
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException("Invalid octal value in the buffer");
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader', 'org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 5.45 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 1) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 1");
+    }
+    while (start < end && (buffer[start] == 0 || buffer[start] == ' ')) {
+        start++;
+    }
+    if (start >= end) {
+        return 0L;
+    }
+    byte trailer = buffer[end - 1];
+    while (start < end && (trailer == 0 || trailer == ' ')) {
+        end--;
+        if (end > start) {
+            trailer = buffer[end - 1];
+        }
+    }
+    if (start >= end) {
+        throw new IllegalArgumentException("Invalid octal value in buffer");
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException("Invalid character in octal value: " + currentByte);
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader', 'org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 4.25 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 1) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 1");
+    }
+    if (buffer[start] == 0) {
+        return 0L;
+    }
+    while (start < end) {
+        if (buffer[start] == ' ') {
+            start++;
+        } else {
+            break;
+        }
+    }
+    if (start >= end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, (byte) 0));
+    }
+    byte trailer = buffer[end - 1];
+    while (start < end && (trailer == 0 || trailer == ' ')) {
+        end--;
+        if (end > start) {
+            trailer = buffer[end - 1];
+        }
+    }
+    if (start == end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, trailer));
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 2.16 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    if (buffer[start] == 0) {
+        return 0L;
+    }
+    while (start < end) {
+        if (buffer[start] == ' ' || buffer[start] == 0) {
+            start++;
+        } else {
+            break;
+        }
+    }
+    if (start >= end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, buffer[end - 1]));
+    }
+    byte trailer = buffer[end - 1];
+    while (start < end && (trailer == 0 || trailer == ' ')) {
+        end--;
+        if (end > start) {
+            trailer = buffer[end - 1];
+        }
+    }
+    if (start >= end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, trailer));
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 2.05 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+
+    if (buffer[start] == 0) {
+        return 0L;
+    }
+
+    while (start < end && buffer[start] == ' ') {
+        start++;
+    }
+
+    while (start < end && (buffer[end - 1] == 0 || buffer[end - 1] == ' ')) {
+        end--;
+    }
+
+    if (start == end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, buffer[end - 1]));
+    }
+
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 2.03 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    if (buffer[start] == 0) {
+        return 0L;
+    }
+    while (start < end) {
+        if (buffer[start] == ' ') {
+            start++;
+        } else {
+            break;
+        }
+    }
+    if (start >= end) {
+        return 0L;
+    }
+    byte trailer = buffer[end - 1];
+    while (start < end && (trailer == 0 || trailer == ' ')) {
+        end--;
+        if (end > start) {
+            trailer = buffer[end - 1];
+        }
+    }
+    if (start >= end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, trailer));
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 2.13 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    if (buffer[start] == 0) {
+        return 0L;
+    }
+    while (start < end) {
+        if (buffer[start] == ' ') {
+            start++;
+        } else {
+            break;
+        }
+    }
+    if (start >= end) { // Adjusted condition to ensure valid range
+        throw new IllegalArgumentException("Invalid buffer content at start");
+    }
+    byte trailer = buffer[end - 1];
+    while (start < end && (trailer == 0 || trailer == ' ')) {
+        end--;
+        if (end > start) { // Added condition to ensure end is valid
+            trailer = buffer[end - 1];
+        }
+    }
+    if (start >= end) { // Adjusted condition to ensure valid range
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, trailer));
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 2.08 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    if (buffer[start] == 0) {
+        return 0L;
+    }
+    while (start < end && buffer[start] == ' ') {
+        start++;
+    }
+    if (start >= end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, buffer[start - 1]));
+    }
+    byte trailer = buffer[end - 1];
+    while (end > start && (trailer == 0 || trailer == ' ')) {
+        end--;
+        if (end > start) {
+            trailer = buffer[end - 1];
+        }
+    }
+    if (start >= end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, trailer));
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 2.13 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+
+    if (buffer[start] == 0) {
+        return 0L;
+    }
+
+    while (start < end) {
+        if (buffer[start] == ' ' || buffer[start] == 0) {
+            start++;
+        } else {
+            break;
+        }
+    }
+
+    if (start >= end) {
+        throw new IllegalArgumentException("No valid octal digits found");
+    }
+
+    byte trailer = buffer[end - 1];
+    while (start < end && (trailer == 0 || trailer == ' ')) {
+        end--;
+        if (end > start) {
+            trailer = buffer[end - 1];
+        }
+    }
+
+    if (start >= end) {
+        throw new IllegalArgumentException("No valid octal digits found");
+    }
+
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 2.05 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+
+    if (length < 1) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 1");
+    }
+
+    while (start < end && (buffer[start] == 0 || buffer[start] == ' ')) {
+        start++;
+    }
+
+    if (start == end) {
+        return 0L;
+    }
+
+    while (end > start && (buffer[end - 1] == 0 || buffer[end - 1] == ' ')) {
+        end--;
+    }
+
+    if (start == end) {
+        throw new IllegalArgumentException("Buffer contains no valid octal digits");
+    }
+
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader', 'org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 2.08 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+    if (length < 1) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 1");
+    }
+    while (start < end && (buffer[start] == 0 || buffer[start] == ' ')) {
+        start++;
+    }
+    while (start < end && (buffer[end - 1] == 0 || buffer[end - 1] == ' ')) {
+        end--;
+    }
+    if (start >= end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, buffer[start]));
+    }
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 17
+  - org.apache.commons.compress.ChainingTestCase::testTarGzip
+  - org.apache.commons.compress.ChainingTestCase::testTarBzip2
+  - org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117
+  - org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive
+  - org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114
+  - org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldConsumeArchiveCompletely
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::readsArchiveCompletely_COMPRESS245
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::datePriorToEpochInGNUFormat
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldUseSpecifiedEncodingWhenReadingGNULongNames
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::testCompress197
+  - org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongDirectoryNameGnuMode
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldUseSpecifiedEncodingWhenReadingGNULongNames', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::datePriorToEpochInGNUFormat', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::testCompress197', 'org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive', 'org.apache.commons.compress.ChainingTestCase::testTarBzip2', 'org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117', 'org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114', 'org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid', 'org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongDirectoryNameGnuMode', 'org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU', 'org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar', 'org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldConsumeArchiveCompletely', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::readsArchiveCompletely_COMPRESS245', 'org.apache.commons.compress.ChainingTestCase::testTarGzip']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 2.13 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+
+    if (length < 2) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 2");
+    }
+    if (buffer[start] == 0) {
+        return 0L;
+    }
+
+    while (start < end && buffer[start] == ' ') {
+        start++;
+    }
+
+    while (start < end && (buffer[end - 1] == 0 || buffer[end - 1] == ' ')) {
+        end--;
+    }
+
+    if (start >= end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, buffer[Math.max(offset, end - 1)]));
+    }
+
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 2.05 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long parseOctal(final byte[] buffer, final int offset, final int length) {
+    long result = 0;
+    int end = offset + length;
+    int start = offset;
+
+    if (length < 1) {
+        throw new IllegalArgumentException("Length " + length + " must be at least 1");
+    }
+
+    while (start < end && (buffer[start] == 0 || buffer[start] == ' ')) {
+        start++;
+    }
+
+    while (start < end && (buffer[end - 1] == 0 || buffer[end - 1] == ' ')) {
+        end--;
+    }
+
+    if (start == end) {
+        throw new IllegalArgumentException(
+                exceptionMessage(buffer, offset, length, start, buffer[start]));
+    }
+
+    for (; start < end; start++) {
+        final byte currentByte = buffer[start];
+        if (currentByte < '0' || currentByte > '7') {
+            throw new IllegalArgumentException(
+                    exceptionMessage(buffer, offset, length, start, currentByte));
+        }
+        result = (result << 3) + (currentByte - '0');
+    }
+
+    return result;
+}
+
+                TEST STDOUT:
+                Failing tests: 17
+  - org.apache.commons.compress.ChainingTestCase::testTarGzip
+  - org.apache.commons.compress.ChainingTestCase::testTarBzip2
+  - org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117
+  - org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive
+  - org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114
+  - org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldConsumeArchiveCompletely
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::readsArchiveCompletely_COMPRESS245
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::datePriorToEpochInGNUFormat
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldUseSpecifiedEncodingWhenReadingGNULongNames
+  - org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::testCompress197
+  - org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongDirectoryNameGnuMode
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctal
+  - org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar
+  - org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldUseSpecifiedEncodingWhenReadingGNULongNames', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::datePriorToEpochInGNUFormat', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::workaroundForBrokenTimeHeader', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::testCompress197', 'org.apache.commons.compress.archivers.TarTestCase::testTarUnarchive', 'org.apache.commons.compress.ChainingTestCase::testTarBzip2', 'org.apache.commons.compress.DetectArchiverTestCase::testCOMPRESS117', 'org.apache.commons.compress.archivers.TarTestCase::testCOMPRESS114', 'org.apache.commons.compress.archivers.tar.TarUtilsTest::testParseOctalInvalid', 'org.apache.commons.compress.archivers.tar.TarArchiveOutputStreamTest::testWriteLongDirectoryNameGnuMode', 'org.apache.commons.compress.archivers.tar.SparseFilesTest::testOldGNU', 'org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromAndAddToTar', 'org.apache.commons.compress.changes.ChangeSetTestCase::testDeleteFromTar', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::shouldConsumeArchiveCompletely', 'org.apache.commons.compress.archivers.tar.TarArchiveInputStreamTest::readsArchiveCompletely_COMPRESS245', 'org.apache.commons.compress.ChainingTestCase::testTarGzip']
+
+                EXCEPTIONS
+                None
+
+

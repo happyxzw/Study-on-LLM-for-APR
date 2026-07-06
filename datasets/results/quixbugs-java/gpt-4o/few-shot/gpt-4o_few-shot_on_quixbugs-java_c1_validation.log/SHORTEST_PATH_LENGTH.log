@@ -1,0 +1,615 @@
+==================================================
+                Project: SHORTEST_PATH_LENGTH
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 1.44 seconds
+                Failure reason: None
+
+                PATCH:
+                public static int shortest_path_length(Map<List<Node>, Integer> length_by_edge, Node startnode, Node goalnode) {
+    Map<Node, Integer> unvisitedNodes = new HashMap<>();
+    Set<Node> visitedNodes = new HashSet<>();
+    unvisitedNodes.put(startnode, 0);
+    while (!unvisitedNodes.isEmpty()) {
+        Node node = getNodeWithMinDistance(unvisitedNodes);
+        int distance = unvisitedNodes.get(node);
+        unvisitedNodes.remove(node);
+        if (node.equals(goalnode)) {
+            return distance;
+        }
+        visitedNodes.add(node);
+        for (Node nextnode : node.getSuccessors()) {
+            if (visitedNodes.contains(nextnode)) {
+                continue;
+            }
+            int edgeLength = length_by_edge.getOrDefault(Arrays.asList(node, nextnode), Integer.MAX_VALUE);
+            int newDistance = distance + edgeLength;
+            unvisitedNodes.put(nextnode, Math.min(unvisitedNodes.getOrDefault(nextnode, Integer.MAX_VALUE), newDistance));
+        }
+    }
+    return Integer.MAX_VALUE;
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+....
+Time: 0.006
+
+OK (4 tests)
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: SHORTEST_PATH_LENGTH
+                Rank: 1
+                Correctness: plausible
+                Validation Time: 1.66 seconds
+                Failure reason: None
+
+                PATCH:
+                public static int shortest_path_length(Map<List<Node>, Integer> length_by_edge, Node startnode, Node goalnode) {
+    Map<Node, Integer> unvisitedNodes = new HashMap<>();
+    Set<Node> visitedNodes = new HashSet<>();
+    unvisitedNodes.put(startnode, 0);
+
+    while (!unvisitedNodes.isEmpty()) {
+        Node node = getNodeWithMinDistance(unvisitedNodes);
+        int distance = unvisitedNodes.get(node);
+        unvisitedNodes.remove(node);
+
+        if (node.equals(goalnode)) {
+            return distance;
+        }
+
+        visitedNodes.add(node);
+
+        for (Node nextnode : node.getSuccessors()) {
+            if (visitedNodes.contains(nextnode)) {
+                continue;
+            }
+
+            int edgeLength = length_by_edge.getOrDefault(Arrays.asList(node, nextnode), Integer.MAX_VALUE);
+
+            if (!unvisitedNodes.containsKey(nextnode)) {
+                unvisitedNodes.put(nextnode, Integer.MAX_VALUE);
+            }
+
+            unvisitedNodes.put(nextnode, Math.min(unvisitedNodes.get(nextnode), distance + edgeLength));
+        }
+    }
+
+    return Integer.MAX_VALUE;
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+....
+Time: 0.006
+
+OK (4 tests)
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: SHORTEST_PATH_LENGTH
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 1.14 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public static int shortest_path_length(Map<List<Node>, Integer> length_by_edge, Node startnode, Node goalnode) {
+    Map<Node, Integer> distances = new HashMap<>();
+    PriorityQueue<NodeDistance> priorityQueue = new PriorityQueue<>(Comparator.comparingInt(NodeDistance::getDistance));
+    distances.put(startnode, 0);
+    priorityQueue.add(new NodeDistance(startnode, 0));
+
+    while (!priorityQueue.isEmpty()) {
+        NodeDistance current = priorityQueue.poll();
+        Node currentNode = current.getNode();
+        int currentDistance = current.getDistance();
+
+        if (currentNode.equals(goalnode)) {
+            return currentDistance;
+        }
+
+        if (distances.get(currentNode) < currentDistance) {
+            continue;
+        }
+
+        for (Node successor : currentNode.getSuccessors()) {
+            int edgeLength = length_by_edge.getOrDefault(Arrays.asList(currentNode, successor), Integer.MAX_VALUE);
+            int newDistance = currentDistance + edgeLength;
+
+            if (newDistance < distances.getOrDefault(successor, Integer.MAX_VALUE)) {
+                distances.put(successor, newDistance);
+                priorityQueue.add(new NodeDistance(successor, newDistance));
+            }
+        }
+    }
+
+    return Integer.MAX_VALUE;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                ./java_programs/SHORTEST_PATH_LENGTH.java:12: error: cannot find symbol
+    PriorityQueue<NodeDistance> priorityQueue = new PriorityQueue<>(Comparator.comparingInt(NodeDistance::getDistance));
+                  ^
+  symbol:   class NodeDistance
+  location: class SHORTEST_PATH_LENGTH
+./java_programs/SHORTEST_PATH_LENGTH.java:12: error: cannot find symbol
+    PriorityQueue<NodeDistance> priorityQueue = new PriorityQueue<>(Comparator.comparingInt(NodeDistance::getDistance));
+                                                                                            ^
+  symbol:   variable NodeDistance
+  location: class SHORTEST_PATH_LENGTH
+./java_programs/SHORTEST_PATH_LENGTH.java:14: error: cannot find symbol
+    priorityQueue.add(new NodeDistance(startnode, 0));
+                          ^
+  symbol:   class NodeDistance
+  location: class SHORTEST_PATH_LENGTH
+./java_programs/SHORTEST_PATH_LENGTH.java:17: error: cannot find symbol
+        NodeDistance current = priorityQueue.poll();
+        ^
+  symbol:   class NodeDistance
+  location: class SHORTEST_PATH_LENGTH
+./java_programs/SHORTEST_PATH_LENGTH.java:35: error: cannot find symbol
+                priorityQueue.add(new NodeDistance(successor, newDistance));
+                                      ^
+  symbol:   class NodeDistance
+  location: class SHORTEST_PATH_LENGTH
+5 errors
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: SHORTEST_PATH_LENGTH
+                Rank: 3
+                Correctness: plausible
+                Validation Time: 1.46 seconds
+                Failure reason: None
+
+                PATCH:
+                public static int shortest_path_length(Map<List<Node>, Integer> length_by_edge, Node startnode, Node goalnode) {
+    Map<Node, Integer> distances = new HashMap<>();
+    Set<Node> visitedNodes = new HashSet<>();
+    PriorityQueue<Node> priorityQueue = new PriorityQueue<>(Comparator.comparingInt(distances::get));
+
+    distances.put(startnode, 0);
+    priorityQueue.add(startnode);
+
+    while (!priorityQueue.isEmpty()) {
+        Node currentNode = priorityQueue.poll();
+
+        if (visitedNodes.contains(currentNode)) {
+            continue;
+        }
+
+        visitedNodes.add(currentNode);
+
+        if (currentNode.equals(goalnode)) {
+            return distances.get(currentNode);
+        }
+
+        for (Node nextNode : currentNode.getSuccessors()) {
+            if (visitedNodes.contains(nextNode)) {
+                continue;
+            }
+
+            int edgeLength = length_by_edge.getOrDefault(Arrays.asList(currentNode, nextNode), Integer.MAX_VALUE);
+            int newDistance = distances.get(currentNode) + edgeLength;
+
+            if (newDistance < distances.getOrDefault(nextNode, Integer.MAX_VALUE)) {
+                distances.put(nextNode, newDistance);
+                priorityQueue.add(nextNode);
+            }
+        }
+    }
+
+    return Integer.MAX_VALUE;
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+....
+Time: 0.075
+
+OK (4 tests)
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: SHORTEST_PATH_LENGTH
+                Rank: 4
+                Correctness: plausible
+                Validation Time: 1.30 seconds
+                Failure reason: None
+
+                PATCH:
+                public static int shortest_path_length(Map<List<Node>, Integer> length_by_edge, Node startnode, Node goalnode) {
+    Map<Node, Integer> unvisitedNodes = new HashMap<>();
+    Set<Node> visitedNodes = new HashSet<>();
+    unvisitedNodes.put(startnode, 0);
+
+    while (!unvisitedNodes.isEmpty()) {
+        Node node = getNodeWithMinDistance(unvisitedNodes);
+        int distance = unvisitedNodes.get(node);
+        unvisitedNodes.remove(node);
+
+        if (node.equals(goalnode)) {
+            return distance;
+        }
+
+        visitedNodes.add(node);
+
+        for (Node nextnode : node.getSuccessors()) {
+            if (visitedNodes.contains(nextnode)) {
+                continue;
+            }
+            int edgeLength = length_by_edge.getOrDefault(Arrays.asList(node, nextnode), Integer.MAX_VALUE);
+            int newDistance = distance + edgeLength;
+
+            if (unvisitedNodes.getOrDefault(nextnode, Integer.MAX_VALUE) > newDistance) {
+                unvisitedNodes.put(nextnode, newDistance);
+            }
+        }
+    }
+
+    return Integer.MAX_VALUE;
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+....
+Time: 0.005
+
+OK (4 tests)
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: SHORTEST_PATH_LENGTH
+                Rank: 5
+                Correctness: plausible
+                Validation Time: 1.47 seconds
+                Failure reason: None
+
+                PATCH:
+                public static int shortest_path_length(Map<List<Node>, Integer> length_by_edge, Node startnode, Node goalnode) {
+    Map<Node, Integer> unvisitedNodes = new HashMap<>();
+    Set<Node> visitedNodes = new HashSet<>();
+    unvisitedNodes.put(startnode, 0);
+
+    while (!unvisitedNodes.isEmpty()) {
+        Node node = getNodeWithMinDistance(unvisitedNodes);
+        int distance = unvisitedNodes.get(node);
+        unvisitedNodes.remove(node);
+
+        if (node.equals(goalnode)) {
+            return distance;
+        }
+
+        visitedNodes.add(node);
+
+        for (Node nextnode : node.getSuccessors()) {
+            if (visitedNodes.contains(nextnode)) {
+                continue;
+            }
+
+            int edgeLength = length_by_edge.getOrDefault(Arrays.asList(node, nextnode), Integer.MAX_VALUE);
+            int newDistance = distance + edgeLength;
+
+            unvisitedNodes.put(nextnode, Math.min(unvisitedNodes.getOrDefault(nextnode, Integer.MAX_VALUE), newDistance));
+        }
+    }
+
+    return Integer.MAX_VALUE;
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+....
+Time: 0.005
+
+OK (4 tests)
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: SHORTEST_PATH_LENGTH
+                Rank: 6
+                Correctness: plausible
+                Validation Time: 1.34 seconds
+                Failure reason: None
+
+                PATCH:
+                public static int shortest_path_length(Map<List<Node>, Integer> length_by_edge, Node startnode, Node goalnode) {
+    Map<Node, Integer> unvisitedNodes = new HashMap<>();
+    Set<Node> visitedNodes = new HashSet<>();
+    unvisitedNodes.put(startnode, 0);
+
+    while (!unvisitedNodes.isEmpty()) {
+        Node node = getNodeWithMinDistance(unvisitedNodes);
+        int distance = unvisitedNodes.get(node);
+        unvisitedNodes.remove(node);
+
+        if (node.equals(goalnode)) {
+            return distance;
+        }
+
+        visitedNodes.add(node);
+
+        for (Node nextnode : node.getSuccessors()) {
+            if (visitedNodes.contains(nextnode)) {
+                continue;
+            }
+            int edgeLength = length_by_edge.getOrDefault(Arrays.asList(node, nextnode), Integer.MAX_VALUE);
+            int newDistance = distance + edgeLength;
+
+            if (!unvisitedNodes.containsKey(nextnode) || newDistance < unvisitedNodes.get(nextnode)) {
+                unvisitedNodes.put(nextnode, newDistance);
+            }
+        }
+    }
+    return Integer.MAX_VALUE;
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+....
+Time: 0.005
+
+OK (4 tests)
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: SHORTEST_PATH_LENGTH
+                Rank: 7
+                Correctness: plausible
+                Validation Time: 1.45 seconds
+                Failure reason: None
+
+                PATCH:
+                public static int shortest_path_length(Map<List<Node>, Integer> length_by_edge, Node startnode, Node goalnode) {
+    Map<Node, Integer> unvisitedNodes = new HashMap<>();
+    Set<Node> visitedNodes = new HashSet<>();
+    unvisitedNodes.put(startnode, 0);
+
+    while (!unvisitedNodes.isEmpty()) {
+        Node node = getNodeWithMinDistance(unvisitedNodes);
+        int distance = unvisitedNodes.get(node);
+        unvisitedNodes.remove(node);
+
+        if (node.equals(goalnode)) {
+            return distance;
+        }
+
+        visitedNodes.add(node);
+
+        for (Node nextnode : node.getSuccessors()) {
+            if (visitedNodes.contains(nextnode)) {
+                continue;
+            }
+
+            int edgeLength = length_by_edge.getOrDefault(Arrays.asList(node, nextnode), Integer.MAX_VALUE);
+            int newDistance = distance + edgeLength;
+
+            if (!unvisitedNodes.containsKey(nextnode) || newDistance < unvisitedNodes.get(nextnode)) {
+                unvisitedNodes.put(nextnode, newDistance);
+            }
+        }
+    }
+
+    return Integer.MAX_VALUE;
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+....
+Time: 0.005
+
+OK (4 tests)
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: SHORTEST_PATH_LENGTH
+                Rank: 8
+                Correctness: plausible
+                Validation Time: 1.34 seconds
+                Failure reason: None
+
+                PATCH:
+                public static int shortest_path_length(Map<List<Node>, Integer> length_by_edge, Node startnode, Node goalnode) {
+    Map<Node, Integer> distances = new HashMap<>();
+    Set<Node> visitedNodes = new HashSet<>();
+    PriorityQueue<Node> unvisitedNodes = new PriorityQueue<>(Comparator.comparingInt(distances::get));
+    distances.put(startnode, 0);
+    unvisitedNodes.add(startnode);
+
+    while (!unvisitedNodes.isEmpty()) {
+        Node node = unvisitedNodes.poll();
+        if (visitedNodes.contains(node)) {
+            continue;
+        }
+        visitedNodes.add(node);
+
+        int currentDistance = distances.get(node);
+        if (node.equals(goalnode)) {
+            return currentDistance;
+        }
+
+        for (Node nextnode : node.getSuccessors()) {
+            if (!visitedNodes.contains(nextnode)) {
+                int edgeLength = length_by_edge.getOrDefault(Arrays.asList(node, nextnode), Integer.MAX_VALUE);
+                int newDistance = currentDistance + edgeLength;
+                if (newDistance < distances.getOrDefault(nextnode, Integer.MAX_VALUE)) {
+                    distances.put(nextnode, newDistance);
+                    unvisitedNodes.add(nextnode);
+                }
+            }
+        }
+    }
+
+    return Integer.MAX_VALUE;
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+....
+Time: 0.082
+
+OK (4 tests)
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: SHORTEST_PATH_LENGTH
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 1.32 seconds
+                Failure reason: None
+
+                PATCH:
+                public static int shortest_path_length(Map<List<Node>, Integer> length_by_edge, Node startnode, Node goalnode) {
+    Map<Node, Integer> unvisitedNodes = new HashMap<>();
+    Set<Node> visitedNodes = new HashSet<>();
+    unvisitedNodes.put(startnode, 0);
+
+    while (!unvisitedNodes.isEmpty()) {
+        Node node = getNodeWithMinDistance(unvisitedNodes);
+        int distance = unvisitedNodes.get(node);
+        unvisitedNodes.remove(node);
+
+        if (node.equals(goalnode)) {
+            return distance;
+        }
+
+        visitedNodes.add(node);
+
+        for (Node nextnode : node.getSuccessors()) {
+            if (visitedNodes.contains(nextnode)) {
+                continue;
+            }
+
+            int edgeLength = length_by_edge.getOrDefault(Arrays.asList(node, nextnode), Integer.MAX_VALUE);
+
+            if (!unvisitedNodes.containsKey(nextnode)) {
+                unvisitedNodes.put(nextnode, Integer.MAX_VALUE);
+            }
+
+            unvisitedNodes.put(nextnode, Math.min(unvisitedNodes.get(nextnode), distance + edgeLength));
+        }
+    }
+
+    return Integer.MAX_VALUE;
+}
+
+                TEST STDOUT:
+                JUnit version 4.12
+....
+Time: 0.005
+
+OK (4 tests)
+
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

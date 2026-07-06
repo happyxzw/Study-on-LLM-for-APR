@@ -1,0 +1,1321 @@
+==================================================
+                Project: Jsoup
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 7.06 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite)
+                    continue;
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append("&#xa0;");
+                    break;
+                case '<':
+                    if (!inAttribute)
+                                            accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c)) 
+                accum.append(c);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.jsoup.nodes.EntitiesTest::escapesGtInXmlAttributesButNotInHtml
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 6.65 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite)
+                    continue;
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (Character.isSupplementaryCodePoint(codePoint)) {
+            final char highSurrogate = (char) codePoint;
+            final char lowSurrogate = (char) Character.codePointAt(string, offset + Character.charCount(highSurrogate));
+            final String surrogatePair = new String(new char[] {highSurrogate, lowSurrogate});
+            if (encoder.canEncode(surrogatePair))
+                accum.append(surrogatePair);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        } else {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append("&#xa0;");
+                    break;
+                case '<':
+                    if (!inAttribute)
+                                            accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - org.jsoup.nodes.AttributeTest::testWithSupplementaryCharacterInAttributeKeyAndValue
+  - org.jsoup.nodes.EntitiesTest::escapeSupplementaryCharacter
+  - org.jsoup.nodes.EntitiesTest::escapesGtInXmlAttributesButNotInHtml
+  - org.jsoup.nodes.TextNodeTest::testWithSupplementaryCharacter
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.jsoup.nodes.EntitiesTest::escapeSupplementaryCharacter', 'org.jsoup.nodes.TextNodeTest::testWithSupplementaryCharacter', 'org.jsoup.nodes.AttributeTest::testWithSupplementaryCharacterInAttributeKeyAndValue']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 6.74 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if (stripLeadingWhite && !reachedNonWhite)
+                    continue;
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append("&#xa0;");
+                    break;
+                case '<':
+                    if (!inAttribute)
+                                            accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c)) 
+                accum.append(c);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.jsoup.nodes.EntitiesTest::escapesGtInXmlAttributesButNotInHtml
+  - org.jsoup.parser.HtmlParserTest::testNoImagesInNoScriptInHead
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.jsoup.parser.HtmlParserTest::testNoImagesInNoScriptInHead']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 6.50 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite)
+                    continue;
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append("&#xa0;");
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c)) 
+                accum.append(c);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.jsoup.nodes.EntitiesTest::escapesGtInXmlAttributesButNotInHtml
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 1.78 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite)
+                    continue;
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append("&#xa0;");
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (encoder.canEncodeChar(c))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncodeChar(c)) 
+                accum.append(c);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jsoup-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/maven-build.xml:74: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/target/classes
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/InputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/CharsetEncoder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Character.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/InputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/CharsetEncoder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Character.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CloneNotSupportedException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CloneNotSupportedException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Class.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Class.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CharSequence.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CharSequence.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AbstractStringBuilder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AbstractStringBuilder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuffer.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuffer.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:134: error: cannot find symbol
+    [javac]                     if (encoder.canEncodeChar(c))
+    [javac]                                ^
+    [javac]   symbol:   method canEncodeChar(char)
+    [javac]   location: variable encoder of type CharsetEncoder
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Integer.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Integer.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Number.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Number.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:143: error: cannot find symbol
+    [javac]             if (encoder.canEncodeChar(c)) 
+    [javac]                        ^
+    [javac]   symbol:   method canEncodeChar(String)
+    [javac]   location: variable encoder of type CharsetEncoder
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/CharBuffer.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/CharBuffer.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Byte.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Byte.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Short.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Short.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Long.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Long.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Float.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Float.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Double.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Double.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Boolean.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Boolean.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Void.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Void.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Properties.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Properties.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Hashtable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Hashtable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Dictionary.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Dictionary.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Reader.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Reader.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Closeable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Closeable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/MissingResourceException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/MissingResourceException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map$Entry.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] 2 errors
+    [javac] 85 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/maven-build.xml:74: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 7.16 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite)
+                    continue;
+                accum.append(' ');
+                lastWasWhite = true;
+            } else {
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append("&#xa0;");
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c))
+                accum.append(c);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 64
+  - org.jsoup.nodes.DocumentTest::testOutputEncoding
+  - org.jsoup.nodes.DocumentTest::testClone
+  - org.jsoup.nodes.DocumentTest::testXhtmlReferences
+  - org.jsoup.nodes.ElementTest::testFormatOutline
+  - org.jsoup.nodes.ElementTest::testAddNewText
+  - org.jsoup.nodes.ElementTest::testNoIndentOnScriptAndStyle
+  - org.jsoup.nodes.ElementTest::testFormatHtml
+  - org.jsoup.nodes.ElementTest::testContainerOutput
+  - org.jsoup.nodes.ElementTest::moveByAppend
+  - org.jsoup.nodes.ElementTest::testSetIndent
+  - org.jsoup.nodes.ElementTest::insertChildrenAsCopy
+  - org.jsoup.nodes.ElementTest::testPrependText
+  - org.jsoup.nodes.EntitiesTest::escapesGtInXmlAttributesButNotInHtml
+  - org.jsoup.nodes.NodeTest::before
+  - org.jsoup.nodes.NodeTest::unwrap
+  - org.jsoup.nodes.NodeTest::after
+  - org.jsoup.nodes.NodeTest::unwrapNoChildren
+  - org.jsoup.nodes.NodeTest::testReplace
+  - org.jsoup.nodes.NodeTest::childNodesCopy
+  - org.jsoup.nodes.NodeTest::testRemove
+  - org.jsoup.nodes.TextNodeTest::testTextBean
+  - org.jsoup.nodes.TextNodeTest::testSplitAnEmbolden
+  - org.jsoup.parser.HtmlParserTest::handlesTextAfterData
+  - org.jsoup.parser.HtmlParserTest::testNormalisesIsIndex
+  - org.jsoup.parser.HtmlParserTest::noTableDirectInTable
+  - org.jsoup.parser.HtmlParserTest::testSpaceAfterTag
+  - org.jsoup.parser.HtmlParserTest::normalisesDocument
+  - org.jsoup.parser.HtmlParserTest::handlesWhatWgExpensesTableExample
+  - org.jsoup.parser.HtmlParserTest::handlesImplicitCaptionClose
+  - org.jsoup.parser.HtmlParserTest::reconstructFormattingElements
+  - org.jsoup.parser.HtmlParserTest::handlesUnclosedTitle
+  - org.jsoup.parser.HtmlParserTest::handlesKnownEmptyBlocks
+  - org.jsoup.parser.HtmlParserTest::testHeaderContents
+  - org.jsoup.parser.HtmlParserTest::testRelaxedTags
+  - org.jsoup.parser.HtmlParserTest::testSpanContents
+  - org.jsoup.parser.HtmlParserTest::testInvalidTableContents
+  - org.jsoup.parser.HtmlParserTest::handlesNestedImplicitTable
+  - org.jsoup.parser.HtmlParserTest::reconstructFormattingElementsInTable
+  - org.jsoup.parser.HtmlParserTest::testNoImagesInNoScriptInHead
+  - org.jsoup.parser.HtmlParserTest::doesNotFindShortestMatchingEntity
+  - org.jsoup.parser.HtmlParserTest::handlesUnclosedAnchors
+  - org.jsoup.parser.HtmlParserTest::relaxedBaseEntityMatchAndStrictExtendedMatch
+  - org.jsoup.parser.HtmlParserTest::handlesUnclosedFormattingElements
+  - org.jsoup.parser.HtmlParserTest::testHgroup
+  - org.jsoup.parser.HtmlParserTest::testFontFlowContents
+  - org.jsoup.parser.HtmlParserTest::testAFlowContents
+  - org.jsoup.parser.HtmlParserTest::handlesNullInData
+  - org.jsoup.parser.XmlTreeBuilderTest::testCommentAndDocType
+  - org.jsoup.parser.XmlTreeBuilderTest::testSimpleXmlParse
+  - org.jsoup.safety.CleanerTest::basicBehaviourTest
+  - org.jsoup.safety.CleanerTest::handlesCustomProtocols
+  - org.jsoup.safety.CleanerTest::preservesRelativeLinksIfConfigured
+  - org.jsoup.safety.CleanerTest::testCleanAnchorProtocol
+  - org.jsoup.safety.CleanerTest::simpleBehaviourTest2
+  - org.jsoup.safety.CleanerTest::testRemoveProtocols
+  - org.jsoup.safety.CleanerTest::simpleBehaviourTest
+  - org.jsoup.select.ElementsTest::before
+  - org.jsoup.select.ElementsTest::unwrap
+  - org.jsoup.select.ElementsTest::unwrapP
+  - org.jsoup.select.ElementsTest::wrap
+  - org.jsoup.select.ElementsTest::after
+  - org.jsoup.select.ElementsTest::wrapDiv
+  - org.jsoup.select.ElementsTest::tagNameSet
+  - org.jsoup.select.SelectorTest::testPseudoContains
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.jsoup.safety.CleanerTest::testRemoveProtocols', 'org.jsoup.nodes.ElementTest::testAddNewText', 'org.jsoup.parser.HtmlParserTest::testHgroup', 'org.jsoup.parser.HtmlParserTest::doesNotFindShortestMatchingEntity', 'org.jsoup.nodes.ElementTest::testContainerOutput', 'org.jsoup.nodes.NodeTest::after', 'org.jsoup.safety.CleanerTest::simpleBehaviourTest', 'org.jsoup.parser.HtmlParserTest::testHeaderContents', 'org.jsoup.parser.HtmlParserTest::reconstructFormattingElements', 'org.jsoup.nodes.NodeTest::testRemove', 'org.jsoup.select.ElementsTest::unwrapP', 'org.jsoup.parser.HtmlParserTest::handlesImplicitCaptionClose', 'org.jsoup.nodes.NodeTest::childNodesCopy', 'org.jsoup.select.ElementsTest::wrapDiv', 'org.jsoup.safety.CleanerTest::testCleanAnchorProtocol', 'org.jsoup.nodes.NodeTest::testReplace', 'org.jsoup.nodes.TextNodeTest::testTextBean', 'org.jsoup.parser.HtmlParserTest::handlesWhatWgExpensesTableExample', 'org.jsoup.parser.HtmlParserTest::handlesUnclosedTitle', 'org.jsoup.parser.HtmlParserTest::handlesNullInData', 'org.jsoup.select.ElementsTest::before', 'org.jsoup.nodes.ElementTest::testFormatHtml', 'org.jsoup.select.ElementsTest::after', 'org.jsoup.parser.HtmlParserTest::handlesUnclosedAnchors', 'org.jsoup.nodes.NodeTest::unwrapNoChildren', 'org.jsoup.nodes.ElementTest::testSetIndent', 'org.jsoup.select.ElementsTest::unwrap', 'org.jsoup.parser.HtmlParserTest::relaxedBaseEntityMatchAndStrictExtendedMatch', 'org.jsoup.nodes.NodeTest::before', 'org.jsoup.parser.HtmlParserTest::testAFlowContents', 'org.jsoup.nodes.NodeTest::unwrap', 'org.jsoup.parser.HtmlParserTest::testInvalidTableContents', 'org.jsoup.parser.HtmlParserTest::handlesTextAfterData', 'org.jsoup.nodes.ElementTest::moveByAppend', 'org.jsoup.parser.HtmlParserTest::testSpanContents', 'org.jsoup.select.ElementsTest::tagNameSet', 'org.jsoup.nodes.ElementTest::testPrependText', 'org.jsoup.safety.CleanerTest::handlesCustomProtocols', 'org.jsoup.nodes.ElementTest::testNoIndentOnScriptAndStyle', 'org.jsoup.safety.CleanerTest::preservesRelativeLinksIfConfigured', 'org.jsoup.select.SelectorTest::testPseudoContains', 'org.jsoup.nodes.ElementTest::insertChildrenAsCopy', 'org.jsoup.safety.CleanerTest::basicBehaviourTest', 'org.jsoup.safety.CleanerTest::simpleBehaviourTest2', 'org.jsoup.parser.HtmlParserTest::testFontFlowContents', 'org.jsoup.parser.HtmlParserTest::normalisesDocument', 'org.jsoup.parser.HtmlParserTest::testNormalisesIsIndex', 'org.jsoup.parser.HtmlParserTest::testNoImagesInNoScriptInHead', 'org.jsoup.parser.HtmlParserTest::testSpaceAfterTag', 'org.jsoup.nodes.ElementTest::testFormatOutline', 'org.jsoup.select.ElementsTest::wrap', 'org.jsoup.nodes.TextNodeTest::testSplitAnEmbolden', 'org.jsoup.parser.HtmlParserTest::testRelaxedTags', 'org.jsoup.nodes.DocumentTest::testXhtmlReferences', 'org.jsoup.nodes.DocumentTest::testOutputEncoding', 'org.jsoup.parser.HtmlParserTest::handlesNestedImplicitTable', 'org.jsoup.nodes.DocumentTest::testClone', 'org.jsoup.parser.XmlTreeBuilderTest::testSimpleXmlParse', 'org.jsoup.parser.HtmlParserTest::reconstructFormattingElementsInTable', 'org.jsoup.parser.XmlTreeBuilderTest::testCommentAndDocType', 'org.jsoup.parser.HtmlParserTest::noTableDirectInTable', 'org.jsoup.parser.HtmlParserTest::handlesUnclosedFormattingElements', 'org.jsoup.parser.HtmlParserTest::handlesKnownEmptyBlocks']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 7.69 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite)
+                    continue;
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append("&#xa0;");
+                    break;
+                case '<':
+                    if (!inAttribute)
+                                            accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c)) 
+                accum.append(c);
+            else if (map.containsKey(c))
+                accum.append('&').append(map.get(c)).append(';');
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.jsoup.nodes.EntitiesTest::escapesGtInXmlAttributesButNotInHtml
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 1.82 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite)
+                    continue;
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append("&#xa0;");
+                    break;
+                case '<':
+                    if (!inAttribute)
+                                            accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jsoup-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/maven-build.xml:74: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:143: error: illegal start of expression
+    [javac]     static String unescape(String string) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:143: error: ';' expected
+    [javac]     static String unescape(String string) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:143: error: ';' expected
+    [javac]     static String unescape(String string) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:153: error: illegal start of expression
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:153: error: ';' expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:153: error: <identifier> expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:153: error: not a statement
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:153: error: ';' expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:171: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:171: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:171: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:171: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:171: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:171: error: not a statement
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:171: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:171: error: <identifier> expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:171: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:183: error: illegal start of expression
+    [javac]     private enum CoreCharset {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:183: error: enum types must not be local
+    [javac]     private enum CoreCharset {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:197: error: illegal start of expression
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:197: error: illegal start of expression
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:197: error: ';' expected
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:204: error: illegal start of expression
+    [javac]     static {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:217: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:217: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:217: error: ';' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:217: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:217: error: ')' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:217: error: not a statement
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:217: error: ';' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:236: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:236: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:236: error: ';' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:236: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:236: error: ')' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:236: error: not a statement
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:236: error: ';' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/src/main/java/org/jsoup/nodes/Entities.java:252: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 38 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Jsoup_47_4cf337c994c84afe9f58a72d1d2793a2/maven-build.xml:74: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 7.36 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite)
+                    continue;
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append("&#xa0;");
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c)) 
+                accum.append(c);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.jsoup.nodes.EntitiesTest::escapesGtInXmlAttributesButNotInHtml
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 7.54 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite)
+                    continue;
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append("&#xa0;");
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            // Handle surrogate pairs
+            final char high = (char) (codePoint >>> 16);
+            final char low = (char) (codePoint & 0xFFFF);
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c)) 
+                accum.append(c);
+            else if (map.containsKey(high))
+                accum.append('&').append(map.get(high)).append(';');
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.jsoup.nodes.EntitiesTest::escapesGtInXmlAttributesButNotInHtml
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

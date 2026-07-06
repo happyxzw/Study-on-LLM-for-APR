@@ -1,0 +1,1170 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 183.37 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      if (n != null) { // Ensure n is not null before adding to externsRoot
+        externsRoot.addChildToBack(n);
+      }
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    hoistExterns(externsRoot);
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() && options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    hoistNoCompileFiles();
+    if (staleInputs) {
+      repartitionInputs();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testDependencySorting
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 180.53 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      if (n != null) { // Add check to prevent adding null nodes
+        externsRoot.addChildToBack(n);
+      }
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    hoistExterns(externsRoot);
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() && options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    hoistNoCompileFiles();
+    if (staleInputs) {
+      repartitionInputs();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testDependencySorting
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 181.39 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      if (n != null) { // Added check to ensure n is not null before adding
+        externsRoot.addChildToBack(n);
+      }
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    hoistExterns(externsRoot);
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() && options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    hoistNoCompileFiles();
+    if (staleInputs) {
+      repartitionInputs();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testDependencySorting
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 181.34 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      if (n != null) { // Added check to prevent adding null nodes
+        externsRoot.addChildToBack(n);
+      }
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    hoistExterns(externsRoot);
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() && options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    hoistNoCompileFiles();
+    if (staleInputs) {
+      repartitionInputs();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testDependencySorting
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 184.93 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      if (n != null) {  // Added null check for externs
+        externsRoot.addChildToBack(n);
+      }
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    hoistExterns(externsRoot);
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() && options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    hoistNoCompileFiles();
+    if (staleInputs) {
+      repartitionInputs();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testDependencySorting
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 196.28 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      if (n != null) { // Added check to ensure n is not null before adding it
+        externsRoot.addChildToBack(n);
+      }
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    hoistExterns(externsRoot);
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() && options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    hoistNoCompileFiles();
+    if (staleInputs) {
+      repartitionInputs();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testDependencySorting
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 234.29 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      if (n != null) { // Added a null check for the externs root
+        externsRoot.addChildToBack(n);
+      }
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    hoistExterns(externsRoot);
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() && options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    hoistNoCompileFiles();
+    if (staleInputs) {
+      repartitionInputs();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testDependencySorting
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 210.73 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      if (n != null) { // Ensure n is not null before adding it to externsRoot
+        externsRoot.addChildToBack(n);
+      }
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    hoistExterns(externsRoot);
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() && options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    hoistNoCompileFiles();
+    if (staleInputs) {
+      repartitionInputs();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testDependencySorting
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 221.54 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      if (n != null) { // Added null check for AST node
+        externsRoot.addChildToBack(n);
+      }
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    hoistExterns(externsRoot);
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() && options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    hoistNoCompileFiles();
+    if (staleInputs) {
+      repartitionInputs();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testDependencySorting
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 228.85 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      if (n != null) { // Check if n is not null before adding to externsRoot
+        externsRoot.addChildToBack(n);
+      }
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    hoistExterns(externsRoot);
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() && options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    hoistNoCompileFiles();
+    if (staleInputs) {
+      repartitionInputs();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.IntegrationTest::testDependencySorting
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

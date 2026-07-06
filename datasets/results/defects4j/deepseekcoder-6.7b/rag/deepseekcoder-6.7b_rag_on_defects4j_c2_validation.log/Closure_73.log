@@ -1,0 +1,979 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 259.05 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+// fixed lines start
+          sb.append(c);
+// fixed lines end
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.google.javascript.jscomp.CodePrinterTest::testPrint
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+  - com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testVersionSpecificRegExpQuirks
+  - com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testContainsUnicodeEscape
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testContainsUnicodeEscape', 'com.google.javascript.jscomp.CodePrinterTest::testPrint', 'com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testVersionSpecificRegExpQuirks']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 234.65 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+// buggy lines start
+          if (c <= 0x7f) {
+// buggy lines end
+                      sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 249.46 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+// buggy lines start
+          if (c > 0x1f && c <= 0x7f) {
+// buggy lines end
+                      sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 244.72 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+    StringBuilder sb = new StringBuilder(s.length() + 2);
+    sb.append(quote);
+    for (int i = 0; i < s.length(); i++) {
+        char c = s.charAt(i);
+        switch (c) {
+            case '\0':
+                sb.append("\\0");
+                break;
+            case '\n':
+                sb.append("\\n");
+                break;
+            case '\r':
+                sb.append("\\r");
+                break;
+            case '\t':
+                sb.append("\\t");
+                break;
+            case '\\':
+                sb.append(backslashEscape);
+                break;
+            case '\"':
+                sb.append(doublequoteEscape);
+                break;
+            case '\'':
+                sb.append(singlequoteEscape);
+                break;
+            case '>':
+                if (i >= 2 &&
+                    ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+                     (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+                    sb.append("\\>");
+                } else {
+                    sb.append(c);
+                }
+                break;
+            case '<':
+                final String END_SCRIPT = "/script";
+                final String START_COMMENT = "!--";
+                if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                                    END_SCRIPT.length())) {
+                    sb.append("<\\");
+                } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                           START_COMMENT.length())) {
+                    sb.append("<\\");
+                } else {
+                    sb.append(c);
+                }
+                break;
+            default:
+                if (outputCharsetEncoder != null) {
+                    if (outputCharsetEncoder.canEncode(c)) {
+                        sb.append(c);
+                    } else {
+                        appendHexJavaScriptRepresentation(sb, c);
+                    }
+                } else {
+                    if (c > 0x1f && c <= 0x7f) {
+                        sb.append(c);
+                    } else {
+                        appendHexJavaScriptRepresentation(sb, c);
+                    }
+                }
+        }
+    }
+    sb.append(quote);
+    return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 239.76 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 85
+  - com.google.debugging.sourcemap.SourceMapGeneratorV1Test::testFunctionNameOutput4
+  - com.google.debugging.sourcemap.SourceMapGeneratorV1Test::testMultilineMapping
+  - com.google.debugging.sourcemap.SourceMapGeneratorV1Test::testMultiFunctionMapping
+  - com.google.debugging.sourcemap.SourceMapGeneratorV1Test::testLiteralMappings
+  - com.google.debugging.sourcemap.SourceMapGeneratorV1Test::testGoldenOutput5
+  - com.google.debugging.sourcemap.SourceMapGeneratorV2Test::testMultilineMapping
+  - com.google.debugging.sourcemap.SourceMapGeneratorV2Test::testMultiFunctionMapping
+  - com.google.debugging.sourcemap.SourceMapGeneratorV2Test::testLiteralMappingsGoldenOutput
+  - com.google.debugging.sourcemap.SourceMapGeneratorV2Test::testLiteralMappings
+  - com.google.debugging.sourcemap.SourceMapGeneratorV2Test::testGoldenOutput5
+  - com.google.javascript.jscomp.CodePrinterTest::testPrint
+  - com.google.javascript.jscomp.CodePrinterTest::testLineLength
+  - com.google.javascript.jscomp.CodePrinterTest::testParsePrintParse
+  - com.google.javascript.jscomp.CodePrinterTest::testPrintScript
+  - com.google.javascript.jscomp.CodePrinterTest::testObjectLit
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+  - com.google.javascript.jscomp.CodePrinterTest::testPrintInOperatorInForLoop
+  - com.google.javascript.jscomp.CodePrinterTest::testDirectEval
+  - com.google.javascript.jscomp.CodePrinterTest::testFunctionWithCall
+  - com.google.javascript.jscomp.CodePrinterTest::testObjectLit2
+  - com.google.javascript.jscomp.CodePrinterTest::testObjectLit3
+  - com.google.javascript.jscomp.CodePrinterTest::testGetter
+  - com.google.javascript.jscomp.CodePrinterTest::testSetter
+  - com.google.javascript.jscomp.CodePrinterTest::testIndirectEval
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testIssue81
+  - com.google.javascript.jscomp.CreateSyntheticBlocksTest::testFoldWithMarkers2
+  - com.google.javascript.jscomp.FunctionRewriterTest::testReplaceGetter1
+  - com.google.javascript.jscomp.FunctionRewriterTest::testReplaceSetter1
+  - com.google.javascript.jscomp.FunctionRewriterTest::testReplaceSetter2
+  - com.google.javascript.jscomp.InlineCostEstimatorTest::testCost
+  - com.google.javascript.jscomp.InlineSimpleMethodsTest::testIssue2508576_1
+  - com.google.javascript.jscomp.InlineSimpleMethodsTest::testIssue2508576_2
+  - com.google.javascript.jscomp.InlineSimpleMethodsTest::testAnonymousGet
+  - com.google.javascript.jscomp.InlineSimpleMethodsTest::testAnonymousSet
+  - com.google.javascript.jscomp.NameAnonymousFunctionsMappedTest::testAssignmentToPrototype3
+  - com.google.javascript.jscomp.NameAnonymousFunctionsMappedTest::testAssignmentToPrototype5
+  - com.google.javascript.jscomp.NameAnonymousFunctionsMappedTest::testAssignmentToGetElem
+  - com.google.javascript.jscomp.NameAnonymousFunctionsMappedTest::testAssignmentToPropertyOfCallReturnValue
+  - com.google.javascript.jscomp.NameAnonymousFunctionsMappedTest::testGetElemWithDashes
+  - com.google.javascript.jscomp.NameAnonymousFunctionsMappedTest::testAssignmentToPropertyOfArrayElement
+  - com.google.javascript.jscomp.ParallelCompilerPassTest::testManyFunctions
+  - com.google.javascript.jscomp.ParallelCompilerPassTest::testInnerFunctions
+  - com.google.javascript.jscomp.ParallelCompilerPassTest::testOneFunction
+  - com.google.javascript.jscomp.ParallelCompilerPassTest::testTwoFunctions
+  - com.google.javascript.jscomp.ParallelCompilerPassTest::testNoFunction
+  - com.google.javascript.jscomp.PeepholeFoldConstantsTest::testStringJoinAdd
+  - com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testVersionSpecificRegExpQuirks
+  - com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testContainsUnicodeEscape
+  - com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testFoldRegExpConstructorStringCompare
+  - com.google.javascript.jscomp.ReplaceCssNamesTest::testNoSymbolMapStripsCallAndDoesntIssueWarnings
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testHookReplacement
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testQualifiedMessageName
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testPlaceholderValueReferencedTwice
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testLegacyStyleNoPlaceholdersVarSyntax
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testLegacyStylePlaceholderNameInLowerUnderscoreCase
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testFunctionWithParamReplacementMissing
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testFunctionReplacementMissing
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testPlaceholderNameInLowerCamelCase
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testLegacyStyleNoPlaceholdersFunctionSyntax
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testReplaceSimpleMessage
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testNameReplacement
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testSimpleMessageReplacementMissing
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testLegacyStyleOnePlaceholder
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testLegacyStyleTwoPlaceholders
+  - com.google.javascript.jscomp.ReplaceMessagesTest::testLegacyStylePlaceholderNameInLowerCamelCase
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testUntypedParam
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testQualifiedClass
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testInnerClasses
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testUnion
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testValue
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testImplementedInterfaceOrdering
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testConstValue
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testImplementedInterfaceOrderingGoogInherits
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testExtendedInterface
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testValueWithInnerFn
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testFunctionType
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testNativeClass
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testInterface
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testSkipParamOK
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testImplementedInterface
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testReturnNothing
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testReturn
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testNullValue
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testValues
+  - com.google.javascript.jscomp.RuntimeTypeCheckTest::testInnerConstructor
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.ReplaceMessagesTest::testLegacyStyleOnePlaceholder', 'com.google.javascript.jscomp.ParallelCompilerPassTest::testManyFunctions', 'com.google.javascript.jscomp.ReplaceMessagesTest::testFunctionReplacementMissing', 'com.google.javascript.jscomp.ParallelCompilerPassTest::testTwoFunctions', 'com.google.javascript.jscomp.CodePrinterTest::testObjectLit3', 'com.google.javascript.jscomp.InlineCostEstimatorTest::testCost', 'com.google.javascript.jscomp.InlineSimpleMethodsTest::testIssue2508576_2', 'com.google.javascript.jscomp.FunctionRewriterTest::testReplaceGetter1', 'com.google.javascript.jscomp.CodePrinterTest::testLineLength', 'com.google.javascript.jscomp.ReplaceMessagesTest::testHookReplacement', 'com.google.javascript.jscomp.NameAnonymousFunctionsMappedTest::testAssignmentToPropertyOfCallReturnValue', 'com.google.javascript.jscomp.ReplaceMessagesTest::testPlaceholderNameInLowerCamelCase', 'com.google.javascript.jscomp.CommandLineRunnerTest::testIssue81', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testInnerClasses', 'com.google.javascript.jscomp.ReplaceMessagesTest::testPlaceholderValueReferencedTwice', 'com.google.javascript.jscomp.CodePrinterTest::testPrint', 'com.google.javascript.jscomp.NameAnonymousFunctionsMappedTest::testAssignmentToPrototype5', 'com.google.javascript.jscomp.CodePrinterTest::testGetter', 'com.google.javascript.jscomp.ReplaceMessagesTest::testLegacyStyleNoPlaceholdersFunctionSyntax', 'com.google.javascript.jscomp.CodePrinterTest::testObjectLit', 'com.google.javascript.jscomp.ReplaceMessagesTest::testFunctionWithParamReplacementMissing', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testNullValue', 'com.google.debugging.sourcemap.SourceMapGeneratorV1Test::testLiteralMappings', 'com.google.debugging.sourcemap.SourceMapGeneratorV2Test::testGoldenOutput5', 'com.google.javascript.jscomp.CreateSyntheticBlocksTest::testFoldWithMarkers2', 'com.google.debugging.sourcemap.SourceMapGeneratorV1Test::testMultiFunctionMapping', 'com.google.javascript.jscomp.CodePrinterTest::testSetter', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testReturnNothing', 'com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testFoldRegExpConstructorStringCompare', 'com.google.javascript.jscomp.ReplaceMessagesTest::testNameReplacement', 'com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testVersionSpecificRegExpQuirks', 'com.google.javascript.jscomp.CodePrinterTest::testParsePrintParse', 'com.google.debugging.sourcemap.SourceMapGeneratorV1Test::testFunctionNameOutput4', 'com.google.javascript.jscomp.CodePrinterTest::testFunctionWithCall', 'com.google.javascript.jscomp.ReplaceMessagesTest::testSimpleMessageReplacementMissing', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testUnion', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testNativeClass', 'com.google.javascript.jscomp.NameAnonymousFunctionsMappedTest::testAssignmentToGetElem', 'com.google.javascript.jscomp.FunctionRewriterTest::testReplaceSetter1', 'com.google.debugging.sourcemap.SourceMapGeneratorV2Test::testLiteralMappingsGoldenOutput', 'com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testContainsUnicodeEscape', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testImplementedInterface', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testInterface', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testReturn', 'com.google.javascript.jscomp.PeepholeFoldConstantsTest::testStringJoinAdd', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testExtendedInterface', 'com.google.javascript.jscomp.NameAnonymousFunctionsMappedTest::testGetElemWithDashes', 'com.google.javascript.jscomp.CodePrinterTest::testPrintScript', 'com.google.javascript.jscomp.ParallelCompilerPassTest::testNoFunction', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testConstValue', 'com.google.javascript.jscomp.FunctionRewriterTest::testReplaceSetter2', 'com.google.javascript.jscomp.ReplaceMessagesTest::testLegacyStylePlaceholderNameInLowerUnderscoreCase', 'com.google.debugging.sourcemap.SourceMapGeneratorV1Test::testMultilineMapping', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testValue', 'com.google.javascript.jscomp.CodePrinterTest::testPrintInOperatorInForLoop', 'com.google.javascript.jscomp.ReplaceMessagesTest::testLegacyStyleTwoPlaceholders', 'com.google.javascript.jscomp.NameAnonymousFunctionsMappedTest::testAssignmentToPropertyOfArrayElement', 'com.google.javascript.jscomp.ReplaceMessagesTest::testLegacyStylePlaceholderNameInLowerCamelCase', 'com.google.javascript.jscomp.ReplaceMessagesTest::testLegacyStyleNoPlaceholdersVarSyntax', 'com.google.debugging.sourcemap.SourceMapGeneratorV2Test::testMultilineMapping', 'com.google.javascript.jscomp.ReplaceMessagesTest::testQualifiedMessageName', 'com.google.debugging.sourcemap.SourceMapGeneratorV1Test::testGoldenOutput5', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testQualifiedClass', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testValueWithInnerFn', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testUntypedParam', 'com.google.javascript.jscomp.InlineSimpleMethodsTest::testAnonymousGet', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testSkipParamOK', 'com.google.javascript.jscomp.ReplaceCssNamesTest::testNoSymbolMapStripsCallAndDoesntIssueWarnings', 'com.google.javascript.jscomp.ReplaceMessagesTest::testReplaceSimpleMessage', 'com.google.javascript.jscomp.InlineSimpleMethodsTest::testIssue2508576_1', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testImplementedInterfaceOrderingGoogInherits', 'com.google.javascript.jscomp.InlineSimpleMethodsTest::testAnonymousSet', 'com.google.debugging.sourcemap.SourceMapGeneratorV2Test::testLiteralMappings', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testValues', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testFunctionType', 'com.google.javascript.jscomp.CodePrinterTest::testObjectLit2', 'com.google.javascript.jscomp.ParallelCompilerPassTest::testOneFunction', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testInnerConstructor', 'com.google.javascript.jscomp.CodePrinterTest::testIndirectEval', 'com.google.javascript.jscomp.RuntimeTypeCheckTest::testImplementedInterfaceOrdering', 'com.google.javascript.jscomp.ParallelCompilerPassTest::testInnerFunctions', 'com.google.debugging.sourcemap.SourceMapGeneratorV2Test::testMultiFunctionMapping', 'com.google.javascript.jscomp.NameAnonymousFunctionsMappedTest::testAssignmentToPrototype3', 'com.google.javascript.jscomp.CodePrinterTest::testDirectEval']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 220.56 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+        StringBuilder sb = new StringBuilder(s.length() + 2);
+        sb.append(quote);
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '\0': sb.append("\\0"); break;
+                case '\n': sb.append("\\n"); break;
+                case '\r': sb.append("\\r"); break;
+                case '\t': sb.append("\\t"); break;
+                case '\\': sb.append(backslashEscape); break;
+                case '\"': sb.append(doublequoteEscape); break;
+                case '\'': sb.append(singlequoteEscape); break;
+                case '>':
+                    if (i >= 2 &&
+                            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+                             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+                        sb.append("\\>");
+                    } else {
+                        sb.append(c);
+                    }
+                    break;
+                case '<':
+                    final String END_SCRIPT = "/script";
+                    final String START_COMMENT = "!--";
+                    if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+                        sb.append("<\\");
+                    } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                            START_COMMENT.length())) {
+                        sb.append("<\\");
+                    } else {
+                        sb.append(c);
+                    }
+                    break;
+                default:
+                    if (outputCharsetEncoder != null) {
+                        if (outputCharsetEncoder.canEncode(c)) {
+                            sb.append(c);
+                        } else {
+                            appendHexJavaScriptRepresentation(sb, c);
+                        }
+                    } else {
+// buggy lines start
+                        sb.append(c);
+// buggy lines end
+                    }
+            }
+        }
+        sb.append(quote);
+        return sb.toString();
+    }
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.google.javascript.jscomp.CodePrinterTest::testPrint
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+  - com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testVersionSpecificRegExpQuirks
+  - com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testContainsUnicodeEscape
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testContainsUnicodeEscape', 'com.google.javascript.jscomp.CodePrinterTest::testPrint', 'com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testVersionSpecificRegExpQuirks']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 261.73 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+    StringBuilder sb = new StringBuilder(s.length() + 2);
+    sb.append(quote);
+    for (int i = 0; i < s.length(); i++) {
+        char c = s.charAt(i);
+        switch (c) {
+            case '\0': sb.append("\\0"); break;
+            case '\n': sb.append("\\n"); break;
+            case '\r': sb.append("\\r"); break;
+            case '\t': sb.append("\\t"); break;
+            case '\\': sb.append(backslashEscape); break;
+            case '\"': sb.append(doublequoteEscape); break;
+            case '\'': sb.append(singlequoteEscape); break;
+            case '>':
+                if (i >= 2 &&
+                    ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+                     (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+                    sb.append("\\>");
+                } else {
+                    sb.append(c);
+                }
+                break;
+            case '<':
+                final String END_SCRIPT = "/script";
+                final String START_COMMENT = "!--";
+                if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                                    END_SCRIPT.length())) {
+                    sb.append("<\\");
+                } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                           START_COMMENT.length())) {
+                    sb.append("<\\");
+                } else {
+                    sb.append(c);
+                }
+                break;
+            default:
+                if (outputCharsetEncoder != null) {
+                    if (outputCharsetEncoder.canEncode(c)) {
+                        sb.append(c);
+                    } else {
+                        appendHexJavaScriptRepresentation(sb, c);
+                    }
+                } else {
+                    // buggy lines start
+                    if (c > 0x1f && c <= 0x7f) {
+                        sb.append(c);
+                    } else {
+                        appendHexJavaScriptRepresentation(sb, c);
+                    }
+                    // buggy lines end
+                }
+        }
+    }
+    sb.append(quote);
+    return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 250.73 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+        StringBuilder sb = new StringBuilder(s.length() + 2);
+        sb.append(quote);
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '\0':
+                    sb.append("\\0");
+                    break;
+                case '\n':
+                    sb.append("\\n");
+                    break;
+                case '\r':
+                    sb.append("\\r");
+                    break;
+                case '\t':
+                    sb.append("\\t");
+                    break;
+                case '\\':
+                    sb.append(backslashEscape);
+                    break;
+                case '\"':
+                    sb.append(doublequoteEscape);
+                    break;
+                case '\'':
+                    sb.append(singlequoteEscape);
+                    break;
+                case '>':
+                    if (i >= 2 &&
+                            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+                                    (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+                        sb.append("\\>");
+                    } else {
+                        sb.append(c);
+                    }
+                    break;
+                case '<':
+                    final String END_SCRIPT = "/script";
+                    final String START_COMMENT = "!--";
+                    if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+                        sb.append("<\\");
+                    } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                            START_COMMENT.length())) {
+                        sb.append("<\\");
+                    } else {
+                        sb.append(c);
+                    }
+                    break;
+                default:
+                    if (outputCharsetEncoder != null) {
+                        if (outputCharsetEncoder.canEncode(c)) {
+                            sb.append(c);
+                        } else {
+                            appendHexJavaScriptRepresentation(sb, c);
+                        }
+                    } else {
+// buggy lines start
+                        if (c > 0x1f && c <= 0x7f) {
+// buggy lines end
+                            sb.append(c);
+                        } else {
+                            appendHexJavaScriptRepresentation(sb, c);
+                        }
+                    }
+            }
+        }
+        sb.append(quote);
+        return sb.toString();
+    }
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 246.37 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+    StringBuilder sb = new StringBuilder(s.length() + 2);
+    sb.append(quote);
+    for (int i = 0; i < s.length(); i++) {
+        char c = s.charAt(i);
+        switch (c) {
+            case '\0': sb.append("\\0"); break;
+            case '\n': sb.append("\\n"); break;
+            case '\r': sb.append("\\r"); break;
+            case '\t': sb.append("\\t"); break;
+            case '\\': sb.append(backslashEscape); break;
+            case '\"': sb.append(doublequoteEscape); break;
+            case '\'': sb.append(singlequoteEscape); break;
+            case '>':
+                if (i >= 2 &&
+                    ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+                     (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+                    sb.append("\\>");
+                } else {
+                    sb.append(c);
+                }
+                break;
+            case '<':
+                final String END_SCRIPT = "/script";
+                final String START_COMMENT = "!--";
+                if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                                    END_SCRIPT.length())) {
+                    sb.append("<\\");
+                } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                           START_COMMENT.length())) {
+                    sb.append("<\\");
+                } else {
+                    sb.append(c);
+                }
+                break;
+            default:
+                if (outputCharsetEncoder != null) {
+                    if (outputCharsetEncoder.canEncode(c)) {
+                        sb.append(c);
+                    } else {
+                        appendHexJavaScriptRepresentation(sb, c);
+                    }
+                } else {
+// buggy lines start
+                    sb.append(c);
+// buggy lines end
+                }
+        }
+    }
+    sb.append(quote);
+    return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.google.javascript.jscomp.CodePrinterTest::testPrint
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+  - com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testVersionSpecificRegExpQuirks
+  - com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testContainsUnicodeEscape
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testContainsUnicodeEscape', 'com.google.javascript.jscomp.CodePrinterTest::testPrint', 'com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testVersionSpecificRegExpQuirks']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 260.30 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+    StringBuilder sb = new StringBuilder(s.length() + 2);
+    sb.append(quote);
+    for (int i = 0; i < s.length(); i++) {
+        char c = s.charAt(i);
+        switch (c) {
+            case '\0':
+                sb.append("\\0");
+                break;
+            case '\n':
+                sb.append("\\n");
+                break;
+            case '\r':
+                sb.append("\\r");
+                break;
+            case '\t':
+                sb.append("\\t");
+                break;
+            case '\\':
+                sb.append(backslashEscape);
+                break;
+            case '\"':
+                sb.append(doublequoteEscape);
+                break;
+            case '\'':
+                sb.append(singlequoteEscape);
+                break;
+            case '>':
+                if (i >= 2 &&
+                        ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+                                (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+                    sb.append("\\>");
+                } else {
+                    sb.append(c);
+                }
+                break;
+            case '<':
+                final String END_SCRIPT = "/script";
+                final String START_COMMENT = "!--";
+                if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                        END_SCRIPT.length())) {
+                    sb.append("<\\");
+                } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                        START_COMMENT.length())) {
+                    sb.append("<\\");
+                } else {
+                    sb.append(c);
+                }
+                break;
+            default:
+                if (outputCharsetEncoder != null) {
+                    if (outputCharsetEncoder.canEncode(c)) {
+                        sb.append(c);
+                    } else {
+                        appendHexJavaScriptRepresentation(sb, c);
+                    }
+                } else {
+// buggy lines start
+                    if (c > 0x1f && c <= 0x7f) {
+// buggy lines end
+                        sb.append(c);
+                    } else {
+                        appendHexJavaScriptRepresentation(sb, c);
+                    }
+                }
+        }
+    }
+    sb.append(quote);
+    return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

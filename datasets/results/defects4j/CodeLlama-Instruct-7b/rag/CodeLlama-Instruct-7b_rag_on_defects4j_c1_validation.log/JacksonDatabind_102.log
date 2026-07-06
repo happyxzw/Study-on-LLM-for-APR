@@ -1,0 +1,1973 @@
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property == null) {
+        return this;
+    }
+        JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone()
+                : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return this;
+    }
+    DateFormat df0 = serializers.getConfig().getDateFormat();
+    if (df0 instanceof StdDateFormat) {
+        StdDateFormat std = (StdDateFormat) df0;
+        if (format.hasLocale()) {
+            std = std.withLocale(format.getLocale());
+        }
+        if (format.hasTimeZone()) {
+            std = std.withTimeZone(format.getTimeZone());
+        }
+        return withFormat(Boolean.FALSE, std);
+    }
+    if (!(df0 instanceof SimpleDateFormat)) {
+        serializers.reportBadDefinition(handledType(), String.format(
+"Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`",
+df0.getClass().getName()));
+    }
+    SimpleDateFormat df = (SimpleDateFormat) df0;
+    if (hasLocale) {
+        df = new SimpleDateFormat(df.toPattern(), format.getLocale());
+    } else {
+        df = (SimpleDateFormat) df.clone();
+    }
+    TimeZone newTz = format.getTimeZone();
+    boolean changeTZ = (newTz != null) && !newTz.equals(df.getTimeZone());
+    if (changeTZ) {
+        df.setTimeZone(newTz);
+    }
+    return withFormat(Boolean.FALSE, df);
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 5.48 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                String toStringHelper(boolean forAnnotations) {
+    if (hasReferenceName()) {
+        return getReferenceName();
+    } else if (prettyPrint) {
+        // Don't pretty print recursively.
+        prettyPrint = false;
+
+        // Use a tree set so that the properties are sorted.
+        Set<String> propertyNames = Sets.newTreeSet();
+        for (ObjectType current = this;
+             current != null && !current.isNativeObjectType() &&
+                 propertyNames.size() <= MAX_PRETTY_PRINTED_PROPERTIES;
+             current = current.getImplicitPrototype()) {
+            propertyNames.addAll(current.getOwnPropertyNames());
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+
+        int i = 0;
+        for (String property : propertyNames) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+
+            sb.append(property);
+            sb.append(": ");
+            sb.append(getPropertyType(property).toStringHelper(forAnnotations));
+
+            ++i;
+            if (!forAnnotations && i == MAX_PRETTY_PRINTED_PROPERTIES) {
+                sb.append(", ...");
+                break;
+            }
+        }
+
+        sb.append("}");
+
+        prettyPrint = true;
+        return sb.toString();
+    } else {
+        return forAnnotations ? "?" : "{...}";
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/maven-build.xml:90: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:62: error: cannot find symbol
+    [javac]     if (hasReferenceName()) {
+    [javac]         ^
+    [javac]   symbol:   method hasReferenceName()
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: cannot find symbol
+    [javac]         return getReferenceName();
+    [javac]                ^
+    [javac]   symbol:   method getReferenceName()
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:64: error: cannot find symbol
+    [javac]     } else if (prettyPrint) {
+    [javac]                ^
+    [javac]   symbol:   variable prettyPrint
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:66: error: cannot find symbol
+    [javac]         prettyPrint = false;
+    [javac]         ^
+    [javac]   symbol:   variable prettyPrint
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:69: error: cannot find symbol
+    [javac]         Set<String> propertyNames = Sets.newTreeSet();
+    [javac]         ^
+    [javac]   symbol:   class Set
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:69: error: cannot find symbol
+    [javac]         Set<String> propertyNames = Sets.newTreeSet();
+    [javac]                                     ^
+    [javac]   symbol:   variable Sets
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:70: error: cannot find symbol
+    [javac]         for (ObjectType current = this;
+    [javac]              ^
+    [javac]   symbol:   class ObjectType
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:72: error: cannot find symbol
+    [javac]                  propertyNames.size() <= MAX_PRETTY_PRINTED_PROPERTIES;
+    [javac]                                          ^
+    [javac]   symbol:   variable MAX_PRETTY_PRINTED_PROPERTIES
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:88: error: cannot find symbol
+    [javac]             sb.append(getPropertyType(property).toStringHelper(forAnnotations));
+    [javac]                       ^
+    [javac]   symbol:   method getPropertyType(String)
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:91: error: cannot find symbol
+    [javac]             if (!forAnnotations && i == MAX_PRETTY_PRINTED_PROPERTIES) {
+    [javac]                                         ^
+    [javac]   symbol:   variable MAX_PRETTY_PRINTED_PROPERTIES
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:99: error: cannot find symbol
+    [javac]         prettyPrint = true;
+    [javac]         ^
+    [javac]   symbol:   variable prettyPrint
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] 11 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/maven-build.xml:90: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 5.09 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private static PeriodFormatter toFormatter(List<Object> elementPairs, boolean notPrinter, boolean notParser) {
+    if (notPrinter && notParser) {
+        throw new IllegalStateException("Builder has created neither a printer nor a parser");
+    }
+    int size = elementPairs.size();
+    if (size >= 2 && elementPairs.get(0) instanceof Separator) {
+        Separator sep = (Separator) elementPairs.get(0);
+        PeriodFormatter f = toFormatter(elementPairs.subList(2, size), notPrinter, notParser);
+        sep = sep.finish(f.getPrinter(), f.getParser());
+        return new PeriodFormatter(sep, sep);
+    }
+    Object[] comp = createComposite(elementPairs);
+    if (notPrinter) {
+        return new PeriodFormatter(null, (PeriodParser) comp[1]);
+    } else if (notParser) {
+        return new PeriodFormatter((PeriodPrinter) comp[0], null);
+    } else {
+        return new PeriodFormatter((PeriodPrinter) comp[0], (PeriodParser) comp[1]);
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/maven-build.xml:90: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: cannot find symbol
+    [javac] private static PeriodFormatter toFormatter(List<Object> elementPairs, boolean notPrinter, boolean notParser) {
+    [javac]                                            ^
+    [javac]   symbol:   class List
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: cannot find symbol
+    [javac] private static PeriodFormatter toFormatter(List<Object> elementPairs, boolean notPrinter, boolean notParser) {
+    [javac]                ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:66: error: cannot find symbol
+    [javac]     if (size >= 2 && elementPairs.get(0) instanceof Separator) {
+    [javac]                                                     ^
+    [javac]   symbol:   class Separator
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:67: error: cannot find symbol
+    [javac]         Separator sep = (Separator) elementPairs.get(0);
+    [javac]         ^
+    [javac]   symbol:   class Separator
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:67: error: cannot find symbol
+    [javac]         Separator sep = (Separator) elementPairs.get(0);
+    [javac]                          ^
+    [javac]   symbol:   class Separator
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:68: error: cannot find symbol
+    [javac]         PeriodFormatter f = toFormatter(elementPairs.subList(2, size), notPrinter, notParser);
+    [javac]         ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:70: error: cannot find symbol
+    [javac]         return new PeriodFormatter(sep, sep);
+    [javac]                    ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:74: error: cannot find symbol
+    [javac]         return new PeriodFormatter(null, (PeriodParser) comp[1]);
+    [javac]                    ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:74: error: cannot find symbol
+    [javac]         return new PeriodFormatter(null, (PeriodParser) comp[1]);
+    [javac]                                           ^
+    [javac]   symbol:   class PeriodParser
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:76: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], null);
+    [javac]                    ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:76: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], null);
+    [javac]                                     ^
+    [javac]   symbol:   class PeriodPrinter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:78: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], (PeriodParser) comp[1]);
+    [javac]                    ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:78: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], (PeriodParser) comp[1]);
+    [javac]                                     ^
+    [javac]   symbol:   class PeriodPrinter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:78: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], (PeriodParser) comp[1]);
+    [javac]                                                              ^
+    [javac]   symbol:   class PeriodParser
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] 14 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/maven-build.xml:90: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 4.84 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                String toStringHelper(boolean forAnnotations) {
+  if (hasReferenceName()) {
+    return getReferenceName();
+  } else if (prettyPrint) {
+    // Don't pretty print recursively.
+    prettyPrint = false;
+
+    // Use a tree set so that the properties are sorted.
+    Set<String> propertyNames = Sets.newTreeSet();
+    for (ObjectType current = this;
+         current != null && !current.isNativeObjectType() &&
+             propertyNames.size() <= MAX_PRETTY_PRINTED_PROPERTIES;
+         current = current.getImplicitPrototype()) {
+      propertyNames.addAll(current.getOwnPropertyNames());
+    }
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("{");
+
+    int i = 0;
+    for (String property : propertyNames) {
+      if (i > 0) {
+        sb.append(", ");
+      }
+
+      sb.append(property);
+      sb.append(": ");
+      sb.append(getPropertyType(property).toStringHelper(forAnnotations));
+
+      ++i;
+      if (!forAnnotations && i == MAX_PRETTY_PRINTED_PROPERTIES) {
+        sb.append(", ...");
+        break;
+      }
+    }
+
+    sb.append("}");
+
+    prettyPrint = true;
+    return sb.toString();
+  } else {
+    return forAnnotations ? "?" : "{...}";
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/maven-build.xml:90: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:62: error: cannot find symbol
+    [javac]   if (hasReferenceName()) {
+    [javac]       ^
+    [javac]   symbol:   method hasReferenceName()
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: cannot find symbol
+    [javac]     return getReferenceName();
+    [javac]            ^
+    [javac]   symbol:   method getReferenceName()
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:64: error: cannot find symbol
+    [javac]   } else if (prettyPrint) {
+    [javac]              ^
+    [javac]   symbol:   variable prettyPrint
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:66: error: cannot find symbol
+    [javac]     prettyPrint = false;
+    [javac]     ^
+    [javac]   symbol:   variable prettyPrint
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:69: error: cannot find symbol
+    [javac]     Set<String> propertyNames = Sets.newTreeSet();
+    [javac]     ^
+    [javac]   symbol:   class Set
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:69: error: cannot find symbol
+    [javac]     Set<String> propertyNames = Sets.newTreeSet();
+    [javac]                                 ^
+    [javac]   symbol:   variable Sets
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:70: error: cannot find symbol
+    [javac]     for (ObjectType current = this;
+    [javac]          ^
+    [javac]   symbol:   class ObjectType
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:72: error: cannot find symbol
+    [javac]              propertyNames.size() <= MAX_PRETTY_PRINTED_PROPERTIES;
+    [javac]                                      ^
+    [javac]   symbol:   variable MAX_PRETTY_PRINTED_PROPERTIES
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:88: error: cannot find symbol
+    [javac]       sb.append(getPropertyType(property).toStringHelper(forAnnotations));
+    [javac]                 ^
+    [javac]   symbol:   method getPropertyType(String)
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:91: error: cannot find symbol
+    [javac]       if (!forAnnotations && i == MAX_PRETTY_PRINTED_PROPERTIES) {
+    [javac]                                   ^
+    [javac]   symbol:   variable MAX_PRETTY_PRINTED_PROPERTIES
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:99: error: cannot find symbol
+    [javac]     prettyPrint = true;
+    [javac]     ^
+    [javac]   symbol:   variable prettyPrint
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] 11 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/maven-build.xml:90: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 3.88 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+
+By making these changes, the corrected functions should now work correctly and produce the expected output.</s>
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/maven-build.xml:90: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal start of type
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac] ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: <identifier> expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: ';' expected
+    [javac] By making these changes, the corrected functions should now work correctly and produce the expected output.</s>
+    [javac]          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: ';' expected
+    [javac] By making these changes, the corrected functions should now work correctly and produce the expected output.</s>
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: ';' expected
+    [javac] By making these changes, the corrected functions should now work correctly and produce the expected output.</s>
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: ';' expected
+    [javac] By making these changes, the corrected functions should now work correctly and produce the expected output.</s>
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: ';' expected
+    [javac] By making these changes, the corrected functions should now work correctly and produce the expected output.</s>
+    [javac]                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: ';' expected
+    [javac] By making these changes, the corrected functions should now work correctly and produce the expected output.</s>
+    [javac]                                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: ';' expected
+    [javac] By making these changes, the corrected functions should now work correctly and produce the expected output.</s>
+    [javac]                                                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: illegal start of type
+    [javac] By making these changes, the corrected functions should now work correctly and produce the expected output.</s>
+    [javac]                                                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: illegal start of type
+    [javac] By making these changes, the corrected functions should now work correctly and produce the expected output.</s>
+    [javac]                                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: illegal start of type
+    [javac] By making these changes, the corrected functions should now work correctly and produce the expected output.</s>
+    [javac]                                                                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:63: error: <identifier> expected
+    [javac] By making these changes, the corrected functions should now work correctly and produce the expected output.</s>
+    [javac]                                                                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:71: error: ';' expected
+    [javac]     @Override
+    [javac]      ^
+    [javac] 43 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/JacksonDatabind_102_636aa9a3aa3e43cab374aa00dde4875a/maven-build.xml:90: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: timeout
+                Validation Time: 300.13 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers, BeanProperty property) throws JsonMappingException {
+    if (property == null) {
+        return this;
+    }
+    JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale() ? format.getLocale() : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone() : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return this;
+    }
+    DateFormat df0 = serializers.getConfig().getDateFormat();
+    if (df0 instanceof StdDateFormat) {
+        StdDateFormat std = (StdDateFormat) df0;
+        if (format.hasLocale()) {
+            std = std.withLocale(format.getLocale());
+        }
+        if (format.hasTimeZone()) {
+            std = std.withTimeZone(format.getTimeZone());
+        }
+        return withFormat(Boolean.FALSE, std);
+    }
+    if (!(df0 instanceof SimpleDateFormat)) {
+        serializers.reportBadDefinition(handledType(), String.format("Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`", df0.getClass().getName()));
+    }
+    SimpleDateFormat df = (SimpleDateFormat) df0;
+    if (hasLocale) {
+        df = new SimpleDateFormat(df.toPattern(), format.getLocale());
+    } else {
+        df = (SimpleDateFormat) df.clone();
+    }
+    TimeZone newTz = format.getTimeZone();
+    boolean changeTZ = (newTz != null) && !newTz.equals(df.getTimeZone());
+    if (changeTZ) {
+        df.setTimeZone(newTz);
+    }
+    return withFormat(Boolean.FALSE, df);
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property == null) {
+        return this;
+    }
+        JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone()
+                : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return this;
+    }
+    DateFormat df0 = serializers.getConfig().getDateFormat();
+    if (df0 instanceof StdDateFormat) {
+        StdDateFormat std = (StdDateFormat) df0;
+        if (format.hasLocale()) {
+            std = std.withLocale(format.getLocale());
+        }
+        if (format.hasTimeZone()) {
+            std = std.withTimeZone(format.getTimeZone());
+        }
+        return withFormat(Boolean.FALSE, std);
+    }
+    if (!(df0 instanceof SimpleDateFormat)) {
+        serializers.reportBadDefinition(handledType(), String.format(
+"Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`",
+df0.getClass().getName()));
+    }
+    SimpleDateFormat df = (SimpleDateFormat) df0;
+    if (hasLocale) {
+        df = new SimpleDateFormat(df.toPattern(), format.getLocale());
+    } else {
+        df = (SimpleDateFormat) df.clone();
+    }
+    TimeZone newTz = format.getTimeZone();
+    boolean changeTZ = (newTz != null) && !newTz.equals(df.getTimeZone());
+    if (changeTZ) {
+        df.setTimeZone(newTz);
+    }
+    return withFormat(Boolean.FALSE, df);
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 3.41 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/maven-build.xml:90: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal start of type
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac] ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: <identifier> expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: illegal character: \96
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: ';' expected
+    [javac] 4. In the `createContextual` method, the `JsonFormat.Value` object is properly used to determine which of the `printer` and `parser` fields should be returned. The `shape` field of the `JsonFormat.Value` object is used to determine which of the `printer` and `parser` fields should be returned.
+    [javac]                                                                                                                                                                                                                                                                                                      ^
+    [javac] 31 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/JacksonDatabind_102_e50dbfcf10d84d00bad60d895ce7c2d4/maven-build.xml:90: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 279.86 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers, BeanProperty property) throws JsonMappingException {
+    if (property == null) {
+        return this;
+    }
+    JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale() ? format.getLocale() : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone() : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return this;
+    }
+    DateFormat df0 = serializers.getConfig().getDateFormat();
+    if (df0 instanceof StdDateFormat) {
+        StdDateFormat std = (StdDateFormat) df0;
+        if (format.hasLocale()) {
+            std = std.withLocale(format.getLocale());
+        }
+        if (format.hasTimeZone()) {
+            std = std.withTimeZone(format.getTimeZone());
+        }
+        return withFormat(Boolean.FALSE, std);
+    }
+    if (!(df0 instanceof SimpleDateFormat)) {
+        serializers.reportBadDefinition(handledType(), String.format("Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`", df0.getClass().getName()));
+    }
+    SimpleDateFormat df = (SimpleDateFormat) df0;
+    if (hasLocale) {
+        df = new SimpleDateFormat(df.toPattern(), format.getLocale());
+    } else {
+        df = (SimpleDateFormat) df.clone();
+    }
+    TimeZone newTz = format.getTimeZone();
+    boolean changeTZ = (newTz != null) && !newTz.equals(df.getTimeZone());
+    if (changeTZ) {
+        df.setTimeZone(newTz);
+    }
+    return withFormat(Boolean.FALSE, df);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.ser.jdk.SqlDateSerializationTest::testSqlDateConfigOverride
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.ser.jdk.SqlDateSerializationTest::testSqlDateConfigOverride']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 3.60 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private static PeriodFormatter toFormatter(List<Object> elementPairs, boolean notPrinter, boolean notParser) {
+    if (notPrinter && notParser) {
+        throw new IllegalStateException("Builder has created neither a printer nor a parser");
+    }
+    int size = elementPairs.size();
+    if (size >= 2 && elementPairs.get(0) instanceof Separator) {
+        Separator sep = (Separator) elementPairs.get(0);
+        if (sep.iAfterParser == null && sep.iAfterPrinter == null) {
+            PeriodFormatter f = toFormatter(elementPairs.subList(2, size), notPrinter, notParser);
+            sep = sep.finish(f.getPrinter(), f.getParser());
+            return new PeriodFormatter(sep, sep);
+        }
+    }
+    Object[] comp = createComposite(elementPairs);
+    if (notPrinter) {
+        return new PeriodFormatter(null, (PeriodParser) comp[1]);
+    } else if (notParser) {
+        return new PeriodFormatter((PeriodPrinter) comp[0], null);
+    } else {
+        return new PeriodFormatter((PeriodPrinter) comp[0], (PeriodParser) comp[1]);
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/maven-build.xml:90: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: cannot find symbol
+    [javac] private static PeriodFormatter toFormatter(List<Object> elementPairs, boolean notPrinter, boolean notParser) {
+    [javac]                                            ^
+    [javac]   symbol:   class List
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: cannot find symbol
+    [javac] private static PeriodFormatter toFormatter(List<Object> elementPairs, boolean notPrinter, boolean notParser) {
+    [javac]                ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:66: error: cannot find symbol
+    [javac]     if (size >= 2 && elementPairs.get(0) instanceof Separator) {
+    [javac]                                                     ^
+    [javac]   symbol:   class Separator
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:67: error: cannot find symbol
+    [javac]         Separator sep = (Separator) elementPairs.get(0);
+    [javac]         ^
+    [javac]   symbol:   class Separator
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:67: error: cannot find symbol
+    [javac]         Separator sep = (Separator) elementPairs.get(0);
+    [javac]                          ^
+    [javac]   symbol:   class Separator
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:69: error: cannot find symbol
+    [javac]             PeriodFormatter f = toFormatter(elementPairs.subList(2, size), notPrinter, notParser);
+    [javac]             ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:71: error: cannot find symbol
+    [javac]             return new PeriodFormatter(sep, sep);
+    [javac]                        ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:76: error: cannot find symbol
+    [javac]         return new PeriodFormatter(null, (PeriodParser) comp[1]);
+    [javac]                    ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:76: error: cannot find symbol
+    [javac]         return new PeriodFormatter(null, (PeriodParser) comp[1]);
+    [javac]                                           ^
+    [javac]   symbol:   class PeriodParser
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:78: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], null);
+    [javac]                    ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:78: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], null);
+    [javac]                                     ^
+    [javac]   symbol:   class PeriodPrinter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:80: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], (PeriodParser) comp[1]);
+    [javac]                    ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:80: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], (PeriodParser) comp[1]);
+    [javac]                                     ^
+    [javac]   symbol:   class PeriodPrinter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:80: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], (PeriodParser) comp[1]);
+    [javac]                                                              ^
+    [javac]   symbol:   class PeriodParser
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] 14 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/maven-build.xml:90: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 3.45 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property == null) {
+        return this;
+    }
+    JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    // Simple case first: serialize as numeric timestamp?
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+
+    // 08-Jun-2017, tatu: With [databind#1648], this gets bit tricky..
+    // First: custom pattern will override things
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone()
+                : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+
+    // Otherwise, need one of these changes:
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return this;
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/maven-build.xml:90: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:105: error: ';' expected
+    [javac]     public boolean isEmpty(SerializerProvider serializers, T value) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:105: error: ';' expected
+    [javac]     public boolean isEmpty(SerializerProvider serializers, T value) {
+    [javac]                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:105: error: not a statement
+    [javac]     public boolean isEmpty(SerializerProvider serializers, T value) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:105: error: ';' expected
+    [javac]     public boolean isEmpty(SerializerProvider serializers, T value) {
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:112: error: illegal start of expression
+    [javac]     protected abstract long _timestamp(T value);
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:112: error: class, interface, or enum expected
+    [javac]     protected abstract long _timestamp(T value);
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:112: error: ';' expected
+    [javac]     protected abstract long _timestamp(T value);
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:112: error: ';' expected
+    [javac]     protected abstract long _timestamp(T value);
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:115: error: ';' expected
+    [javac]     public JsonNode getSchema(SerializerProvider serializers, Type typeHint) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:115: error: ';' expected
+    [javac]     public JsonNode getSchema(SerializerProvider serializers, Type typeHint) {
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:115: error: not a statement
+    [javac]     public JsonNode getSchema(SerializerProvider serializers, Type typeHint) {
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:115: error: ';' expected
+    [javac]     public JsonNode getSchema(SerializerProvider serializers, Type typeHint) {
+    [javac]                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:121: error: ';' expected
+    [javac]     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint) throws JsonMappingException
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:121: error: ';' expected
+    [javac]     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint) throws JsonMappingException
+    [javac]                                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:121: error: not a statement
+    [javac]     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint) throws JsonMappingException
+    [javac]                                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:121: error: ';' expected
+    [javac]     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint) throws JsonMappingException
+    [javac]                                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:121: error: not a statement
+    [javac]     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint) throws JsonMappingException
+    [javac]                                                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:121: error: ';' expected
+    [javac]     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint) throws JsonMappingException
+    [javac]                                                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:133: error: ';' expected
+    [javac]     public abstract void serialize(T value, JsonGenerator gen, SerializerProvider serializers)
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:133: error: ';' expected
+    [javac]     public abstract void serialize(T value, JsonGenerator gen, SerializerProvider serializers)
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:133: error: not a statement
+    [javac]     public abstract void serialize(T value, JsonGenerator gen, SerializerProvider serializers)
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:133: error: ';' expected
+    [javac]     public abstract void serialize(T value, JsonGenerator gen, SerializerProvider serializers)
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:133: error: ';' expected
+    [javac]     public abstract void serialize(T value, JsonGenerator gen, SerializerProvider serializers)
+    [javac]                                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:134: error: not a statement
+    [javac]         throws IOException;
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:142: error: illegal start of expression
+    [javac]     protected boolean _asTimestamp(SerializerProvider serializers)
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:142: error: ';' expected
+    [javac]     protected boolean _asTimestamp(SerializerProvider serializers)
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:142: error: ';' expected
+    [javac]     protected boolean _asTimestamp(SerializerProvider serializers)
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:157: error: illegal start of expression
+    [javac]     protected void _acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:157: error: illegal start of expression
+    [javac]     protected void _acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint,
+    [javac]               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:157: error: ';' expected
+    [javac]     protected void _acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint,
+    [javac]                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:157: error: ';' expected
+    [javac]     protected void _acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint,
+    [javac]                                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:157: error: not a statement
+    [javac]     protected void _acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint,
+    [javac]                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:157: error: ';' expected
+    [javac]     protected void _acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint,
+    [javac]                                                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:158: error: ';' expected
+    [javac] 		boolean asNumber) throws JsonMappingException
+    [javac] 		                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:158: error: not a statement
+    [javac] 		boolean asNumber) throws JsonMappingException
+    [javac] 		                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:158: error: ';' expected
+    [javac] 		boolean asNumber) throws JsonMappingException
+    [javac] 		                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:171: error: illegal start of expression
+    [javac]     protected void _serializeAsString(Date value, JsonGenerator g, SerializerProvider provider) throws IOException
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:171: error: illegal start of expression
+    [javac]     protected void _serializeAsString(Date value, JsonGenerator g, SerializerProvider provider) throws IOException
+    [javac]               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:171: error: ';' expected
+    [javac]     protected void _serializeAsString(Date value, JsonGenerator g, SerializerProvider provider) throws IOException
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:171: error: ';' expected
+    [javac]     protected void _serializeAsString(Date value, JsonGenerator g, SerializerProvider provider) throws IOException
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:171: error: not a statement
+    [javac]     protected void _serializeAsString(Date value, JsonGenerator g, SerializerProvider provider) throws IOException
+    [javac]                                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:171: error: ';' expected
+    [javac]     protected void _serializeAsString(Date value, JsonGenerator g, SerializerProvider provider) throws IOException
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:171: error: ';' expected
+    [javac]     protected void _serializeAsString(Date value, JsonGenerator g, SerializerProvider provider) throws IOException
+    [javac]                                                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:171: error: not a statement
+    [javac]     protected void _serializeAsString(Date value, JsonGenerator g, SerializerProvider provider) throws IOException
+    [javac]                                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:171: error: ';' expected
+    [javac]     protected void _serializeAsString(Date value, JsonGenerator g, SerializerProvider provider) throws IOException
+    [javac]                                                                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:192: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 46 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/maven-build.xml:90: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 3.16 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private static PeriodFormatter toFormatter(List<Object> elementPairs, boolean notPrinter, boolean notParser) {
+    if (notPrinter && notParser) {
+        throw new IllegalStateException("Builder has created neither a printer nor a parser");
+    }
+    int size = elementPairs.size();
+    if (size >= 2 && elementPairs.get(0) instanceof Separator) {
+        Separator sep = (Separator) elementPairs.get(0);
+        if (sep.iAfterParser == null && sep.iAfterPrinter == null) {
+            PeriodFormatter f = toFormatter(elementPairs.subList(2, size), notPrinter, notParser);
+            sep = sep.finish(f.getPrinter(), f.getParser());
+            return new PeriodFormatter(sep, sep);
+        }
+    }
+    Object[] comp = createComposite(elementPairs);
+    if (notPrinter) {
+        return new PeriodFormatter(null, (PeriodParser) comp[1]);
+    } else if (notParser) {
+        return new PeriodFormatter((PeriodPrinter) comp[0], null);
+    } else {
+        return new PeriodFormatter((PeriodPrinter) comp[0], (PeriodParser) comp[1]);
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jackson-databind-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/maven-build.xml:90: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/target/classes
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: cannot find symbol
+    [javac] private static PeriodFormatter toFormatter(List<Object> elementPairs, boolean notPrinter, boolean notParser) {
+    [javac]                                            ^
+    [javac]   symbol:   class List
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:61: error: cannot find symbol
+    [javac] private static PeriodFormatter toFormatter(List<Object> elementPairs, boolean notPrinter, boolean notParser) {
+    [javac]                ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:66: error: cannot find symbol
+    [javac]     if (size >= 2 && elementPairs.get(0) instanceof Separator) {
+    [javac]                                                     ^
+    [javac]   symbol:   class Separator
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:67: error: cannot find symbol
+    [javac]         Separator sep = (Separator) elementPairs.get(0);
+    [javac]         ^
+    [javac]   symbol:   class Separator
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:67: error: cannot find symbol
+    [javac]         Separator sep = (Separator) elementPairs.get(0);
+    [javac]                          ^
+    [javac]   symbol:   class Separator
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:69: error: cannot find symbol
+    [javac]             PeriodFormatter f = toFormatter(elementPairs.subList(2, size), notPrinter, notParser);
+    [javac]             ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:71: error: cannot find symbol
+    [javac]             return new PeriodFormatter(sep, sep);
+    [javac]                        ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:76: error: cannot find symbol
+    [javac]         return new PeriodFormatter(null, (PeriodParser) comp[1]);
+    [javac]                    ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:76: error: cannot find symbol
+    [javac]         return new PeriodFormatter(null, (PeriodParser) comp[1]);
+    [javac]                                           ^
+    [javac]   symbol:   class PeriodParser
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:78: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], null);
+    [javac]                    ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:78: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], null);
+    [javac]                                     ^
+    [javac]   symbol:   class PeriodPrinter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:80: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], (PeriodParser) comp[1]);
+    [javac]                    ^
+    [javac]   symbol:   class PeriodFormatter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:80: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], (PeriodParser) comp[1]);
+    [javac]                                     ^
+    [javac]   symbol:   class PeriodPrinter
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/src/main/java/com/fasterxml/jackson/databind/ser/std/DateTimeSerializerBase.java:80: error: cannot find symbol
+    [javac]         return new PeriodFormatter((PeriodPrinter) comp[0], (PeriodParser) comp[1]);
+    [javac]                                                              ^
+    [javac]   symbol:   class PeriodParser
+    [javac]   location: class DateTimeSerializerBase<T>
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in class DateTimeSerializerBase
+    [javac] 14 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/JacksonDatabind_102_5efad09807df4a068f035ebf11588c74/maven-build.xml:90: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property == null) {
+        return this;
+    }
+    JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone()
+                : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return this;
+    }
+    DateFormat df0 = serializers.getConfig().getDateFormat();
+    if (df0 instanceof StdDateFormat) {
+        StdDateFormat std = (StdDateFormat) df0;
+        if (format.hasLocale()) {
+            std = std.withLocale(format.getLocale());
+        }
+        if (format.hasTimeZone()) {
+            std = std.withTimeZone(format.getTimeZone());
+        }
+        return withFormat(Boolean.FALSE, std);
+    }
+    if (!(df0 instanceof SimpleDateFormat)) {
+        serializers.reportBadDefinition(handledType(), String.format(
+"Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`",
+df0.getClass().getName()));
+    }
+    SimpleDateFormat df = (SimpleDateFormat) df0;
+    if (hasLocale) {
+        df = new SimpleDateFormat(df.toPattern(), format.getLocale());
+    } else {
+        df = (SimpleDateFormat) df.clone();
+    }
+    TimeZone newTz = format.getTimeZone();
+    boolean changeTZ = (newTz != null) && !newTz.equals(df.getTimeZone());
+    if (changeTZ) {
+        df.setTimeZone(newTz);
+    }
+    return withFormat(Boolean.FALSE, df);
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property == null) {
+        return this;
+    }
+    JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone()
+                : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return this;
+    }
+    DateFormat df0 = serializers.getConfig().getDateFormat();
+    if (df0 instanceof StdDateFormat) {
+        StdDateFormat std = (StdDateFormat) df0;
+        if (format.hasLocale()) {
+            std = std.withLocale(format.getLocale());
+        }
+        if (format.hasTimeZone()) {
+            std = std.withTimeZone(format.getTimeZone());
+        }
+        return withFormat(Boolean.FALSE, std);
+    }
+    if (!(df0 instanceof SimpleDateFormat)) {
+        serializers.reportBadDefinition(handledType(), String.format(
+"Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`",
+df0.getClass().getName()));
+    }
+    SimpleDateFormat df = (SimpleDateFormat) df0;
+    if (hasLocale) {
+        df = new SimpleDateFormat(df.toPattern(), format.getLocale());
+    } else {
+        df = (SimpleDateFormat) df.clone();
+    }
+    TimeZone newTz = format.getTimeZone();
+    boolean changeTZ = (newTz != null) && !newTz.equals(df.getTimeZone());
+    if (changeTZ) {
+        df.setTimeZone(newTz);
+    }
+    return withFormat(Boolean.FALSE, df);
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException {
+    if (property == null) {
+        return this;
+    }
+    JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone()
+                : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return this;
+    }
+    DateFormat df0 = serializers.getConfig().getDateFormat();
+    if (df0 instanceof StdDateFormat) {
+        StdDateFormat std = (StdDateFormat) df0;
+        if (format.hasLocale()) {
+            std = std.withLocale(format.getLocale());
+        }
+        if (format.hasTimeZone()) {
+            std = std.withTimeZone(format.getTimeZone());
+        }
+        return withFormat(Boolean.FALSE, std);
+    }
+    if (!(df0 instanceof SimpleDateFormat)) {
+        serializers.reportBadDefinition(handledType(), String.format(
+"Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`",
+df0.getClass().getName()));
+    }
+    SimpleDateFormat df = (SimpleDateFormat) df0;
+    if (hasLocale) {
+        df = new SimpleDateFormat(df.toPattern(), format.getLocale());
+    } else {
+        df = (SimpleDateFormat) df.clone();
+    }
+    TimeZone newTz = format.getTimeZone();
+    boolean changeTZ = (newTz != null) && !newTz.equals(df.getTimeZone());
+    if (changeTZ) {
+        df.setTimeZone(newTz);
+    }
+    return withFormat(Boolean.FALSE, df);
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 6
+                Correctness: timeout
+                Validation Time: 300.12 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property == null) {
+        return this;
+    }
+    JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone()
+                : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return this;
+    }
+    DateFormat df0 = serializers.getConfig().getDateFormat();
+    if (df0 instanceof StdDateFormat) {
+        StdDateFormat std = (StdDateFormat) df0;
+        if (format.hasLocale()) {
+            std = std.withLocale(format.getLocale());
+        }
+        if (format.hasTimeZone()) {
+            std = std.withTimeZone(format.getTimeZone());
+        }
+        return withFormat(Boolean.FALSE, std);
+    }
+    if (!(df0 instanceof SimpleDateFormat)) {
+        serializers.reportBadDefinition(handledType(), String.format(
+"Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`",
+df0.getClass().getName()));
+    }
+    SimpleDateFormat df = (SimpleDateFormat) df0;
+    if (hasLocale) {
+        df = new SimpleDateFormat(df.toPattern(), format.getLocale());
+    } else {
+        df = (SimpleDateFormat) df.clone();
+    }
+    TimeZone newTz = format.getTimeZone();
+    boolean changeTZ = (newTz != null) && !newTz.equals(df.getTimeZone());
+    if (changeTZ) {
+        df.setTimeZone(newTz);
+    }
+    return withFormat(Boolean.FALSE, df);
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

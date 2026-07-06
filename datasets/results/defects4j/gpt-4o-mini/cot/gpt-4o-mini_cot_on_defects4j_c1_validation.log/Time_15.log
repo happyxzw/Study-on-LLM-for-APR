@@ -1,0 +1,1038 @@
+==================================================
+                Project: Time
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 47.70 seconds
+                Failure reason: None
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    if (val2 == -1) {
+        if (val1 == Long.MIN_VALUE) {
+            throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+        }
+        return -val1;
+    }
+    if (val2 == 0) {
+        return 0L;
+    }
+    if (val2 == 1) {
+        return val1;
+    }
+
+    long total = val1 * val2;
+    if (total / val2 != val1) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 45.74 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    if (val2 == 0) {
+        return 0L;
+    }
+    if (val2 == 1) {
+        return val1;
+    }
+    if (val2 == -1) {
+        return -val1;
+    }
+
+    if (val2 > 0) {
+        if (val1 > Long.MAX_VALUE / val2) {
+            throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+        }
+    } else {
+        if (val1 < Long.MIN_VALUE / val2) {
+            throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+        }
+    }
+
+    return val1 * val2;
+}
+
+                TEST STDOUT:
+                Failing tests: 14
+  - org.joda.time.TestBaseSingleFieldPeriod::testFactory_standardPeriodIn_RPeriod
+  - org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestDateTime_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestDateTime_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestDays::testFactory_standardDaysIn_RPeriod
+  - org.joda.time.TestHours::testFactory_standardHoursIn_RPeriod
+  - org.joda.time.TestInstant_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestInstant_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestMinutes::testFactory_standardMinutesIn_RPeriod
+  - org.joda.time.TestMutableDateTime_Adds::testAdd_RD_int1
+  - org.joda.time.TestSeconds::testFactory_standardSecondsIn_RPeriod
+  - org.joda.time.TestWeeks::testFactory_standardWeeksIn_RPeriod
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestMinutes::testFactory_standardMinutesIn_RPeriod', 'org.joda.time.TestInstant_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestInstant_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestDateTime_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestSeconds::testFactory_standardSecondsIn_RPeriod', 'org.joda.time.TestHours::testFactory_standardHoursIn_RPeriod', 'org.joda.time.TestBaseSingleFieldPeriod::testFactory_standardPeriodIn_RPeriod', 'org.joda.time.TestDays::testFactory_standardDaysIn_RPeriod', 'org.joda.time.TestWeeks::testFactory_standardWeeksIn_RPeriod', 'org.joda.time.TestDateTime_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestMutableDateTime_Adds::testAdd_RD_int1', 'org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_RD_int']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 50.08 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    // Handle edge cases
+    if (val2 == 0) {
+        return 0L;
+    }
+    if (val2 == 1) {
+        return val1;
+    }
+    if (val2 == -1) {
+        return -val1;
+    }
+
+    // Check for overflow
+    if (val1 > 0) {
+        if (val2 > 0) {
+            if (val1 > Long.MAX_VALUE / val2) {
+                throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+            }
+        } else { // val2 < 0
+            if (val1 > Long.MIN_VALUE / val2) {
+                throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+            }
+        }
+    } else { // val1 < 0
+        if (val2 > 0) {
+            if (val1 < Long.MIN_VALUE / val2) {
+                throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+            }
+        } else { // val2 < 0
+            if (val1 != 0 && val1 < Long.MAX_VALUE / val2) {
+                throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+            }
+        }
+    }
+
+    return val1 * val2;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 46.37 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    if (val2 == 0) return 0L;
+    if (val2 == 1) return val1;
+    if (val2 == -1) return -val1;
+
+    long total = val1 * val2;
+    if (val1 != 0 && total / val1 != val2) {
+      throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 4
+                Correctness: plausible
+                Validation Time: 50.95 seconds
+                Failure reason: None
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    if (val1 == 0 || val2 == 0) {
+        return 0L;
+    }
+    if (val2 == 1) {
+        return val1;
+    }
+    if (val2 == -1) {
+        if (val1 == Long.MIN_VALUE) {
+            throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+        }
+        return -val1;
+    }
+
+    long total = val1 * val2;
+    if (total / val2 != val1) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 46.08 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    if (val2 == -1 && val1 == Long.MIN_VALUE) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val2 > 0) {
+        if (val1 > Long.MAX_VALUE / val2) {
+            throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+        }
+    } else if (val2 < 0) {
+        if (val1 < Long.MIN_VALUE / val2) {
+            throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+        }
+    }
+
+    switch (val2) {
+        case -1:
+            return -val1;
+        case 0:
+            return 0L;
+        case 1:
+            return val1;
+    }
+
+    return val1 * val2;
+}
+
+                TEST STDOUT:
+                Failing tests: 14
+  - org.joda.time.TestBaseSingleFieldPeriod::testFactory_standardPeriodIn_RPeriod
+  - org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestDateTime_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestDateTime_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestDays::testFactory_standardDaysIn_RPeriod
+  - org.joda.time.TestHours::testFactory_standardHoursIn_RPeriod
+  - org.joda.time.TestInstant_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestInstant_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestMinutes::testFactory_standardMinutesIn_RPeriod
+  - org.joda.time.TestMutableDateTime_Adds::testAdd_RD_int1
+  - org.joda.time.TestSeconds::testFactory_standardSecondsIn_RPeriod
+  - org.joda.time.TestWeeks::testFactory_standardWeeksIn_RPeriod
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestMinutes::testFactory_standardMinutesIn_RPeriod', 'org.joda.time.TestInstant_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestInstant_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestDateTime_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestSeconds::testFactory_standardSecondsIn_RPeriod', 'org.joda.time.TestHours::testFactory_standardHoursIn_RPeriod', 'org.joda.time.TestBaseSingleFieldPeriod::testFactory_standardPeriodIn_RPeriod', 'org.joda.time.TestDays::testFactory_standardDaysIn_RPeriod', 'org.joda.time.TestWeeks::testFactory_standardWeeksIn_RPeriod', 'org.joda.time.TestDateTime_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestMutableDateTime_Adds::testAdd_RD_int1', 'org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_RD_int']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 6
+                Correctness: plausible
+                Validation Time: 49.47 seconds
+                Failure reason: None
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    if (val1 == 0 || val2 == 0) {
+        return 0L;
+    }
+
+    if (val2 == -1 && val1 == Long.MIN_VALUE) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+
+    long total = val1 * val2;
+
+    if (val1 != 0 && total / val1 != val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 45.06 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    switch (val2) {
+        case -1:
+            return -val1;
+        case 0:
+            return 0L;
+        case 1:
+            return val1;
+    }
+
+    // Check for overflow
+    if (val1 > 0) {
+        if (val2 > 0 && val1 > Long.MAX_VALUE / val2) {
+            throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+        }
+        if (val2 < 0 && val1 > Long.MIN_VALUE / val2) {
+            throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+        }
+    } else if (val1 < 0) {
+        if (val2 > 0 && val1 < Long.MIN_VALUE / val2) {
+            throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+        }
+        if (val2 < 0 && val1 < Long.MAX_VALUE / val2) {
+            throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+        }
+    }
+
+    return val1 * val2;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 46.74 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    if (val2 == 0) {
+        return 0L;
+    }
+    if (val2 == 1) {
+        return val1;
+    }
+    if (val2 == -1) {
+        return -val1;
+    }
+
+    // Check for overflow
+    if (val1 > Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 < Long.MIN_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+
+    return val1 * val2;
+}
+
+                TEST STDOUT:
+                Failing tests: 14
+  - org.joda.time.TestBaseSingleFieldPeriod::testFactory_standardPeriodIn_RPeriod
+  - org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestDateTime_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestDateTime_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestDays::testFactory_standardDaysIn_RPeriod
+  - org.joda.time.TestHours::testFactory_standardHoursIn_RPeriod
+  - org.joda.time.TestInstant_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestInstant_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestMinutes::testFactory_standardMinutesIn_RPeriod
+  - org.joda.time.TestMutableDateTime_Adds::testAdd_RD_int1
+  - org.joda.time.TestSeconds::testFactory_standardSecondsIn_RPeriod
+  - org.joda.time.TestWeeks::testFactory_standardWeeksIn_RPeriod
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestMinutes::testFactory_standardMinutesIn_RPeriod', 'org.joda.time.TestInstant_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestInstant_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestDateTime_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestSeconds::testFactory_standardSecondsIn_RPeriod', 'org.joda.time.TestHours::testFactory_standardHoursIn_RPeriod', 'org.joda.time.TestBaseSingleFieldPeriod::testFactory_standardPeriodIn_RPeriod', 'org.joda.time.TestDays::testFactory_standardDaysIn_RPeriod', 'org.joda.time.TestWeeks::testFactory_standardWeeksIn_RPeriod', 'org.joda.time.TestDateTime_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestMutableDateTime_Adds::testAdd_RD_int1', 'org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_RD_int']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 52.76 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    if (val2 == 0) {
+        return 0L;
+    }
+    if (val2 == 1) {
+        return val1;
+    }
+    if (val2 == -1) {
+        return -val1;
+    }
+    if (val2 > 0) {
+        if (val1 > Long.MAX_VALUE / val2) {
+            throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+        }
+    } else {
+        if (val1 < Long.MIN_VALUE / val2) {
+            throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+        }
+    }
+    return val1 * val2;
+}
+
+                TEST STDOUT:
+                Failing tests: 14
+  - org.joda.time.TestBaseSingleFieldPeriod::testFactory_standardPeriodIn_RPeriod
+  - org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestDateTime_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestDateTime_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestDays::testFactory_standardDaysIn_RPeriod
+  - org.joda.time.TestHours::testFactory_standardHoursIn_RPeriod
+  - org.joda.time.TestInstant_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestInstant_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestMinutes::testFactory_standardMinutesIn_RPeriod
+  - org.joda.time.TestMutableDateTime_Adds::testAdd_RD_int1
+  - org.joda.time.TestSeconds::testFactory_standardSecondsIn_RPeriod
+  - org.joda.time.TestWeeks::testFactory_standardWeeksIn_RPeriod
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestMinutes::testFactory_standardMinutesIn_RPeriod', 'org.joda.time.TestInstant_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestInstant_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestDateTime_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestSeconds::testFactory_standardSecondsIn_RPeriod', 'org.joda.time.TestHours::testFactory_standardHoursIn_RPeriod', 'org.joda.time.TestBaseSingleFieldPeriod::testFactory_standardPeriodIn_RPeriod', 'org.joda.time.TestDays::testFactory_standardDaysIn_RPeriod', 'org.joda.time.TestWeeks::testFactory_standardWeeksIn_RPeriod', 'org.joda.time.TestDateTime_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestMutableDateTime_Adds::testAdd_RD_int1', 'org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_RD_int']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 33.08 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    switch (val2) {
+        case -1:
+            return -val1;
+        case 0:
+            return 0L;
+        case 1:
+            return val1;
+    }
+    // Check if val2 is negative, and if so, handle the overflow check correctly
+    if (val2 < 0 && val1 < Long.MIN_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    long total = val1 * val2;
+    // Ensure we check for overflow correctly after the multiplication
+    if (val2 != 0 && total / val2 != val1) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 14
+  - org.joda.time.TestBaseSingleFieldPeriod::testFactory_standardPeriodIn_RPeriod
+  - org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestDateTime_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestDateTime_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestDays::testFactory_standardDaysIn_RPeriod
+  - org.joda.time.TestHours::testFactory_standardHoursIn_RPeriod
+  - org.joda.time.TestInstant_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestInstant_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestMinutes::testFactory_standardMinutesIn_RPeriod
+  - org.joda.time.TestMutableDateTime_Adds::testAdd_RD_int1
+  - org.joda.time.TestSeconds::testFactory_standardSecondsIn_RPeriod
+  - org.joda.time.TestWeeks::testFactory_standardWeeksIn_RPeriod
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestHours::testFactory_standardHoursIn_RPeriod', 'org.joda.time.TestDateTime_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestMinutes::testFactory_standardMinutesIn_RPeriod', 'org.joda.time.TestBaseSingleFieldPeriod::testFactory_standardPeriodIn_RPeriod', 'org.joda.time.TestDays::testFactory_standardDaysIn_RPeriod', 'org.joda.time.TestMutableDateTime_Adds::testAdd_RD_int1', 'org.joda.time.TestInstant_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestSeconds::testFactory_standardSecondsIn_RPeriod', 'org.joda.time.TestWeeks::testFactory_standardWeeksIn_RPeriod', 'org.joda.time.TestInstant_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestDateTime_Basics::testWithDurationAdded_long_int']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 33.28 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    switch (val2) {
+        case -1:
+            return -val1;
+        case 0:
+            return 0L;
+        case 1:
+            return val1;
+    }
+    // Check for overflow before performing the multiplication
+    if (val1 > Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    long total = val1 * val2;
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 14
+  - org.joda.time.TestBaseSingleFieldPeriod::testFactory_standardPeriodIn_RPeriod
+  - org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestDateTime_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestDateTime_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestDays::testFactory_standardDaysIn_RPeriod
+  - org.joda.time.TestHours::testFactory_standardHoursIn_RPeriod
+  - org.joda.time.TestInstant_Basics::testWithDurationAdded_RD_int
+  - org.joda.time.TestInstant_Basics::testWithDurationAdded_long_int
+  - org.joda.time.TestMinutes::testFactory_standardMinutesIn_RPeriod
+  - org.joda.time.TestMutableDateTime_Adds::testAdd_RD_int1
+  - org.joda.time.TestSeconds::testFactory_standardSecondsIn_RPeriod
+  - org.joda.time.TestWeeks::testFactory_standardWeeksIn_RPeriod
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestHours::testFactory_standardHoursIn_RPeriod', 'org.joda.time.TestDateTime_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestMinutes::testFactory_standardMinutesIn_RPeriod', 'org.joda.time.TestBaseSingleFieldPeriod::testFactory_standardPeriodIn_RPeriod', 'org.joda.time.TestDays::testFactory_standardDaysIn_RPeriod', 'org.joda.time.TestMutableDateTime_Adds::testAdd_RD_int1', 'org.joda.time.TestInstant_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestDateMidnight_Basics::testWithDurationAdded_RD_int', 'org.joda.time.TestSeconds::testFactory_standardSecondsIn_RPeriod', 'org.joda.time.TestWeeks::testFactory_standardWeeksIn_RPeriod', 'org.joda.time.TestInstant_Basics::testWithDurationAdded_long_int', 'org.joda.time.TestDateTime_Basics::testWithDurationAdded_long_int']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 31.45 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    switch (val2) {
+        case -1:
+            return -val1;
+        case 0:
+            return 0L;
+        case 1:
+            return val1;
+    }
+    // Fix: Check for overflow before performing the multiplication
+    if (val1 > 0 && val2 > 0 && val1 > Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 < 0 && val2 < 0 && val1 < Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 > 0 && val2 < 0 && val1 > Long.MIN_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 < 0 && val2 > 0 && val1 < Long.MIN_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+
+    long total = val1 * val2; // Perform multiplication after overflow checks
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 31.38 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    switch (val2) {
+        case -1:
+            return -val1;
+        case 0:
+            return 0L;
+        case 1:
+            return val1;
+    }
+    // Check for potential overflow before performing multiplication
+    if (val1 > 0 && val2 > 0 && val1 > Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 < 0 && val2 < 0 && val1 < Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 > 0 && val2 < 0 && val1 > Long.MIN_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 < 0 && val2 > 0 && val1 < Long.MIN_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+
+    long total = val1 * val2;
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 29.79 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    switch (val2) {
+        case -1:
+            return -val1;
+        case 0:
+            return 0L;
+        case 1:
+            return val1;
+    }
+    // Check for overflow before performing multiplication
+    if (val1 > 0 && val2 > 0 && val1 > Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 < 0 && val2 < 0 && val1 < Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if ((val1 > 0 && val2 < 0 && val1 > Long.MIN_VALUE / val2) || (val1 < 0 && val2 > 0 && val2 > Long.MIN_VALUE / val1)) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    long total = val1 * val2;
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 30.12 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    switch (val2) {
+        case -1:
+            return -val1;
+        case 0:
+            return 0L;
+        case 1:
+            return val1;
+    }
+    long total = val1 * val2;
+    if (val2 != 0 && total / val2 != val1) { // Fix: Ensure val2 is not zero to avoid division by zero error
+      throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 32.09 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    switch (val2) {
+        case -1:
+            return -val1;
+        case 0:
+            return 0L;
+        case 1:
+            return val1;
+    }
+    long total = val1 * val2;
+    if (val2 != 0 && total / val2 != val1) { // Check for division by zero and ensure overflow detection
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 30.43 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    switch (val2) {
+        case -1:
+            return -val1;
+        case 0:
+            return 0L;
+        case 1:
+            return val1;
+    }
+
+    // Check for overflow before performing multiplication
+    if (val1 > 0 && val2 > 0 && val1 > Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 < 0 && val2 < 0 && val1 < Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 > 0 && val2 < 0 && val1 > Long.MIN_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 < 0 && val2 > 0 && val1 < Long.MIN_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+
+    long total = val1 * val2;
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 30.63 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    switch (val2) {
+        case -1:
+            return -val1;
+        case 0:
+            return 0L;
+        case 1:
+            return val1;
+    }
+    // Check for overflow before performing the multiplication
+    if (val1 > 0 && val2 > 0 && val1 > Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 < 0 && val2 < 0 && val1 < Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 > 0 && val2 < 0 && val1 > Long.MIN_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 < 0 && val2 > 0 && val1 < Long.MIN_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+
+    long total = val1 * val2;
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 28.84 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static long safeMultiply(long val1, int val2) {
+    switch (val2) {
+        case -1:
+            return -val1;
+        case 0:
+            return 0L;
+        case 1:
+            return val1;
+    }
+    // Check for potential overflow before performing multiplication
+    if (val1 > 0 && val2 > 0 && val1 > Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 < 0 && val2 < 0 && val1 < Long.MAX_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 > 0 && val2 < 0 && val1 > Long.MIN_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+    if (val1 < 0 && val2 > 0 && val1 < Long.MIN_VALUE / val2) {
+        throw new ArithmeticException("Multiplication overflows a long: " + val1 + " * " + val2);
+    }
+
+    long total = val1 * val2; // Safe to multiply after overflow checks
+    return total;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

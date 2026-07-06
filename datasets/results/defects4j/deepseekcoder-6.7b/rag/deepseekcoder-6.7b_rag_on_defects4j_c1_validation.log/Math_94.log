@@ -1,0 +1,1264 @@
+==================================================
+                Project: Math
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 40.37 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static int gcd(int u, int v) {
+        if (u * v == 0) {
+            return (Math.abs(u) + Math.abs(v));
+        }
+        if (u > 0) {
+            u = -u;
+        } 
+        if (v > 0) {
+            v = -v;
+        } 
+        int k = 0;
+        while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+            u /= 2;
+            v /= 2;
+            k++; 
+        }
+        if (k == 31) {
+            throw new ArithmeticException("overflow: gcd is 2^31");
+        }
+        int t = ((u & 1) == 1) ? v : -(u / 2);
+        do {
+            while ((t & 1) == 0) { 
+                t /= 2; 
+            }
+            if (t > 0) {
+                u = -t;
+            } else {
+                v = t;
+            }
+            t = (v - u) / 2;
+        } while (t != 0);
+        return -u * (1 << k); 
+    }
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 1
+                Correctness: timeout
+                Validation Time: 94.10 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u == 0) return Math.abs(v);
+    if (v == 0) return Math.abs(u);
+
+    int shift;
+    for (shift = 0; ((u | v) & 1) == 0; ++shift) {
+        u >>= 1;
+        v >>= 1;
+    }
+
+    while ((u & 1) == 0)
+        u >>= 1;
+
+    do {
+        while ((v & 1) == 0)
+            v >>= 1;
+
+        if (u > v) {
+            int t = v; v = u; u = t;
+        } 
+        v = v - u;
+    } while (v != 0);
+
+    return u << shift;
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 38.97 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u * v == 0) {
+        return Math.abs(u) + Math.abs(v);
+    }
+    int k = 0;
+    if (u < 0) {
+        u = -u;
+    }
+    if (v < 0) {
+        v = -v;
+    }
+    while ((u & 1) == 0 && (v & 1) == 0) {
+        u >>= 1;
+        v >>= 1;
+        k++;
+    }
+    while ((u & 1) == 0) {
+        u >>= 1;
+    }
+    while ((v & 1) == 0) {
+        v >>= 1;
+    }
+    if (u > v) {
+        int tmp = u;
+        u = v;
+        v = tmp;
+    }
+    int t = ((u & 1) == 1) ? v : -(u >> 1);
+    do {
+        while ((t & 1) == 0) {
+            t >>= 1;
+        }
+        if (t > 0) {
+            u = t;
+        } else {
+            v = -t;
+        }
+        t = (v - u) >> 1;
+    } while (t != 0);
+    return u << k;
+}
+
+                TEST STDOUT:
+                Failing tests: 31
+  - org.apache.commons.math.fraction.FractionFormatTest::testFormatImproperNegative
+  - org.apache.commons.math.fraction.FractionFormatTest::testFormatImproper
+  - org.apache.commons.math.fraction.FractionFormatTest::testParseProper
+  - org.apache.commons.math.fraction.FractionFormatTest::testParseProperNegative
+  - org.apache.commons.math.fraction.FractionFormatTest::testParseInteger
+  - org.apache.commons.math.fraction.FractionTest::testFloatValue
+  - org.apache.commons.math.fraction.FractionTest::testAbs
+  - org.apache.commons.math.fraction.FractionTest::testAdd
+  - org.apache.commons.math.fraction.FractionTest::testSubtract
+  - org.apache.commons.math.fraction.FractionTest::testReciprocal
+  - org.apache.commons.math.fraction.FractionTest::testLongValue
+  - org.apache.commons.math.fraction.FractionTest::testIntValue
+  - org.apache.commons.math.fraction.FractionTest::testDivide
+  - org.apache.commons.math.fraction.FractionTest::testMultiply
+  - org.apache.commons.math.fraction.FractionTest::testNegate
+  - org.apache.commons.math.fraction.FractionTest::testDoubleValue
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDimensionCheck
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBackward
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testSmallStep
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDecreasingSteps
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBigStep
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testCoefficients
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testPredictorCoefficients
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDimensionCheck
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBackward
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testSmallStep
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDecreasingSteps
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBigStep
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testCorrectorCoefficients
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+  - org.apache.commons.math.util.MathUtilsTest::testLcm
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.fraction.FractionTest::testAdd', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBigStep', 'org.apache.commons.math.fraction.FractionTest::testSubtract', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDecreasingSteps', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBigStep', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDimensionCheck', 'org.apache.commons.math.fraction.FractionTest::testAbs', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBackward', 'org.apache.commons.math.fraction.FractionTest::testReciprocal', 'org.apache.commons.math.fraction.FractionTest::testNegate', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testCoefficients', 'org.apache.commons.math.fraction.FractionTest::testLongValue', 'org.apache.commons.math.fraction.FractionTest::testDoubleValue', 'org.apache.commons.math.fraction.FractionFormatTest::testParseProper', 'org.apache.commons.math.fraction.FractionTest::testFloatValue', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testSmallStep', 'org.apache.commons.math.fraction.FractionTest::testIntValue', 'org.apache.commons.math.util.MathUtilsTest::testLcm', 'org.apache.commons.math.fraction.FractionFormatTest::testFormatImproperNegative', 'org.apache.commons.math.fraction.FractionFormatTest::testFormatImproper', 'org.apache.commons.math.fraction.FractionTest::testDivide', 'org.apache.commons.math.fraction.FractionFormatTest::testParseInteger', 'org.apache.commons.math.fraction.FractionTest::testMultiply', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testCorrectorCoefficients', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBackward', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDimensionCheck', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testSmallStep', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testPredictorCoefficients', 'org.apache.commons.math.fraction.FractionFormatTest::testParseProperNegative', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDecreasingSteps']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 32.20 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u == 0) {
+        return v;
+    }
+    if (v == 0) {
+        return u;
+    }
+    if ((u & 1) == 0) {
+        if ((v & 1) == 0) { 
+            return 2 * gcd(u >> 1, v >> 1);
+        } else {
+            return gcd(u >> 1, v);
+        }
+    }
+    if ((v & 1) == 0) {
+        return gcd(u, v >> 1);
+    }
+    if (u > v) {
+        return gcd((u - v) >> 1, v);
+    }
+    return gcd(u, (v - u) >> 1);
+}
+
+                TEST STDOUT:
+                Failing tests: 28
+  - org.apache.commons.math.fraction.FractionFormatTest::testFormatImproperNegative
+  - org.apache.commons.math.fraction.FractionFormatTest::testParseProperNegative
+  - org.apache.commons.math.fraction.FractionFormatTest::testFormatNegative
+  - org.apache.commons.math.fraction.FractionFormatTest::testParseNegative
+  - org.apache.commons.math.fraction.FractionTest::testAbs
+  - org.apache.commons.math.fraction.FractionTest::testAdd
+  - org.apache.commons.math.fraction.FractionTest::testSubtract
+  - org.apache.commons.math.fraction.FractionTest::testReciprocal
+  - org.apache.commons.math.fraction.FractionTest::testGetReducedFraction
+  - org.apache.commons.math.fraction.FractionTest::testDivide
+  - org.apache.commons.math.fraction.FractionTest::testMultiply
+  - org.apache.commons.math.fraction.FractionTest::testNegate
+  - org.apache.commons.math.fraction.FractionTest::testConstructor
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDimensionCheck
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBackward
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testSmallStep
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDecreasingSteps
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBigStep
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testCoefficients
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testPredictorCoefficients
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDimensionCheck
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBackward
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testSmallStep
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDecreasingSteps
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBigStep
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testCorrectorCoefficients
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+  - org.apache.commons.math.util.MathUtilsTest::testLcm
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.fraction.FractionTest::testAdd', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBigStep', 'org.apache.commons.math.fraction.FractionTest::testSubtract', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDecreasingSteps', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBigStep', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDimensionCheck', 'org.apache.commons.math.fraction.FractionTest::testAbs', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBackward', 'org.apache.commons.math.fraction.FractionTest::testReciprocal', 'org.apache.commons.math.fraction.FractionTest::testNegate', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testCoefficients', 'org.apache.commons.math.fraction.FractionTest::testGetReducedFraction', 'org.apache.commons.math.fraction.FractionFormatTest::testFormatNegative', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testSmallStep', 'org.apache.commons.math.util.MathUtilsTest::testLcm', 'org.apache.commons.math.fraction.FractionFormatTest::testFormatImproperNegative', 'org.apache.commons.math.fraction.FractionTest::testDivide', 'org.apache.commons.math.fraction.FractionFormatTest::testParseNegative', 'org.apache.commons.math.fraction.FractionTest::testConstructor', 'org.apache.commons.math.fraction.FractionTest::testMultiply', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testCorrectorCoefficients', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBackward', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDimensionCheck', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testSmallStep', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testPredictorCoefficients', 'org.apache.commons.math.fraction.FractionFormatTest::testParseProperNegative', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDecreasingSteps']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 34.60 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static int gcd(int u, int v) {
+        if (u * v == 0) {
+            return (Math.abs(u) + Math.abs(v));
+        }
+        if (u > 0) {
+            u = -u;
+        } 
+        if (v > 0) {
+            v = -v;
+        } 
+        int k = 0;
+        while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+            u /= 2;
+            v /= 2;
+            k++; 
+        }
+        if (k == 31) {
+            throw new ArithmeticException("overflow: gcd is 2^31");
+        }
+        int t = ((u & 1) == 1) ? v : -(u / 2);
+        do {
+            while ((t & 1) == 0) { 
+                t /= 2; 
+            }
+            if (t > 0) {
+                u = -t;
+            } else {
+                v = t;
+            }
+            t = (v - u) / 2;
+        } while (t != 0);
+        return -u * (1 << k); 
+    }
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 32.60 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u * v == 0) {
+        return (Math.abs(u) + Math.abs(v));
+    }
+
+    if (u > 0) {
+        u = -u;
+    } 
+    if (v > 0) {
+        v = -v;
+    } 
+
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+        u /= 2;
+        v /= 2;
+        k++; 
+    }
+    if (k == 31) {
+        throw new ArithmeticException("overflow: gcd is 2^31");
+    }
+
+    int t = ((u & 1) == 1) ? v : -(u / 2);
+    do {
+        while ((t & 1) == 0) { 
+            t /= 2; 
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) / 2;
+    } while (t != 0);
+    return -u * (1 << k); 
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 28.27 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static int gcd(int u, int v) {
+        if (u * v == 0) {
+            return (Math.abs(u) + Math.abs(v));
+        }
+        if (u > 0) {
+            u = -u;
+        } 
+        if (v > 0) {
+            v = -v;
+        } 
+        int k = 0;
+        while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+            u /= 2;
+            v /= 2;
+            k++; 
+        }
+        if (k == 31) {
+            throw new ArithmeticException("overflow: gcd is 2^31");
+        }
+        int t = ((u & 1) == 1) ? -v : u / 2;
+        do {
+            while ((t & 1) == 0) { 
+                t /= 2; 
+            }
+            if (t > 0) {
+                u = -t;
+            } else {
+                v = t;
+            }
+            t = (v - u) / 2;
+        } while (t != 0);
+        return -u * (1 << k); 
+    }
+
+                TEST STDOUT:
+                Failing tests: 27
+  - org.apache.commons.math.fraction.FractionFormatTest::testFormatImproperNegative
+  - org.apache.commons.math.fraction.FractionFormatTest::testFormatImproper
+  - org.apache.commons.math.fraction.FractionFormatTest::testParseProper
+  - org.apache.commons.math.fraction.FractionFormatTest::testParseProperNegative
+  - org.apache.commons.math.fraction.FractionTest::testFloatValue
+  - org.apache.commons.math.fraction.FractionTest::testAdd
+  - org.apache.commons.math.fraction.FractionTest::testSubtract
+  - org.apache.commons.math.fraction.FractionTest::testReciprocal
+  - org.apache.commons.math.fraction.FractionTest::testDivide
+  - org.apache.commons.math.fraction.FractionTest::testMultiply
+  - org.apache.commons.math.fraction.FractionTest::testNegate
+  - org.apache.commons.math.fraction.FractionTest::testDoubleValue
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDimensionCheck
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBackward
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testSmallStep
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDecreasingSteps
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBigStep
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testCoefficients
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testPredictorCoefficients
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDimensionCheck
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBackward
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testSmallStep
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDecreasingSteps
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBigStep
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testCorrectorCoefficients
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+  - org.apache.commons.math.util.MathUtilsTest::testLcm
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.fraction.FractionTest::testAdd', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBigStep', 'org.apache.commons.math.fraction.FractionTest::testSubtract', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDecreasingSteps', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBigStep', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDimensionCheck', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBackward', 'org.apache.commons.math.fraction.FractionTest::testReciprocal', 'org.apache.commons.math.fraction.FractionTest::testNegate', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testCoefficients', 'org.apache.commons.math.fraction.FractionFormatTest::testParseProper', 'org.apache.commons.math.fraction.FractionTest::testDoubleValue', 'org.apache.commons.math.fraction.FractionTest::testFloatValue', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testSmallStep', 'org.apache.commons.math.util.MathUtilsTest::testLcm', 'org.apache.commons.math.fraction.FractionFormatTest::testFormatImproperNegative', 'org.apache.commons.math.fraction.FractionFormatTest::testFormatImproper', 'org.apache.commons.math.fraction.FractionTest::testDivide', 'org.apache.commons.math.fraction.FractionTest::testMultiply', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testCorrectorCoefficients', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBackward', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDimensionCheck', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testSmallStep', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testPredictorCoefficients', 'org.apache.commons.math.fraction.FractionFormatTest::testParseProperNegative', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDecreasingSteps']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 7
+                Correctness: timeout
+                Validation Time: 94.10 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u * v == 0) {
+        return Math.abs(u) + Math.abs(v);
+    }
+    if (u < 0) {
+        u = -u;
+    }
+    if (v < 0) {
+        v = -v;
+    }
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) {
+        u >>= 1;
+        v >>= 1;
+        k++;
+    }
+    if (k == 31) {
+        throw new ArithmeticException("overflow: gcd is 2^31");
+    }
+    int t = ((u & 1) == 1) ? v : -(u >> 1);
+    do {
+        while ((t & 1) == 0) {
+            t >>= 1;
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) >> 1;
+    } while (t != 0);
+    return -u * (1 << k);
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 33.91 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static int gcd(int u, int v) {
+        if (u * v == 0) {
+            return (Math.abs(u) + Math.abs(v));
+        }
+        if (u > 0) {
+            u = -u;
+        }
+        if (v > 0) {
+            v = -v;
+        }
+        int k = 0;
+        while ((u & 1) == 0 && (v & 1) == 0 && k < 31) {
+            u /= 2;
+            v /= 2;
+            k++;
+        }
+        if (k == 31) {
+            throw new ArithmeticException("overflow: gcd is 2^31");
+        }
+        int t = ((u & 1) == 1) ? v : -(u / 2);
+        do {
+            while ((t & 1) == 0) {
+                t /= 2;
+            }
+            if (t > 0) {
+                u = -t;
+            } else {
+                v = t;
+            }
+            t = (v - u) / 2;
+        } while (t != 0);
+        return -u * (1 << k);
+    }
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 32.04 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u * v == 0) {
+        return (Math.abs(u) + Math.abs(v));
+    }
+    if (u > 0) {
+        u = -u;
+    } 
+    if (v > 0) {
+        v = -v;
+    } 
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+        u /= 2;
+        v /= 2;
+        k++; 
+    }
+    if (k == 31) {
+        throw new ArithmeticException("overflow: gcd is 2^31");
+    }
+    int t = ((u & 1) == 1) ? v : -(u / 2);
+    do {
+        while ((t & 1) == 0) { 
+            t /= 2; 
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) / 2;
+    } while (t != 0);
+    return -u * (1 << k); 
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 9.03 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u * v == 0) {
+        return (Math.abs(u) + Math.abs(v));
+    }
+    if (u > 0) {
+        u = -u;
+    } 
+    if (v > 0) {
+        v = -v;
+    } 
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+        u /= 2;
+        v /= 2;
+        k++; 
+    }
+    if (k == 31) {
+        throw new ArithmeticException("overflow: gcd is 2^31");
+    }
+    int t = ((u & 1) == 1) ? v : -(u / 2);
+    do {
+        while ((t & 1) == 0) { 
+            t /= 2; 
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) / 2;
+    } while (t != 0);
+    return -u * (1 << k); 
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 8.85 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u * v == 0) {
+            return (Math.abs(u) + Math.abs(v));
+    }
+    if (u > 0) {
+        u = -u;
+    } 
+    if (v > 0) {
+        v = -v;
+    } 
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+        u /= 2;
+        v /= 2;
+        k++; 
+    }
+    if (k == 31) {
+        throw new ArithmeticException("overflow: gcd is 2^31");
+    }
+    int t = ((u & 1) == 1) ? v : -(u / 2);
+    do {
+        while ((t & 1) == 0) { 
+            t /= 2; 
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) / 2;
+    } while (t != 0);
+    return -u * (1 << k); 
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 9.15 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u == 0) {
+        return Math.abs(v);
+    }
+    if (v == 0) {
+        return Math.abs(u);
+    }
+    if (u * v == 0) {
+        return Math.abs(u) + Math.abs(v);
+    }
+    if (u > 0) {
+        u = -u;
+    } 
+    if (v > 0) {
+        v = -v;
+    } 
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+        u /= 2;
+        v /= 2;
+        k++; 
+    }
+    if (k == 31) {
+        throw new ArithmeticException("overflow: gcd is 2^31");
+    }
+    int t = ((u & 1) == 1) ? v : -(u / 2);
+    do {
+        while ((t & 1) == 0) { 
+            t /= 2; 
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) / 2;
+    } while (t != 0);
+    return -u * (1 << k); 
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 10.16 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u * v == 0) {
+        return (Math.abs(u) + Math.abs(v));
+    }
+    if (u > 0) {
+        u = -u;
+    } 
+    if (v > 0) {
+        v = -v;
+    } 
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+        u /= 2;
+        v /= 2;
+        k++; 
+    }
+    if (k == 31) {
+        throw new ArithmeticException("overflow: gcd is 2^31");
+    }
+    int t = ((u & 1) == 1) ? v : -(u / 2);
+    do {
+        while ((t & 1) == 0) { 
+            t /= 2; 
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) / 2;
+    } while (t != 0);
+    return -u * (1 << k); 
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 10.15 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u * v == 0) {
+            return (Math.abs(u) + Math.abs(v));
+    }
+    if (u > 0) {
+        u = -u;
+    } 
+    if (v > 0) {
+        v = -v;
+    } 
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+        u /= 2;
+        v /= 2;
+        k++; 
+    }
+    if (k == 31) {
+        throw new ArithmeticException("overflow: gcd is 2^31");
+    }
+    int t = ((u & 1) == 1) ? v : -(u / 2);
+    do {
+        while ((t & 1) == 0) { 
+            t /= 2; 
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) / 2;
+    } while (t != 0);
+    return -u * (1 << k); 
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 5
+                Correctness: plausible
+                Validation Time: 9.39 seconds
+                Failure reason: None
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if ((u == 0) || (v == 0)) {
+        if ((u == Integer.MIN_VALUE) || (v == Integer.MIN_VALUE)) {
+            throw new ArithmeticException("overflow: gcd is 2^31");
+        }
+        return Math.abs(u) + Math.abs(v);
+    }
+    if (u > 0) {
+        u = -u;
+    } 
+    if (v > 0) {
+        v = -v;
+    } 
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+        u /= 2;
+        v /= 2;
+        k++; 
+    }
+    int t = ((u & 1) == 1) ? v : -(u / 2);
+    do {
+        while ((t & 1) == 0) { 
+            t /= 2; 
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) / 2;
+    } while (t != 0);
+    return -u * (1 << k); 
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 9.89 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u * v == 0) {
+            return (Math.abs(u) + Math.abs(v));
+    }
+    if (u > 0) {
+        u = -u;
+    } 
+    if (v > 0) {
+        v = -v;
+    } 
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+        u /= 2;
+        v /= 2;
+        k++; 
+    }
+    if (k == 31) {
+        throw new ArithmeticException("overflow: gcd is 2^31");
+    }
+    int t = ((u & 1) == 1) ? v : -(u / 2);
+    do {
+        while ((t & 1) == 0) { 
+            t /= 2; 
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) / 2;
+    } while (t != 0);
+    return u * (1 << k); 
+}
+
+                TEST STDOUT:
+                Failing tests: 21
+  - org.apache.commons.math.fraction.FractionTest::testAdd
+  - org.apache.commons.math.fraction.FractionTest::testSubtract
+  - org.apache.commons.math.fraction.FractionTest::testReciprocal
+  - org.apache.commons.math.fraction.FractionTest::testDivide
+  - org.apache.commons.math.fraction.FractionTest::testMultiply
+  - org.apache.commons.math.fraction.FractionTest::testNegate
+  - org.apache.commons.math.fraction.FractionTest::testConstructor
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDimensionCheck
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBackward
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testSmallStep
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDecreasingSteps
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBigStep
+  - org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testCoefficients
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testPredictorCoefficients
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDimensionCheck
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBackward
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testSmallStep
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDecreasingSteps
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBigStep
+  - org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testCorrectorCoefficients
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDecreasingSteps', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testPredictorCoefficients', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBigStep', 'org.apache.commons.math.fraction.FractionTest::testReciprocal', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testBackward', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testCorrectorCoefficients', 'org.apache.commons.math.fraction.FractionTest::testMultiply', 'org.apache.commons.math.fraction.FractionTest::testDivide', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBackward', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDimensionCheck', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testSmallStep', 'org.apache.commons.math.fraction.FractionTest::testSubtract', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testDecreasingSteps', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testSmallStep', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testBigStep', 'org.apache.commons.math.fraction.FractionTest::testAdd', 'org.apache.commons.math.fraction.FractionTest::testConstructor', 'org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest::testDimensionCheck', 'org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegratorTest::testCoefficients', 'org.apache.commons.math.fraction.FractionTest::testNegate']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 10.22 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u * v == 0) {
+        return (Math.abs(u) + Math.abs(v));
+    }
+    if (u > 0) {
+        u = -u;
+    } 
+    if (v > 0) {
+        v = -v;
+    } 
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+        u /= 2;
+        v /= 2;
+        k++; 
+    }
+    if (k == 31) {
+        throw new ArithmeticException("overflow: gcd is 2^31");
+    }
+    int t = ((u & 1) == 1) ? v : -(u / 2);
+    do {
+        while ((t & 1) == 0) { 
+            t /= 2; 
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) / 2;
+    } while (t != 0);
+    return -u * (1 << k); 
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.util.MathUtilsTest::testGcd
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 8
+                Correctness: timeout
+                Validation Time: 24.03 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if (u == 0) {
+        return v;
+    }
+    if (v == 0) {
+        return u;
+    }
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+        u /= 2;
+        v /= 2;
+        k++; 
+    }
+    if (k == 31) {
+        throw new ArithmeticException("overflow: gcd is 2^31");
+    }
+    int t = ((u & 1) == 1) ? v : -(u / 2);
+    do {
+        while ((t & 1) == 0) { 
+            t /= 2; 
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) / 2;
+    } while (t != 0);
+    return -u * (1 << k); 
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 11.08 seconds
+                Failure reason: None
+
+                PATCH:
+                public static int gcd(int u, int v) {
+    if ((u == 0) || (v == 0)) {
+        if ((u == Integer.MIN_VALUE) || (v == Integer.MIN_VALUE)) {
+            throw new ArithmeticException("overflow: gcd is 2^31");
+        }
+        return Math.abs(u) + Math.abs(v);
+    }
+    if (u > 0) {
+        u = -u;
+    } 
+    if (v > 0) {
+        v = -v;
+    } 
+    int k = 0;
+    while ((u & 1) == 0 && (v & 1) == 0 && k < 31) { 
+        u /= 2;
+        v /= 2;
+        k++; 
+    }
+    int t = ((u & 1) == 1) ? v : -(u / 2);
+    do {
+        while ((t & 1) == 0) { 
+            t /= 2; 
+        }
+        if (t > 0) {
+            u = -t;
+        } else {
+            v = t;
+        }
+        t = (v - u) / 2;
+    } while (t != 0);
+    return -u * (1 << k); 
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

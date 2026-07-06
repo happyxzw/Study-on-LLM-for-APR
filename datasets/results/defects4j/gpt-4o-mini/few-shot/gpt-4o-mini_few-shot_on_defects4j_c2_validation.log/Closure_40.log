@@ -1,0 +1,1700 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 35.40 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 38.16 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 40.82 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 38.18 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 38.03 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 36.32 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 44.60 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 38.52 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 36.69 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 38.86 seconds
+                Failure reason: None
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(ns.name, true);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 45.28 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 46.78 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 46.33 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 45.68 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 45.40 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 55.72 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 49.69 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 49.40 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 50.25 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(nameNode.getString(), false);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 20
+  - com.google.javascript.jscomp.IntegrationTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testInherits8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1
+  - com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7
+  - com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8
+  - com.google.javascript.jscomp.NameAnalyzerTest::testIssue284
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin2
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin3
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin4
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin5
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin6
+  - com.google.javascript.jscomp.NameAnalyzerTest::testMixin7
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.NameAnalyzerTest::testInherits8', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits7', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits1', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin4', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits2', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits6', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits4', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias7', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin5', 'com.google.javascript.jscomp.NameAnalyzerTest::testSingletonGetter1', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits3', 'com.google.javascript.jscomp.NameAnalyzerTest::testPreservePropertyMutationsToAlias8', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin2', 'com.google.javascript.jscomp.NameAnalyzerTest::testInherits5', 'com.google.javascript.jscomp.NameAnalyzerTest::testMixin6']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 50.43 seconds
+                Failure reason: None
+
+                PATCH:
+                public void visit(NodeTraversal t, Node n, Node parent) {
+  if (t.inGlobalScope()) {
+    if (NodeUtil.isVarDeclaration(n)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      Preconditions.checkNotNull(ns);
+      recordSet(ns.name, n);
+    } else if (NodeUtil.isFunctionDeclaration(n)) {
+      Node nameNode = n.getFirstChild();
+      NameInformation ns = createNameInformation(t, nameNode, n);
+      if (ns != null) {
+        JsName nameInfo = getName(nameNode.getString(), true);
+        recordSet(nameInfo.name, nameNode);
+      }
+    } else if (NodeUtil.isObjectLitKey(n, parent)) {
+      NameInformation ns = createNameInformation(t, n, parent);
+      if (ns != null) {
+        recordSet(ns.name, n);
+      }
+    }
+  }
+  if (n.isAssign()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null) {
+      if (ns.isPrototype) {
+        recordPrototypeSet(ns.prototypeClass, ns.prototypeProperty, n);
+      } else {
+        recordSet(ns.name, nameNode);
+      }
+    }
+  } else if (n.isCall()) {
+    Node nameNode = n.getFirstChild();
+    NameInformation ns = createNameInformation(t, nameNode, n);
+    if (ns != null && ns.onlyAffectsClassDef) {
+      JsName name = getName(ns.name, true);
+      if (name != null) {
+        refNodes.add(new ClassDefiningFunctionNode(
+            name, n, parent, parent.getParent()));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

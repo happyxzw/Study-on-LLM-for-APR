@@ -1,0 +1,2736 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 3.84 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      name = null;
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      if (name == null) {
+        name = n.getQualifiedName();
+      }
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build/lib/rhino.jar
+
+relversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:259: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:265: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:440: error: ';' expected
+    [javac]     String getNameForObjLitKey(Node n) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:440: error: ';' expected
+    [javac]     String getNameForObjLitKey(Node n) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:500: error: ';' expected
+    [javac]     Name.Type getValueType(Node n) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:500: error: ';' expected
+    [javac]     Name.Type getValueType(Node n) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:539: error: illegal start of expression
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:539: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:539: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:539: error: not a statement
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:539: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:540: error: ';' expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:540: error: not a statement
+    [javac]         Node n, Node parent, String name,
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:540: error: ';' expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:540: error: <identifier> expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:541: error: not a statement
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:541: error: ';' expected
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:541: error: ';' expected
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:575: error: illegal start of expression
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:575: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:575: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:575: error: not a statement
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:575: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:595: error: illegal start of expression
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:595: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:595: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:595: error: not a statement
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:595: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:595: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:595: error: not a statement
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:595: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:596: error: ';' expected
+    [javac]                             String name) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:625: error: illegal start of expression
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:625: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:625: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:625: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:625: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:626: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:626: error: not a statement
+    [javac]         Node n, Node parent, String name) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:626: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:626: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:686: error: illegal start of expression
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:686: error: ';' expected
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:686: error: ';' expected
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:705: error: ';' expected
+    [javac]     Ref.Type determineGetTypeForHookOrBooleanExpr(
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:706: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:706: error: not a statement
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:706: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:706: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:706: error: not a statement
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:706: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:762: error: illegal start of expression
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:762: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:762: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:762: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:762: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:762: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:762: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:762: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:763: error: ';' expected
+    [javac]         String name, Ref.Type type) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:763: error: ';' expected
+    [javac]         String name, Ref.Type type) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:783: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:783: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:783: error: not a statement
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:783: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:784: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:784: error: not a statement
+    [javac]         Node n, Node parent, String name) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:784: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:784: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:831: error: ';' expected
+    [javac]     boolean isNestedAssign(Node parent) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:831: error: ';' expected
+    [javac]     boolean isNestedAssign(Node parent) {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:843: error: ';' expected
+    [javac]     Name getOrCreateName(String name) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:843: error: ';' expected
+    [javac]     Name getOrCreateName(String name) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:1351: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 72 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:265: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 3.85 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+                    case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build/lib/rhino.jar
+
+relversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:259: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:265: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:434: error: ';' expected
+    [javac]     String getNameForObjLitKey(Node n) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:434: error: ';' expected
+    [javac]     String getNameForObjLitKey(Node n) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:494: error: ';' expected
+    [javac]     Name.Type getValueType(Node n) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:494: error: ';' expected
+    [javac]     Name.Type getValueType(Node n) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:533: error: illegal start of expression
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:533: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:533: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:533: error: not a statement
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:533: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:534: error: ';' expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:534: error: not a statement
+    [javac]         Node n, Node parent, String name,
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:534: error: ';' expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:534: error: <identifier> expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:535: error: not a statement
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:535: error: ';' expected
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:535: error: ';' expected
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:569: error: illegal start of expression
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:569: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:569: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:569: error: not a statement
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:569: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:589: error: illegal start of expression
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:589: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:589: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:589: error: not a statement
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:589: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:589: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:589: error: not a statement
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:589: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:590: error: ';' expected
+    [javac]                             String name) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:619: error: illegal start of expression
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:619: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:619: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:619: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:619: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:620: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:620: error: not a statement
+    [javac]         Node n, Node parent, String name) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:620: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:620: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:680: error: illegal start of expression
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:680: error: ';' expected
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:680: error: ';' expected
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:699: error: ';' expected
+    [javac]     Ref.Type determineGetTypeForHookOrBooleanExpr(
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:700: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:700: error: not a statement
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:700: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:700: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:700: error: not a statement
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:700: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:756: error: illegal start of expression
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:756: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:756: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:756: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:756: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:756: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:756: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:756: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:757: error: ';' expected
+    [javac]         String name, Ref.Type type) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:757: error: ';' expected
+    [javac]         String name, Ref.Type type) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:777: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:777: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:777: error: not a statement
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:777: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:778: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:778: error: not a statement
+    [javac]         Node n, Node parent, String name) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:778: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:778: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:825: error: ';' expected
+    [javac]     boolean isNestedAssign(Node parent) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:825: error: ';' expected
+    [javac]     boolean isNestedAssign(Node parent) {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:837: error: ';' expected
+    [javac]     Name getOrCreateName(String name) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:837: error: ';' expected
+    [javac]     Name getOrCreateName(String name) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:863: error: illegal start of expression
+    [javac]   static class Name implements StaticSlot<JSType> {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:1172: error: illegal start of expression
+    [javac]   static class Ref implements StaticReference<JSType> {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:1296: error: illegal start of expression
+    [javac]   static class Tracker implements CompilerPass {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:1345: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 75 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:265: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 29.43 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+                    case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 3.22 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.CALL:
+            if (parent.getParent().getType() == Token.VAR) {
+              isSet = true;
+              type = Name.Type.FUNCTION;
+            }
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    case Token.GETPROP:
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build/lib/rhino.jar
+
+relversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:259: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:265: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:435: error: ';' expected
+    [javac]     String getNameForObjLitKey(Node n) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:435: error: ';' expected
+    [javac]     String getNameForObjLitKey(Node n) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:495: error: ';' expected
+    [javac]     Name.Type getValueType(Node n) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:495: error: ';' expected
+    [javac]     Name.Type getValueType(Node n) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:534: error: illegal start of expression
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:534: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:534: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:534: error: not a statement
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:534: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:535: error: ';' expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:535: error: not a statement
+    [javac]         Node n, Node parent, String name,
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:535: error: ';' expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:535: error: <identifier> expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:536: error: not a statement
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:536: error: ';' expected
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:536: error: ';' expected
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:570: error: illegal start of expression
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:570: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:570: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:570: error: not a statement
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:570: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:590: error: illegal start of expression
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:590: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:590: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:590: error: not a statement
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:590: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:590: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:590: error: not a statement
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:590: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:591: error: ';' expected
+    [javac]                             String name) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:620: error: illegal start of expression
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:620: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:620: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:620: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:620: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:621: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:621: error: not a statement
+    [javac]         Node n, Node parent, String name) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:621: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:621: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:681: error: illegal start of expression
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:681: error: ';' expected
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:681: error: ';' expected
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:700: error: ';' expected
+    [javac]     Ref.Type determineGetTypeForHookOrBooleanExpr(
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:701: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:701: error: not a statement
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:701: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:701: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:701: error: not a statement
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:701: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:757: error: illegal start of expression
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:757: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:757: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:757: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:757: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:757: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:757: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:757: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:758: error: ';' expected
+    [javac]         String name, Ref.Type type) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:758: error: ';' expected
+    [javac]         String name, Ref.Type type) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:778: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:778: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:778: error: not a statement
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:778: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:779: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:779: error: not a statement
+    [javac]         Node n, Node parent, String name) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:779: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:779: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:826: error: ';' expected
+    [javac]     boolean isNestedAssign(Node parent) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:826: error: ';' expected
+    [javac]     boolean isNestedAssign(Node parent) {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:838: error: ';' expected
+    [javac]     Name getOrCreateName(String name) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:838: error: ';' expected
+    [javac]     Name getOrCreateName(String name) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:864: error: illegal start of expression
+    [javac]   static class Name implements StaticSlot<JSType> {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:1173: error: illegal start of expression
+    [javac]   static class Ref implements StaticReference<JSType> {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:1297: error: illegal start of expression
+    [javac]   static class Tracker implements CompilerPass {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:1346: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 75 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:265: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 29.04 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 5.29 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+                    case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build/lib/rhino.jar
+
+relversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:259: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:265: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:427: error: ';' expected
+    [javac]     String getNameForObjLitKey(Node n) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:427: error: ';' expected
+    [javac]     String getNameForObjLitKey(Node n) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:487: error: ';' expected
+    [javac]     Name.Type getValueType(Node n) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:487: error: ';' expected
+    [javac]     Name.Type getValueType(Node n) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:526: error: illegal start of expression
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:526: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:526: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:526: error: not a statement
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:526: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:527: error: ';' expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:527: error: not a statement
+    [javac]         Node n, Node parent, String name,
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:527: error: ';' expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:527: error: <identifier> expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:528: error: not a statement
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:528: error: ';' expected
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:528: error: ';' expected
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:562: error: illegal start of expression
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:562: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:562: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:562: error: not a statement
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:562: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:582: error: illegal start of expression
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:582: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:582: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:582: error: not a statement
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:582: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:582: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:582: error: not a statement
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:582: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:583: error: ';' expected
+    [javac]                             String name) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:612: error: illegal start of expression
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:612: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:612: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:612: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:612: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:613: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:613: error: not a statement
+    [javac]         Node n, Node parent, String name) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:613: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:613: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:673: error: illegal start of expression
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:673: error: ';' expected
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:673: error: ';' expected
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:692: error: ';' expected
+    [javac]     Ref.Type determineGetTypeForHookOrBooleanExpr(
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:693: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:693: error: not a statement
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:693: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:693: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:693: error: not a statement
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:693: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:749: error: illegal start of expression
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:749: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:749: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:749: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:749: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:749: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:749: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:749: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:750: error: ';' expected
+    [javac]         String name, Ref.Type type) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:750: error: ';' expected
+    [javac]         String name, Ref.Type type) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:770: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:770: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:770: error: not a statement
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:770: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:771: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:771: error: not a statement
+    [javac]         Node n, Node parent, String name) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:771: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:771: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:818: error: ';' expected
+    [javac]     boolean isNestedAssign(Node parent) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:818: error: ';' expected
+    [javac]     boolean isNestedAssign(Node parent) {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:830: error: ';' expected
+    [javac]     Name getOrCreateName(String name) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:830: error: ';' expected
+    [javac]     Name getOrCreateName(String name) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:1338: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 72 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:265: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 4.66 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build/lib/rhino.jar
+
+relversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:259: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:265: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:419: error: ';' expected
+    [javac]     String getNameForObjLitKey(Node n) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:419: error: ';' expected
+    [javac]     String getNameForObjLitKey(Node n) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:479: error: ';' expected
+    [javac]     Name.Type getValueType(Node n) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:479: error: ';' expected
+    [javac]     Name.Type getValueType(Node n) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:518: error: illegal start of expression
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:518: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:518: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:518: error: not a statement
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:518: error: ';' expected
+    [javac]     void handleSetFromGlobal(JSModule module, Scope scope,
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:519: error: ';' expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:519: error: not a statement
+    [javac]         Node n, Node parent, String name,
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:519: error: ';' expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:519: error: <identifier> expected
+    [javac]         Node n, Node parent, String name,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:520: error: not a statement
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:520: error: ';' expected
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:520: error: ';' expected
+    [javac]         boolean isPropAssign, Name.Type type) {
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:554: error: illegal start of expression
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:554: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:554: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:554: error: not a statement
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:554: error: ';' expected
+    [javac]     private boolean isTypeDeclaration(Node n, Node parent) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:574: error: illegal start of expression
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:574: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:574: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:574: error: not a statement
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:574: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:574: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:574: error: not a statement
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:574: error: ';' expected
+    [javac]     void handleSetFromLocal(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:575: error: ';' expected
+    [javac]                             String name) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:604: error: illegal start of expression
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:604: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:604: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:604: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:604: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope,
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:605: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:605: error: not a statement
+    [javac]         Node n, Node parent, String name) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:605: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:605: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:665: error: illegal start of expression
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:665: error: ';' expected
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:665: error: ';' expected
+    [javac]     private boolean isClassDefiningCall(Node callNode) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:684: error: ';' expected
+    [javac]     Ref.Type determineGetTypeForHookOrBooleanExpr(
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:685: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:685: error: not a statement
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:685: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:685: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:685: error: not a statement
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:685: error: ';' expected
+    [javac]         JSModule module, Scope scope, Node parent, String name) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:741: error: illegal start of expression
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:741: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:741: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:741: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:741: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:741: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:741: error: not a statement
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:741: error: ';' expected
+    [javac]     void handleGet(JSModule module, Scope scope, Node n, Node parent,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:742: error: ';' expected
+    [javac]         String name, Ref.Type type) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:742: error: ';' expected
+    [javac]         String name, Ref.Type type) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:762: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:762: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:762: error: not a statement
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:762: error: ';' expected
+    [javac]     boolean maybeHandlePrototypePrefix(JSModule module, Scope scope,
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:763: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:763: error: not a statement
+    [javac]         Node n, Node parent, String name) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:763: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:763: error: ';' expected
+    [javac]         Node n, Node parent, String name) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:810: error: ';' expected
+    [javac]     boolean isNestedAssign(Node parent) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:810: error: ';' expected
+    [javac]     boolean isNestedAssign(Node parent) {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:822: error: ';' expected
+    [javac]     Name getOrCreateName(String name) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:822: error: ';' expected
+    [javac]     Name getOrCreateName(String name) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:848: error: illegal start of expression
+    [javac]   static class Name implements StaticSlot<JSType> {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:1157: error: illegal start of expression
+    [javac]   static class Ref implements StaticReference<JSType> {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:1281: error: illegal start of expression
+    [javac]   static class Tracker implements CompilerPass {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/src/com/google/javascript/jscomp/GlobalNamespace.java:1330: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 75 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260627_191459/Closure_119_186225871e0d4aed8a826999056caff2/build.xml:265: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 29.37 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 30.96 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+                    case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (isGlobalNameReference(name, scope)) {
+    if (isSet) {
+      if (isGlobalScope(scope)) {
+        handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+      } else {
+        handleSetFromLocal(module, scope, n, parent, name);
+      }
+    } else {
+      handleGet(module, scope, n, parent, name);
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 30.38 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

@@ -1,0 +1,1050 @@
+==================================================
+                Project: FIND_ZERO
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 10.40 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static double find_zero(List<Double> xs) {
+    double begin = -1.;
+    double end = 1.;
+    while (poly(xs, begin) * poly(xs, end) > 0) {
+        begin *= 2.;
+        end *= 2.;
+    }
+    while (end - begin > 1e-10) {
+        double center = (begin + end) / 2.;
+        if (poly(xs, begin) * poly(xs, center) < 0) { // Fix: changed end to center in the condition
+            end = center; // Fix: changed begin to end here to correctly narrow the range
+        } else {
+            begin = center; // Fix: changed end to begin here to correctly narrow the range
+        }
+    }
+    return (begin + end) / 2.; // Fix: return the midpoint of begin and end for better accuracy
+}
+
+                TEST STDOUT:
+                [INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< humaneval:humaneval-java >----------------------
+[INFO] Building humaneval-java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 164 source files to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/classes
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/test-classes
+[INFO] 
+[INFO] --- surefire:2.22.1:test (default-test) @ humaneval-java ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running humaneval.TEST_FIND_ZERO
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.126 s <<< FAILURE! - in humaneval.TEST_FIND_ZERO
+[ERROR] test_5(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.004 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_5(TEST_FIND_ZERO.java:57)
+
+[ERROR] test_7(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.011 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_7(TEST_FIND_ZERO.java:75)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   TEST_FIND_ZERO.test_5:57
+[ERROR]   TEST_FIND_ZERO.test_7:75
+[INFO] 
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.570 s
+[INFO] Finished at: 2026-06-24T21:49:55+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project humaneval-java: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['humaneval.TEST_FIND_ZERO.test_5']
+
+                EXCEPTIONS
+                ['AssertionError', 'java.lang.AssertionError']
+
+
+==================================================
+                Project: FIND_ZERO
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 11.29 seconds
+                Failure reason: Partially fixed
+
+                PATCH:
+                public static double find_zero(List<Double> xs){
+    double begin = -1.;
+    double end = 1.;
+    // Change the condition to find a range where the polynomial values have different signs
+    while (poly(xs, begin) * poly(xs, end) > 0) {
+        begin *= 2.;
+        end *= 2.;
+        // Ensure that end is also being increased to maintain a valid search range
+        if (poly(xs, end) > 0) {
+            end *= 2.; // Double the end if the polynomial at end is positive
+        }
+    }
+    while (end - begin > 1e-10) {
+        double center = (begin + end) / 2.;
+        if (poly(xs, center) * poly(xs, end) < 0) { // Check center against end to find the zero
+            begin = center; // Move begin up if zero is between center and end
+        } else {
+            end = center; // Move end down if zero is between begin and center
+        }
+    }
+    return (begin + end) / 2; // Return the midpoint for better accuracy
+}
+
+                TEST STDOUT:
+                [INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< humaneval:humaneval-java >----------------------
+[INFO] Building humaneval-java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 164 source files to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/classes
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/test-classes
+[INFO] 
+[INFO] --- surefire:2.22.1:test (default-test) @ humaneval-java ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running humaneval.TEST_FIND_ZERO
+[ERROR] Tests run: 8, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.094 s <<< FAILURE! - in humaneval.TEST_FIND_ZERO
+[ERROR] test_4(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.007 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_4(TEST_FIND_ZERO.java:48)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   TEST_FIND_ZERO.test_4:48
+[INFO] 
+[ERROR] Tests run: 8, Failures: 1, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.725 s
+[INFO] Finished at: 2026-06-24T21:50:06+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project humaneval-java: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                ['AssertionError', 'java.lang.AssertionError']
+
+
+==================================================
+                Project: FIND_ZERO
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 9.60 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static double find_zero(List<Double> xs){
+    double begin = -1.;
+    double end = 1.;
+    while (poly(xs, begin) * poly(xs, end) > 0) {
+        begin *= 2.;
+        end *= 2.;
+    }
+    while (end - begin > 1e-10) {
+        double center = (begin + end) / 2.;
+        if (poly(xs, begin) * poly(xs, center) < 0) { // Fixed: Changed end to center for correct interval check
+            end = center; // Fixed: Updated 'begin' to 'end' to match the bisection method's logic
+        } else {
+            begin = center; // Fixed: Updated 'end' to 'begin' to match the bisection method's logic
+        }
+    }
+    return (begin + end) / 2.; // Fixed: Return the midpoint for more accurate result
+}
+
+                TEST STDOUT:
+                [INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< humaneval:humaneval-java >----------------------
+[INFO] Building humaneval-java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 164 source files to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/classes
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/test-classes
+[INFO] 
+[INFO] --- surefire:2.22.1:test (default-test) @ humaneval-java ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running humaneval.TEST_FIND_ZERO
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.137 s <<< FAILURE! - in humaneval.TEST_FIND_ZERO
+[ERROR] test_5(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.012 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_5(TEST_FIND_ZERO.java:57)
+
+[ERROR] test_7(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.007 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_7(TEST_FIND_ZERO.java:75)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   TEST_FIND_ZERO.test_5:57
+[ERROR]   TEST_FIND_ZERO.test_7:75
+[INFO] 
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.466 s
+[INFO] Finished at: 2026-06-24T21:50:16+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project humaneval-java: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['humaneval.TEST_FIND_ZERO.test_5']
+
+                EXCEPTIONS
+                ['AssertionError', 'java.lang.AssertionError']
+
+
+==================================================
+                Project: FIND_ZERO
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 15.71 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static double find_zero(List<Double> xs){
+    double begin = -1.;
+    double end = 1.;
+    // The first while loop needs to adjust the end value if both begin and end have the same sign
+    while (poly(xs, begin) * poly(xs, end) > 0) {
+        end *= 2.; // Corrected to only adjust the end value to find a valid range
+    }
+    while (end - begin > 1e-10) {
+        double center = (begin + end) / 2.;
+        if (poly(xs, begin) * poly(xs, center) < 0) { // Changed to use center for the condition
+            end = center; // Update end if zero is between begin and center
+        } else {
+            begin = center; // Update begin if zero is between center and end
+        }
+    }
+    return begin;
+}
+
+                TEST STDOUT:
+                [INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< humaneval:humaneval-java >----------------------
+[INFO] Building humaneval-java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 164 source files to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/classes
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/test-classes
+[INFO] 
+[INFO] --- surefire:2.22.1:test (default-test) @ humaneval-java ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running humaneval.TEST_FIND_ZERO
+[ERROR] Tests run: 8, Failures: 2, Errors: 2, Skipped: 0, Time elapsed: 6.107 s <<< FAILURE! - in humaneval.TEST_FIND_ZERO
+[ERROR] test_3(humaneval.TEST_FIND_ZERO)  Time elapsed: 3.016 s  <<< ERROR!
+org.junit.runners.model.TestTimedOutException: test timed out after 3000 milliseconds
+	at humaneval.TEST_FIND_ZERO.test_3(TEST_FIND_ZERO.java:38)
+
+[ERROR] test_5(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.001 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_5(TEST_FIND_ZERO.java:57)
+
+[ERROR] test_6(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.006 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_6(TEST_FIND_ZERO.java:66)
+
+[ERROR] test_7(humaneval.TEST_FIND_ZERO)  Time elapsed: 3.016 s  <<< ERROR!
+org.junit.runners.model.TestTimedOutException: test timed out after 3000 milliseconds
+	at humaneval.TEST_FIND_ZERO.test_7(TEST_FIND_ZERO.java:74)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   TEST_FIND_ZERO.test_5:57
+[ERROR]   TEST_FIND_ZERO.test_6:66
+[ERROR] Errors: 
+[ERROR]   TEST_FIND_ZERO.test_3:38 » TestTimedOut test timed out after 3000 milliseconds
+[ERROR]   TEST_FIND_ZERO.test_7:74 » TestTimedOut test timed out after 3000 milliseconds
+[INFO] 
+[ERROR] Tests run: 8, Failures: 2, Errors: 2, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.398 s
+[INFO] Finished at: 2026-06-24T21:50:32+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project humaneval-java: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['humaneval.TEST_FIND_ZERO.test_5']
+
+                EXCEPTIONS
+                ['org.junit.runners.model.TestTimedOutException', 'AssertionError', 'java.lang.AssertionError']
+
+
+==================================================
+                Project: FIND_ZERO
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 10.74 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static double find_zero(List<Double> xs){
+    double begin = -1.;
+    double end = 1.;
+    while (poly(xs, begin) * poly(xs, end) > 0) {
+        begin *= 2.;
+        end *= 2.;
+    }
+    while (end - begin > 1e-10) {
+        double center = (begin + end) / 2.;
+        if (poly(xs, begin) * poly(xs, center) < 0) { // Fixed: use 'center' to check the sign of the polynomial
+            end = center; // Fixed: need to update 'end' instead of 'begin' when the sign changes
+        } else {
+            begin = center; // Fixed: update 'begin' when the sign doesn't change
+        }
+    }
+    return (begin + end) / 2.; // Fixed: return the midpoint of 'begin' and 'end' for better accuracy
+}
+
+                TEST STDOUT:
+                [INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< humaneval:humaneval-java >----------------------
+[INFO] Building humaneval-java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 164 source files to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/classes
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/test-classes
+[INFO] 
+[INFO] --- surefire:2.22.1:test (default-test) @ humaneval-java ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running humaneval.TEST_FIND_ZERO
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.1 s <<< FAILURE! - in humaneval.TEST_FIND_ZERO
+[ERROR] test_5(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.011 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_5(TEST_FIND_ZERO.java:57)
+
+[ERROR] test_7(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.003 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_7(TEST_FIND_ZERO.java:75)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   TEST_FIND_ZERO.test_5:57
+[ERROR]   TEST_FIND_ZERO.test_7:75
+[INFO] 
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.093 s
+[INFO] Finished at: 2026-06-24T21:50:42+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project humaneval-java: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['humaneval.TEST_FIND_ZERO.test_5']
+
+                EXCEPTIONS
+                ['AssertionError', 'java.lang.AssertionError']
+
+
+==================================================
+                Project: FIND_ZERO
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 11.62 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static double find_zero(List<Double> xs){
+    double begin = -1.;
+    double end = 1.;
+    // Corrected the condition to find the interval where the sign changes
+    while (poly(xs, begin) * poly(xs, end) > 0) {
+        begin *= 2.;
+        end *= 2.;
+    }
+    // Ensure to check the middle point with the correct values of begin and end
+    while (end - begin > 1e-10) {
+        double center = (begin + end) / 2.;
+        if (poly(xs, center) * poly(xs, begin) < 0) { // Use center to check the sign
+            end = center; // Move end to center since root is in [begin, center]
+        } else {
+            begin = center; // Move begin to center since root is in [center, end]
+        }
+    }
+    return (begin + end) / 2; // Return the midpoint of the final interval
+}
+
+                TEST STDOUT:
+                [INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< humaneval:humaneval-java >----------------------
+[INFO] Building humaneval-java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 164 source files to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/classes
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/test-classes
+[INFO] 
+[INFO] --- surefire:2.22.1:test (default-test) @ humaneval-java ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running humaneval.TEST_FIND_ZERO
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.152 s <<< FAILURE! - in humaneval.TEST_FIND_ZERO
+[ERROR] test_5(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.013 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_5(TEST_FIND_ZERO.java:57)
+
+[ERROR] test_7(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.004 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_7(TEST_FIND_ZERO.java:75)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   TEST_FIND_ZERO.test_5:57
+[ERROR]   TEST_FIND_ZERO.test_7:75
+[INFO] 
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.970 s
+[INFO] Finished at: 2026-06-24T21:50:54+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project humaneval-java: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['humaneval.TEST_FIND_ZERO.test_5']
+
+                EXCEPTIONS
+                ['AssertionError', 'java.lang.AssertionError']
+
+
+==================================================
+                Project: FIND_ZERO
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 11.04 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static double find_zero(List<Double> xs) {
+    double begin = -1.;
+    double end = 1.;
+    // Correct the condition to find a range where the polynomial changes sign
+    while (poly(xs, begin) * poly(xs, end) > 0) {
+        begin *= 2.;
+        end *= 2.;
+    }
+    while (end - begin > 1e-10) {
+        double center = (begin + end) / 2.;
+        // Correct the if statement to check the sign of the polynomial at the center
+        if (poly(xs, begin) * poly(xs, center) < 0) {
+            end = center;  // Move end to center if there's a sign change
+        } else {
+            begin = center; // Move begin to center if no sign change
+        }
+    }
+    return (begin + end) / 2.; // Return the midpoint for better accuracy
+}
+
+                TEST STDOUT:
+                [INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< humaneval:humaneval-java >----------------------
+[INFO] Building humaneval-java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 164 source files to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/classes
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/test-classes
+[INFO] 
+[INFO] --- surefire:2.22.1:test (default-test) @ humaneval-java ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running humaneval.TEST_FIND_ZERO
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.131 s <<< FAILURE! - in humaneval.TEST_FIND_ZERO
+[ERROR] test_5(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.005 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_5(TEST_FIND_ZERO.java:57)
+
+[ERROR] test_7(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.004 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_7(TEST_FIND_ZERO.java:75)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   TEST_FIND_ZERO.test_5:57
+[ERROR]   TEST_FIND_ZERO.test_7:75
+[INFO] 
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.376 s
+[INFO] Finished at: 2026-06-24T21:51:05+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project humaneval-java: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['humaneval.TEST_FIND_ZERO.test_5']
+
+                EXCEPTIONS
+                ['AssertionError', 'java.lang.AssertionError']
+
+
+==================================================
+                Project: FIND_ZERO
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 12.18 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static double find_zero(List<Double> xs){
+    double begin = -1.;
+    double end = 1.;
+
+    // Change the loop condition to find the correct interval where the sign changes
+    while (poly(xs, begin) * poly(xs, end) >= 0) { // Use >= instead of > to include the boundary case
+        begin *= 2.;
+        end *= 2.;
+    }
+
+    while (end - begin > 1e-10) {
+        double center = (begin + end) / 2.;
+        if (poly(xs, begin) * poly(xs, center) < 0) { // Check the sign at 'center' instead of 'end'
+            end = center; // Move 'end' to 'center' since the root is between 'begin' and 'center'
+        } else {
+            begin = center; // Move 'begin' to 'center' since the root is between 'center' and 'end'
+        }
+    }
+    return (begin + end) / 2.; // Return the midpoint of 'begin' and 'end' for better precision
+}
+
+                TEST STDOUT:
+                [INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< humaneval:humaneval-java >----------------------
+[INFO] Building humaneval-java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 164 source files to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/classes
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/test-classes
+[INFO] 
+[INFO] --- surefire:2.22.1:test (default-test) @ humaneval-java ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running humaneval.TEST_FIND_ZERO
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.123 s <<< FAILURE! - in humaneval.TEST_FIND_ZERO
+[ERROR] test_5(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.013 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_5(TEST_FIND_ZERO.java:57)
+
+[ERROR] test_7(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.004 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_7(TEST_FIND_ZERO.java:75)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   TEST_FIND_ZERO.test_5:57
+[ERROR]   TEST_FIND_ZERO.test_7:75
+[INFO] 
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.717 s
+[INFO] Finished at: 2026-06-24T21:51:17+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project humaneval-java: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['humaneval.TEST_FIND_ZERO.test_5']
+
+                EXCEPTIONS
+                ['AssertionError', 'java.lang.AssertionError']
+
+
+==================================================
+                Project: FIND_ZERO
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 11.85 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static double find_zero(List<Double> xs) {
+    double begin = -1.;
+    double end = 1.;
+    // Corrected the condition to check if the signs of the function values are the same
+    while (poly(xs, begin) * poly(xs, end) >= 0) {
+        begin *= 2.;
+        end *= 2.;
+    }
+    while (end - begin > 1e-10) {
+        double center = (begin + end) / 2.;
+        // Fixed the condition to check the function values at 'begin' and 'center' instead of 'end'
+        if (poly(xs, begin) * poly(xs, center) < 0) {
+            end = center; // Set end to center if the root is between begin and center
+        } else {
+            begin = center; // Set begin to center otherwise
+        }
+    }
+    return (begin + end) / 2; // Return the midpoint for a more accurate result
+}
+
+                TEST STDOUT:
+                [INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< humaneval:humaneval-java >----------------------
+[INFO] Building humaneval-java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 164 source files to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/classes
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/test-classes
+[INFO] 
+[INFO] --- surefire:2.22.1:test (default-test) @ humaneval-java ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running humaneval.TEST_FIND_ZERO
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.103 s <<< FAILURE! - in humaneval.TEST_FIND_ZERO
+[ERROR] test_5(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.009 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_5(TEST_FIND_ZERO.java:57)
+
+[ERROR] test_7(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.003 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_7(TEST_FIND_ZERO.java:75)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   TEST_FIND_ZERO.test_5:57
+[ERROR]   TEST_FIND_ZERO.test_7:75
+[INFO] 
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.771 s
+[INFO] Finished at: 2026-06-24T21:51:29+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project humaneval-java: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['humaneval.TEST_FIND_ZERO.test_5']
+
+                EXCEPTIONS
+                ['AssertionError', 'java.lang.AssertionError']
+
+
+==================================================
+                Project: FIND_ZERO
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 12.16 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static double find_zero(List<Double> xs){
+    double begin = -1.;
+    double end = 1.;
+    while (poly(xs, begin) * poly(xs, end) > 0) {
+        begin *= 2.;
+        end *= 2.;
+    }
+    while (end - begin > 1e-10) {
+        double center = (begin + end) / 2.;
+        if (poly(xs, begin) * poly(xs, center) < 0) { // Changed 'end' to 'center'
+            end = center; // Changed 'begin' to 'end'
+        } else {
+            begin = center; // Changed 'end' to 'begin'
+        }
+    }
+    return (begin + end) / 2; // Return the average of 'begin' and 'end'
+}
+
+                TEST STDOUT:
+                [INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< humaneval:humaneval-java >----------------------
+[INFO] Building humaneval-java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 164 source files to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/classes
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ humaneval-java ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ humaneval-java ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/test-classes
+[INFO] 
+[INFO] --- surefire:2.22.1:test (default-test) @ humaneval-java ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running humaneval.TEST_FIND_ZERO
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.135 s <<< FAILURE! - in humaneval.TEST_FIND_ZERO
+[ERROR] test_5(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.008 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_5(TEST_FIND_ZERO.java:57)
+
+[ERROR] test_7(humaneval.TEST_FIND_ZERO)  Time elapsed: 0.01 s  <<< FAILURE!
+java.lang.AssertionError
+	at humaneval.TEST_FIND_ZERO.test_7(TEST_FIND_ZERO.java:75)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   TEST_FIND_ZERO.test_5:57
+[ERROR]   TEST_FIND_ZERO.test_7:75
+[INFO] 
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.755 s
+[INFO] Finished at: 2026-06-24T21:51:41+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.1:test (default-test) on project humaneval-java: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/chenshiping/peft4apr/datasets/tmp_benchmark/humaneval_c1_20260624_204148/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+
+                TEST STDERR:
+
+
+                NEW FAILED TESTS
+                ['humaneval.TEST_FIND_ZERO.test_5']
+
+                EXCEPTIONS
+                ['AssertionError', 'java.lang.AssertionError']
+
+

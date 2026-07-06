@@ -1,0 +1,2233 @@
+==================================================
+                Project: Math
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 15.14 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+                f0 *= Math.min(ftol, Math.abs(f1) / (Math.abs(f1) + Math.abs(fx)));
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testQuinticZero
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSinZero
+  - org.apache.commons.math.ode.events.OverlappingEventsTest::testOverlappingEvents1
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testQuinticZero', 'org.apache.commons.math.ode.events.OverlappingEventsTest::testOverlappingEvents1', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSinZero']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 15.74 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+// buggy lines start
+                break;
+// buggy lines end
+                            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                if (inverted) {
+                    return x1;
+                }
+                break;
+            case RIGHT_SIDE:
+                if (!inverted) {
+                    return x1;
+                }
+                break;
+            case BELOW_SIDE:
+                if (f1 <= 0) {
+                    return x1;
+                }
+                break;
+            case ABOVE_SIDE:
+                if (f1 >= 0) {
+                    return x1;
+                }
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 16.15 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+// buggy lines start
+                break;
+// buggy lines end
+                            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                if (inverted) {
+                    return x1;
+                }
+                break;
+            case RIGHT_SIDE:
+                if (!inverted) {
+                    return x1;
+                }
+                break;
+            case BELOW_SIDE:
+                if (f1 <= 0) {
+                    return x1;
+                }
+                break;
+            case ABOVE_SIDE:
+                if (f1 >= 0) {
+                    return x1;
+                }
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 4.01 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private boolean isInlinableObject(List<Reference> refs) {
+  boolean ret = false;
+  Set<String> validProperties = Sets.newHashSet();
+  for (Reference ref : refs) {
+    Node name = ref.getNode();
+    Node parent = ref.getParent();
+    Node gramps = ref.getGrandparent();
+
+    // Ignore indirect references, like x.y (except x.y(), since
+    // the function referenced by y might reference 'this').
+    //
+    if (parent.isGetProp()) {
+      Preconditions.checkState(parent.getFirstChild() == name);
+      // A call target maybe using the object as a 'this' value.
+      if (gramps.isCall()
+          && gramps.getFirstChild() == parent) {
+        return false;
+      }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260604_210716/Math_48_015c451bd9ab49b4b393a78644d8b815 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260604_210716/Math_48_015c451bd9ab49b4b393a78644d8b815 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+init:
+     [echo] -------- Commons MATH 3.0-SNAPSHOT --------
+
+compile:
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260604_210716/Math_48_015c451bd9ab49b4b393a78644d8b815/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260604_210716/Math_48_015c451bd9ab49b4b393a78644d8b815/src/main/java/org/apache/commons/math/analysis/solvers/BaseSecantSolver.java:149: error: illegal start of expression
+    [javac]     protected enum Method {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260604_210716/Math_48_015c451bd9ab49b4b393a78644d8b815/src/main/java/org/apache/commons/math/analysis/solvers/BaseSecantSolver.java:149: error: enum types must not be local
+    [javac]     protected enum Method {
+    [javac]               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260604_210716/Math_48_015c451bd9ab49b4b393a78644d8b815/src/main/java/org/apache/commons/math/analysis/solvers/BaseSecantSolver.java:164: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 3 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260604_210716/Math_48_015c451bd9ab49b4b393a78644d8b815/build.xml:162: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 13.26 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+                break;
+// buggy lines start
+            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                if (inverted) {
+                    return x1;
+                }
+                break;
+            case RIGHT_SIDE:
+                if (!inverted) {
+                    return x1;
+                }
+                break;
+            case BELOW_SIDE:
+                if (f1 <= 0) {
+                    return x1;
+                }
+                break;
+            case ABOVE_SIDE:
+                if (f1 >= 0) {
+                    return x1;
+                }
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 15.12 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+// buggy lines start
+            case REGULA_FALSI:
+// buggy lines end
+                            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                if (inverted) {
+                    return x1;
+                }
+                break;
+            case RIGHT_SIDE:
+                if (!inverted) {
+                    return x1;
+                }
+                break;
+            case BELOW_SIDE:
+                if (f1 <= 0) {
+                    return x1;
+                }
+                break;
+            case ABOVE_SIDE:
+                if (f1 >= 0) {
+                    return x1;
+                }
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionRightSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionAboveSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionBelowSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionLeftSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testQuinticZero
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSinZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSinZero', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionLeftSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testQuinticZero', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionRightSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionBelowSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionAboveSide']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 14.75 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+                f0 *= FastMath.max(0.3, Math.abs(f1) / Math.abs(fx));
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionRightSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionAboveSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionBelowSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionLeftSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testQuinticZero
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSinZero
+  - org.apache.commons.math.ode.events.OverlappingEventsTest::testOverlappingEvents1
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSinZero', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionLeftSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testQuinticZero', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionRightSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionBelowSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionAboveSide', 'org.apache.commons.math.ode.events.OverlappingEventsTest::testOverlappingEvents1']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 14.23 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+// buggy lines start
+                break;
+// buggy lines end
+                            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                if (inverted) {
+                    return x1;
+                }
+                break;
+            case RIGHT_SIDE:
+                if (!inverted) {
+                    return x1;
+                }
+                break;
+            case BELOW_SIDE:
+                if (f1 <= 0) {
+                    return x1;
+                }
+                break;
+            case ABOVE_SIDE:
+                if (f1 >= 0) {
+                    return x1;
+                }
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 12.87 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+// buggy lines start
+                break;
+// buggy lines end
+                            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                if (inverted) {
+                    return x1;
+                }
+                break;
+            case RIGHT_SIDE:
+                if (!inverted) {
+                    return x1;
+                }
+                break;
+            case BELOW_SIDE:
+                if (f1 <= 0) {
+                    return x1;
+                }
+                break;
+            case ABOVE_SIDE:
+                if (f1 >= 0) {
+                    return x1;
+                }
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 5.85 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+// buggy lines start
+                break;
+// buggy lines end
+                            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                     atol)) {
+                if (x1 == x0) {
+                    break;
+                } else {
+                    return x1;
+                }
+            } else {
+                return (x0 + x1) / 2.0;
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260604_210716/Math_48_015c451bd9ab49b4b393a78644d8b815 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260604_210716/Math_48_015c451bd9ab49b4b393a78644d8b815 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+init:
+     [echo] -------- Commons MATH 3.0-SNAPSHOT --------
+
+compile:
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260604_210716/Math_48_015c451bd9ab49b4b393a78644d8b815/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalStateException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalStateException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CloneNotSupportedException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CloneNotSupportedException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Class.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Class.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260604_210716/Math_48_015c451bd9ab49b4b393a78644d8b815/src/main/java/org/apache/commons/math/analysis/solvers/BaseSecantSolver.java:184: error: missing return statement
+    [javac] }
+    [javac] ^
+    [javac] 1 error
+    [javac] 39 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260604_210716/Math_48_015c451bd9ab49b4b393a78644d8b815/build.xml:162: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 16.08 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+                f0 *= Math.min(ftol, Math.abs(f1) / (Math.abs(f1) + Math.abs(fx)));
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testQuinticZero
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSinZero
+  - org.apache.commons.math.ode.events.OverlappingEventsTest::testOverlappingEvents1
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testQuinticZero', 'org.apache.commons.math.ode.events.OverlappingEventsTest::testOverlappingEvents1', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSinZero']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 21.12 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+// buggy lines start
+                break;
+// buggy lines end
+                            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                if (inverted) {
+                    return x1;
+                }
+                break;
+            case RIGHT_SIDE:
+                if (!inverted) {
+                    return x1;
+                }
+                break;
+            case BELOW_SIDE:
+                if (f1 <= 0) {
+                    return x1;
+                }
+                break;
+            case ABOVE_SIDE:
+                if (f1 >= 0) {
+                    return x1;
+                }
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 21.71 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+// buggy lines start
+                break;
+// buggy lines end
+                            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                if (inverted) {
+                    return x1;
+                }
+                break;
+            case RIGHT_SIDE:
+                if (!inverted) {
+                    return x1;
+                }
+                break;
+            case BELOW_SIDE:
+                if (f1 <= 0) {
+                    return x1;
+                }
+                break;
+            case ABOVE_SIDE:
+                if (f1 >= 0) {
+                    return x1;
+                }
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 16.79 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+                break;
+// buggy lines start
+            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                if (inverted) {
+                    return x1;
+                }
+                break;
+            case RIGHT_SIDE:
+                if (!inverted) {
+                    return x1;
+                }
+                break;
+            case BELOW_SIDE:
+                if (f1 <= 0) {
+                    return x1;
+                }
+                break;
+            case ABOVE_SIDE:
+                if (f1 >= 0) {
+                    return x1;
+                }
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 18.65 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+// buggy lines start
+            case REGULA_FALSI:
+// buggy lines end
+                            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                if (inverted) {
+                    return x1;
+                }
+                break;
+            case RIGHT_SIDE:
+                if (!inverted) {
+                    return x1;
+                }
+                break;
+            case BELOW_SIDE:
+                if (f1 <= 0) {
+                    return x1;
+                }
+                break;
+            case ABOVE_SIDE:
+                if (f1 >= 0) {
+                    return x1;
+                }
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionRightSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionAboveSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionBelowSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionLeftSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testQuinticZero
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSinZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testQuinticZero', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionAboveSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionLeftSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionBelowSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionRightSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSinZero']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 21.14 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+                f0 *= FastMath.max(0.3, Math.abs(f1) / Math.abs(fx));
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionRightSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionAboveSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionBelowSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionLeftSide
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testQuinticZero
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSinZero
+  - org.apache.commons.math.ode.events.OverlappingEventsTest::testOverlappingEvents1
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testQuinticZero', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionAboveSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionLeftSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionBelowSide', 'org.apache.commons.math.ode.events.OverlappingEventsTest::testOverlappingEvents1', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSolutionRightSide', 'org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testSinZero']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 19.94 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+// buggy lines start
+                break;
+// buggy lines end
+                            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                if (inverted) {
+                    return x1;
+                }
+                break;
+            case RIGHT_SIDE:
+                if (!inverted) {
+                    return x1;
+                }
+                break;
+            case BELOW_SIDE:
+                if (f1 <= 0) {
+                    return x1;
+                }
+                break;
+            case ABOVE_SIDE:
+                if (f1 >= 0) {
+                    return x1;
+                }
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 17.29 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    boolean inverted = false;
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+            inverted = !inverted;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+// buggy lines start
+                break;
+// buggy lines end
+                            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                if (inverted) {
+                    return x1;
+                }
+                break;
+            case RIGHT_SIDE:
+                if (!inverted) {
+                    return x1;
+                }
+                break;
+            case BELOW_SIDE:
+                if (f1 <= 0) {
+                    return x1;
+                }
+                break;
+            case ABOVE_SIDE:
+                if (f1 >= 0) {
+                    return x1;
+                }
+                break;
+            default:
+                throw new MathInternalError();
+            }
+        }
+        if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                 atol)) {
+            switch (allowed) {
+            case ANY_SIDE:
+                return x1;
+            case LEFT_SIDE:
+                return inverted ? x1 : x0;
+            case RIGHT_SIDE:
+                return inverted ? x0 : x1;
+            case BELOW_SIDE:
+                return (f1 <= 0) ? x1 : x0;
+            case ABOVE_SIDE:
+                return (f1 >= 0) ? x1 : x0;
+            default:
+                throw new MathInternalError();
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest::testIssue631
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 5.63 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected final double doSolve() {
+    double x0 = getMin();
+    double x1 = getMax();
+    double f0 = computeObjectiveValue(x0);
+    double f1 = computeObjectiveValue(x1);
+    if (f0 == 0.0) {
+        return x0;
+    }
+    if (f1 == 0.0) {
+        return x1;
+    }
+    verifyBracketing(x0, x1);
+    final double ftol = getFunctionValueAccuracy();
+    final double atol = getAbsoluteAccuracy();
+    final double rtol = getRelativeAccuracy();
+    while (true) {
+        final double x = x1 - ((f1 * (x1 - x0)) / (f1 - f0));
+        final double fx = computeObjectiveValue(x);
+        if (fx == 0.0) {
+            return x;
+        }
+        if (f1 * fx < 0) {
+            x0 = x1;
+            f0 = f1;
+        } else {
+            switch (method) {
+            case ILLINOIS:
+                f0 *= 0.5;
+                break;
+            case PEGASUS:
+                f0 *= f1 / (f1 + fx);
+                break;
+            case REGULA_FALSI:
+// buggy lines start
+                break;
+// buggy lines end
+                            default:
+                throw new MathInternalError();
+            }
+        }
+        x1 = x;
+        f1 = fx;
+        if (FastMath.abs(f1) <= ftol) {
+            if (FastMath.abs(x1 - x0) < FastMath.max(rtol * FastMath.abs(x1),
+                                                     atol)) {
+                if (x1 == x0) {
+                    break;
+                } else {
+                    return x1;
+                }
+            } else {
+                return (x0 + x1) / 2.0;
+            }
+        }
+    }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260613_212636/Math_48_2239e80c6b8d4580a653ba4220b16d60 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260613_212636/Math_48_2239e80c6b8d4580a653ba4220b16d60 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+init:
+     [echo] -------- Commons MATH 3.0-SNAPSHOT --------
+
+compile:
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260613_212636/Math_48_2239e80c6b8d4580a653ba4220b16d60/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalStateException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalStateException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CloneNotSupportedException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CloneNotSupportedException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Class.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Class.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260613_212636/Math_48_2239e80c6b8d4580a653ba4220b16d60/src/main/java/org/apache/commons/math/analysis/solvers/BaseSecantSolver.java:184: error: missing return statement
+    [javac] }
+    [javac] ^
+    [javac] 1 error
+    [javac] 39 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260613_212636/Math_48_2239e80c6b8d4580a653ba4220b16d60/build.xml:162: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

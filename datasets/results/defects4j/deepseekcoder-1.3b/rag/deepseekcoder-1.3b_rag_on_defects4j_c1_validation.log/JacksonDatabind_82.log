@@ -1,0 +1,3111 @@
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: timeout
+                Validation Time: 300.12 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 297.80 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+        for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 293.08 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 284.31 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+        for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+        anySetterField = beanDesc.findAnySetterField();
+        if(anySetterField != null) {
+            builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+        }
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 6
+                Correctness: timeout
+                Validation Time: 300.10 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 287.13 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 227.89 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 280.92 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+        for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 6
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+        for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 7
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 8
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 231.97 seconds
+                Failure reason: Regression
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+  // need to ensure method is callable (for non-public)
+  AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+  AnnotatedMember anySetterField = null;
+  if (anySetterMethod != null) {
+    builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+  }
+  else {
+    anySetterField = beanDesc.findAnySetterField();
+    if(anySetterField != null) {
+      builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    }
+  }
+  if (anySetterMethod == null && anySetterField == null) {
+    Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+    if (ignored2 != null) {
+      for (String propName : ignored2) {
+        builder.addIgnorable(propName);
+      }
+    }
+  }
+  final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+    && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+  List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+    beanDesc, builder, beanDesc.findProperties(), beanDesc.getIgnoredPropertyNames());
+  if (_factoryConfig.hasDeserializerModifiers()) {
+    for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+      propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+    }
+  }
+  for (BeanPropertyDefinition propDef : propDefs) {
+    SettableBeanProperty prop = null;
+    if (propDef.hasSetter()) {
+      JavaType propertyType = propDef.getSetter().getParameterType(0);
+      prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+    } else if (propDef.hasField()) {
+      JavaType propertyType = propDef.getField().getType();
+      prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+    } else if (useGettersAsSetters && propDef.hasGetter()) {
+      AnnotatedMethod getter = propDef.getGetter();
+      Class<?> rawPropertyType = getter.getRawType();
+      if (Collection.class.isAssignableFrom(rawPropertyType) || Map.class.isAssignableFrom(rawPropertyType)) {
+        prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+      }
+    }
+    if (prop != null) {
+      Class<?>[] views = propDef.findViews();
+      if (views == null) {
+        if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+          views = NO_VIEWS;
+        }
+      }
+      prop.setViews(views);
+      builder.addProperty(prop);
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 19
+  - com.fasterxml.jackson.databind.convert.ConvertingAbstractSerializer795Test::testAbstractTypeDeserialization
+  - com.fasterxml.jackson.databind.creators.BuilderSimpleTest::testSimpleWithIgnores
+  - com.fasterxml.jackson.databind.creators.TestCreators2::testCreatorProperties
+  - com.fasterxml.jackson.databind.creators.TestCreators2::testJackson431
+  - com.fasterxml.jackson.databind.deser.TestAnnotationIgnore::testFailOnIgnore
+  - com.fasterxml.jackson.databind.deser.TestAnyProperties::testIgnored
+  - com.fasterxml.jackson.databind.deser.TestAnyProperties::testIgnoredPart2
+  - com.fasterxml.jackson.databind.deser.TestCustomDeserializers::testIssue882
+  - com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreViaConfigOverride1217
+  - com.fasterxml.jackson.databind.filter.ReadOnlyProperties95Test::testReadOnlyProp
+  - com.fasterxml.jackson.databind.filter.TestUnknownPropertyDeserialization::testClassWithIgnoreUnknown
+  - com.fasterxml.jackson.databind.filter.TestUnknownPropertyDeserialization::testWithClassIgnore
+  - com.fasterxml.jackson.databind.filter.TestUnknownPropertyDeserialization::testPropertyIgnoralWithClass
+  - com.fasterxml.jackson.databind.jsontype.TestPolymorphicWithDefaultImpl::testUnknownTypeIDRecovery
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId999Test::testExternalTypeId
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testInverseExternalId928
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue798
+  - com.fasterxml.jackson.databind.node.TestTreeTraversingParser::testSkipChildrenWrt370
+  - com.fasterxml.jackson.databind.struct.TestPOJOAsArray::testSimpleWithIndex
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.filter.ReadOnlyProperties95Test::testReadOnlyProp', 'com.fasterxml.jackson.databind.creators.BuilderSimpleTest::testSimpleWithIgnores', 'com.fasterxml.jackson.databind.jsontype.TestPolymorphicWithDefaultImpl::testUnknownTypeIDRecovery', 'com.fasterxml.jackson.databind.convert.ConvertingAbstractSerializer795Test::testAbstractTypeDeserialization', 'com.fasterxml.jackson.databind.deser.TestAnyProperties::testIgnoredPart2', 'com.fasterxml.jackson.databind.struct.TestPOJOAsArray::testSimpleWithIndex', 'com.fasterxml.jackson.databind.creators.TestCreators2::testCreatorProperties', 'com.fasterxml.jackson.databind.filter.TestUnknownPropertyDeserialization::testWithClassIgnore', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId999Test::testExternalTypeId', 'com.fasterxml.jackson.databind.node.TestTreeTraversingParser::testSkipChildrenWrt370', 'com.fasterxml.jackson.databind.creators.TestCreators2::testJackson431', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue798', 'com.fasterxml.jackson.databind.filter.TestUnknownPropertyDeserialization::testPropertyIgnoralWithClass', 'com.fasterxml.jackson.databind.filter.TestUnknownPropertyDeserialization::testClassWithIgnoreUnknown', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testInverseExternalId928', 'com.fasterxml.jackson.databind.deser.TestAnyProperties::testIgnored', 'com.fasterxml.jackson.databind.deser.TestCustomDeserializers::testIssue882', 'com.fasterxml.jackson.databind.deser.TestAnnotationIgnore::testFailOnIgnore', 'com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreViaConfigOverride1217']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 221.74 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 227.18 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 225.73 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+                for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 234.28 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected void addBeanProps(DeserializationContext ctxt,
+        BeanDescription beanDesc, BeanDeserializerBuilder builder)
+    throws JsonMappingException
+{
+    final boolean isConcrete = !beanDesc.getType().isAbstract();
+    final SettableBeanProperty[] creatorProps = isConcrete
+            ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig())
+            : null;
+    final boolean hasCreatorProps = (creatorProps != null);
+    JsonIgnoreProperties.Value ignorals = ctxt.getConfig()
+            .getDefaultPropertyIgnorals(beanDesc.getBeanClass(),
+                    beanDesc.getClassInfo());
+    Set<String> ignored;
+    if (ignorals != null) {
+        boolean ignoreAny = ignorals.getIgnoreUnknown();
+        builder.setIgnoreUnknownProperties(ignoreAny);
+        ignored = ignorals.getIgnored();
+        for (String propName : ignored) {
+            builder.addIgnorable(propName);
+        }
+    } else {
+        ignored = Collections.emptySet();
+    }
+    AnnotatedMethod anySetterMethod = beanDesc.findAnySetter();
+    AnnotatedMember anySetterField = null;
+    if (anySetterMethod != null) {
+        builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterMethod));
+    }
+    else {
+    	anySetterField = beanDesc.findAnySetterField();
+    	if(anySetterField != null) {
+    		builder.setAnySetter(constructAnySetter(ctxt, beanDesc, anySetterField));
+    	}
+    }
+    if (anySetterMethod == null && anySetterField == null) {
+        Collection<String> ignored2 = beanDesc.getIgnoredPropertyNames();
+        if (ignored2 != null) {
+            for (String propName : ignored2) {
+                builder.addIgnorable(propName);
+            }
+        }
+    }
+    final boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS)
+            && ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+    List<BeanPropertyDefinition> propDefs = filterBeanProps(ctxt,
+            beanDesc, builder, beanDesc.findProperties(), ignored);
+    if (_factoryConfig.hasDeserializerModifiers()) {
+        for (BeanDeserializerModifier mod : _factoryConfig.deserializerModifiers()) {
+            propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+        }
+    }
+    for (BeanPropertyDefinition propDef : propDefs) {
+        SettableBeanProperty prop = null;
+        if (propDef.hasSetter()) {
+            JavaType propertyType = propDef.getSetter().getParameterType(0);
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (propDef.hasField()) {
+            JavaType propertyType = propDef.getField().getType();
+            prop = constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+        } else if (useGettersAsSetters && propDef.hasGetter()) {
+            AnnotatedMethod getter = propDef.getGetter();
+            Class<?> rawPropertyType = getter.getRawType();
+            if (Collection.class.isAssignableFrom(rawPropertyType)
+                    || Map.class.isAssignableFrom(rawPropertyType)) {
+                prop = constructSetterlessProperty(ctxt, beanDesc, propDef);
+            }
+        }
+        if (hasCreatorProps && propDef.hasConstructorParameter()) {
+            final String name = propDef.getName();
+            CreatorProperty cprop = null;
+            if (creatorProps != null) {
+                for (SettableBeanProperty cp : creatorProps) {
+                    if (name.equals(cp.getName()) && (cp instanceof CreatorProperty)) {
+                        cprop = (CreatorProperty) cp;
+                        break;
+                    }
+                }
+            }
+            if (cprop == null) {
+                List<String> n = new ArrayList<>();
+                for (SettableBeanProperty cp : creatorProps) {
+                    n.add(cp.getName());
+                }
+                ctxt.reportBadPropertyDefinition(beanDesc, propDef,
+                        "Could not find creator property with name '%s' (known Creator properties: %s)",
+                        name, n);
+                continue;
+            }
+            if (prop != null) {
+                cprop.setFallbackSetter(prop);
+            }
+            prop = cprop;
+            builder.addCreatorProperty(cprop);
+            continue;
+        }
+        if (prop != null) {
+            Class<?>[] views = propDef.findViews();
+            if (views == null) {
+                if (!ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+                    views = NO_VIEWS;
+                }
+            }
+            prop.setViews(views);
+            builder.addProperty(prop);
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.filter.IgnorePropertyOnDeserTest::testIgnoreGetterNotSetter1595
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

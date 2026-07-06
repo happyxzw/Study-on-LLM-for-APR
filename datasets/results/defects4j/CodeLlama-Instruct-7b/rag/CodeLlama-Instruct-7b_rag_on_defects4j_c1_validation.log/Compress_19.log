@@ -1,0 +1,1500 @@
+==================================================
+                Project: Compress
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 10.21 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void reparseCentralDirectoryData(boolean hasUncompressedSize,
+                                        boolean hasCompressedSize,
+                                        boolean hasRelativeHeaderOffset,
+                                        boolean hasDiskStart)
+    throws ZipException {
+    if (rawCentralDirectoryData != null) {
+        int expectedLength = (hasUncompressedSize ? DWORD : 0)
+            + (hasCompressedSize ? DWORD : 0)
+            + (hasRelativeHeaderOffset ? DWORD : 0)
+            + (hasDiskStart ? WORD : 0);
+        if (rawCentralDirectoryData.length != expectedLength) {
+                    throw new ZipException("central directory zip64 extended"
+                                   + " information extra field's length"
+                                   + " doesn't match central directory"
+                                   + " data.  Expected length "
+                                   + expectedLength + " but is "
+                                   + rawCentralDirectoryData.length);
+        }
+        int offset = 0;
+        if (hasUncompressedSize) {
+            size = new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasCompressedSize) {
+            compressedSize = new ZipEightByteInteger(rawCentralDirectoryData,
+                                                     offset);
+            offset += DWORD;
+        }
+        if (hasRelativeHeaderOffset) {
+            relativeHeaderOffset =
+                new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasDiskStart) {
+            diskStart = new ZipLong(rawCentralDirectoryData, offset);
+            offset += WORD;
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.ZipFileTest::testExcessDataInZip64ExtraField
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 3.92 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    // get the offset at instantLocal (first estimate)
+    final int offsetLocal = getOffset(instantLocal);
+    // adjust instantLocal using the estimate and recalc the offset
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    // if the offsets differ, we must be near a DST boundary
+    if (offsetLocal != offsetAdjusted) {
+        // we need to ensure that time is always after the DST gap
+        // this happens naturally for positive offsets, but not for negative
+        if ((offsetLocal - offsetAdjusted) < 0) {
+            // if we just return offsetAdjusted then the time is pushed
+            // back before the transition, whereas it should be
+            // on or after the transition
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal >= 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetPrev - offsetLocal;
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/zip/ZipException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/zip/ZipException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:251: error: cannot find symbol
+    [javac]     final int offsetLocal = getOffset(instantLocal);
+    [javac]                             ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:254: error: cannot find symbol
+    [javac]     final int offsetAdjusted = getOffset(instantAdjusted);
+    [javac]                                ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:263: error: cannot find symbol
+    [javac]             long nextLocal = nextTransition(instantAdjusted);
+    [javac]                              ^
+    [javac]   symbol:   method nextTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:264: error: cannot find symbol
+    [javac]             long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+    [javac]                                 ^
+    [javac]   symbol:   method nextTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:270: error: cannot find symbol
+    [javac]         long prev = previousTransition(instantAdjusted);
+    [javac]                     ^
+    [javac]   symbol:   method previousTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:272: error: cannot find symbol
+    [javac]             int offsetPrev = getOffset(prev);
+    [javac]                              ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] 6 errors
+    [javac] 23 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 11.40 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void reparseCentralDirectoryData(boolean hasUncompressedSize,
+                                        boolean hasCompressedSize,
+                                        boolean hasRelativeHeaderOffset,
+                                        boolean hasDiskStart)
+    throws ZipException {
+    if (rawCentralDirectoryData != null) {
+        int expectedLength = (hasUncompressedSize ? DWORD : 0)
+            + (hasCompressedSize ? DWORD : 0)
+            + (hasRelativeHeaderOffset ? DWORD : 0)
+            + (hasDiskStart ? WORD : 0);
+        if (rawCentralDirectoryData.length != expectedLength) {
+                    throw new ZipException("central directory zip64 extended"
+                                   + " information extra field's length"
+                                   + " doesn't match central directory"
+                                   + " data.  Expected length "
+                                   + expectedLength + " but is "
+                                   + rawCentralDirectoryData.length);
+        }
+        int offset = 0;
+        if (hasUncompressedSize) {
+            size = new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasCompressedSize) {
+            compressedSize = new ZipEightByteInteger(rawCentralDirectoryData,
+                                                     offset);
+            offset += DWORD;
+        }
+        if (hasRelativeHeaderOffset) {
+            relativeHeaderOffset =
+                new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasDiskStart) {
+            diskStart = new ZipLong(rawCentralDirectoryData, offset);
+            offset += WORD;
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.ZipFileTest::testExcessDataInZip64ExtraField
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 3.82 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    // get the offset at instantLocal (first estimate)
+    final int offsetLocal = getOffset(instantLocal);
+    // adjust instantLocal using the estimate and recalc the offset
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    // if the offsets differ, we must be near a DST boundary
+    if (offsetLocal != offsetAdjusted) {
+        // we need to ensure that time is always after the DST gap
+        // this happens naturally for positive offsets, but not for negative
+        if ((offsetLocal - offsetAdjusted) < 0) {
+            // if we just return offsetAdjusted then the time is pushed
+            // back before the transition, whereas it should be
+            // on or after the transition
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal > 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetPrev - offsetLocal;
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/zip/ZipException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/zip/ZipException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:251: error: cannot find symbol
+    [javac]     final int offsetLocal = getOffset(instantLocal);
+    [javac]                             ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:254: error: cannot find symbol
+    [javac]     final int offsetAdjusted = getOffset(instantAdjusted);
+    [javac]                                ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:263: error: cannot find symbol
+    [javac]             long nextLocal = nextTransition(instantAdjusted);
+    [javac]                              ^
+    [javac]   symbol:   method nextTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:264: error: cannot find symbol
+    [javac]             long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+    [javac]                                 ^
+    [javac]   symbol:   method nextTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:270: error: cannot find symbol
+    [javac]         long prev = previousTransition(instantAdjusted);
+    [javac]                     ^
+    [javac]   symbol:   method previousTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:272: error: cannot find symbol
+    [javac]             int offsetPrev = getOffset(prev);
+    [javac]                              ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] 6 errors
+    [javac] 23 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 3.58 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    // get the offset at instantLocal (first estimate)
+    final int offsetLocal = getOffset(instantLocal);
+    // adjust instantLocal using the estimate and recalc the offset
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    // if the offsets differ, we must be near a DST boundary
+    if (offsetLocal != offsetAdjusted) {
+        // we need to ensure that time is always after the DST gap
+        // this happens naturally for positive offsets, but not for negative
+        if ((offsetLocal - offsetAdjusted) < 0) {
+            // if we just return offsetAdjusted then the time is pushed
+            // back before the transition, whereas it should be
+            // on or after the transition
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal > 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetPrev - offsetLocal;
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/zip/ZipException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/zip/ZipException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:251: error: cannot find symbol
+    [javac]     final int offsetLocal = getOffset(instantLocal);
+    [javac]                             ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:254: error: cannot find symbol
+    [javac]     final int offsetAdjusted = getOffset(instantAdjusted);
+    [javac]                                ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:263: error: cannot find symbol
+    [javac]             long nextLocal = nextTransition(instantAdjusted);
+    [javac]                              ^
+    [javac]   symbol:   method nextTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:264: error: cannot find symbol
+    [javac]             long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+    [javac]                                 ^
+    [javac]   symbol:   method nextTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:270: error: cannot find symbol
+    [javac]         long prev = previousTransition(instantAdjusted);
+    [javac]                     ^
+    [javac]   symbol:   method previousTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:272: error: cannot find symbol
+    [javac]             int offsetPrev = getOffset(prev);
+    [javac]                              ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] 6 errors
+    [javac] 23 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 4.02 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    // get the offset at instantLocal (first estimate)
+    final int offsetLocal = getOffset(instantLocal);
+    // adjust instantLocal using the estimate and recalc the offset
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    // if the offsets differ, we must be near a DST boundary
+    if (offsetLocal != offsetAdjusted) {
+        // we need to ensure that time is always after the DST gap
+        // this happens naturally for positive offsets, but not for negative
+        if ((offsetLocal - offsetAdjusted) < 0) {
+            // if we just return offsetAdjusted then the time is pushed
+            // back before the transition, whereas it should be
+            // on or after the transition
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal >= 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetPrev - offsetLocal;
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/zip/ZipException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/zip/ZipException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:251: error: cannot find symbol
+    [javac]     final int offsetLocal = getOffset(instantLocal);
+    [javac]                             ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:254: error: cannot find symbol
+    [javac]     final int offsetAdjusted = getOffset(instantAdjusted);
+    [javac]                                ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:263: error: cannot find symbol
+    [javac]             long nextLocal = nextTransition(instantAdjusted);
+    [javac]                              ^
+    [javac]   symbol:   method nextTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:264: error: cannot find symbol
+    [javac]             long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+    [javac]                                 ^
+    [javac]   symbol:   method nextTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:270: error: cannot find symbol
+    [javac]         long prev = previousTransition(instantAdjusted);
+    [javac]                     ^
+    [javac]   symbol:   method previousTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:272: error: cannot find symbol
+    [javac]             int offsetPrev = getOffset(prev);
+    [javac]                              ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] 6 errors
+    [javac] 23 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 4.14 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public void reparseCentralDirectoryData(boolean hasUncompressedSize,
+                                        boolean hasCompressedSize,
+                                        boolean hasRelativeHeaderOffset,
+                                        boolean hasDiskStart)
+    throws ZipException {
+    if (rawCentralDirectoryData != null) {
+        int expectedLength = (hasUncompressedSize ? DWORD : 0)
+            + (hasCompressedSize ? DWORD : 0)
+            + (hasRelativeHeaderOffset ? DWORD : 0)
+            + (hasDiskStart ? WORD : 0);
+        if (rawCentralDirectoryData.length != expectedLength) {
+            throw new ZipException("central directory zip64 extended"
+                                   + " information extra field's length"
+                                   + " doesn't match central directory"
+                                   + " data.  Expected length "
+                                   + expectedLength + " but is "
+                                   + rawCentralDirectoryData.length);
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:271: error: illegal start of expression
+    [javac]     public ZipEightByteInteger getSize() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:271: error: ';' expected
+    [javac]     public ZipEightByteInteger getSize() {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:278: error: illegal start of expression
+    [javac]     public void setSize(ZipEightByteInteger size) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:278: error: illegal start of expression
+    [javac]     public void setSize(ZipEightByteInteger size) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:278: error: ';' expected
+    [javac]     public void setSize(ZipEightByteInteger size) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:278: error: ';' expected
+    [javac]     public void setSize(ZipEightByteInteger size) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:285: error: illegal start of expression
+    [javac]     public ZipEightByteInteger getCompressedSize() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:285: error: ';' expected
+    [javac]     public ZipEightByteInteger getCompressedSize() {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:292: error: illegal start of expression
+    [javac]     public void setCompressedSize(ZipEightByteInteger compressedSize) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:292: error: illegal start of expression
+    [javac]     public void setCompressedSize(ZipEightByteInteger compressedSize) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:292: error: ';' expected
+    [javac]     public void setCompressedSize(ZipEightByteInteger compressedSize) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:292: error: ';' expected
+    [javac]     public void setCompressedSize(ZipEightByteInteger compressedSize) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:299: error: illegal start of expression
+    [javac]     public ZipEightByteInteger getRelativeHeaderOffset() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:299: error: ';' expected
+    [javac]     public ZipEightByteInteger getRelativeHeaderOffset() {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:306: error: illegal start of expression
+    [javac]     public void setRelativeHeaderOffset(ZipEightByteInteger rho) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:306: error: illegal start of expression
+    [javac]     public void setRelativeHeaderOffset(ZipEightByteInteger rho) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:306: error: ';' expected
+    [javac]     public void setRelativeHeaderOffset(ZipEightByteInteger rho) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:306: error: ';' expected
+    [javac]     public void setRelativeHeaderOffset(ZipEightByteInteger rho) {
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:313: error: illegal start of expression
+    [javac]     public ZipLong getDiskStartNumber() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:313: error: ';' expected
+    [javac]     public ZipLong getDiskStartNumber() {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:320: error: illegal start of expression
+    [javac]     public void setDiskStartNumber(ZipLong ds) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:320: error: illegal start of expression
+    [javac]     public void setDiskStartNumber(ZipLong ds) {
+    [javac]            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:320: error: ';' expected
+    [javac]     public void setDiskStartNumber(ZipLong ds) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:320: error: ';' expected
+    [javac]     public void setDiskStartNumber(ZipLong ds) {
+    [javac]                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:324: error: illegal start of expression
+    [javac]     private int addSizes(byte[] data) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:324: error: ';' expected
+    [javac]     private int addSizes(byte[] data) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:324: error: ';' expected
+    [javac]     private int addSizes(byte[] data) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:336: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 28 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_19_94e1e52830ad49b6b31ea00a70e011ab/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 6.71 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void reparseCentralDirectoryData(boolean hasUncompressedSize,
+                                        boolean hasCompressedSize,
+                                        boolean hasRelativeHeaderOffset,
+                                        boolean hasDiskStart)
+    throws ZipException {
+    if (rawCentralDirectoryData != null) {
+        int expectedLength = (hasUncompressedSize ? DWORD : 0)
+            + (hasCompressedSize ? DWORD : 0)
+            + (hasRelativeHeaderOffset ? DWORD : 0)
+            + (hasDiskStart ? WORD : 0);
+        if (rawCentralDirectoryData.length != expectedLength) {
+                    throw new ZipException("central directory zip64 extended"
+                                   + " information extra field's length"
+                                   + " doesn't match central directory"
+                                   + " data.  Expected length "
+                                   + expectedLength + " but is "
+                                   + rawCentralDirectoryData.length);
+        }
+        int offset = 0;
+        if (hasUncompressedSize) {
+            size = new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasCompressedSize) {
+            compressedSize = new ZipEightByteInteger(rawCentralDirectoryData,
+                                                     offset);
+            offset += DWORD;
+        }
+        if (hasRelativeHeaderOffset) {
+            relativeHeaderOffset =
+                new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasDiskStart) {
+            diskStart = new ZipLong(rawCentralDirectoryData, offset);
+            offset += WORD;
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.ZipFileTest::testExcessDataInZip64ExtraField
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 2.57 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    // get the offset at instantLocal (first estimate)
+    final int offsetLocal = getOffset(instantLocal);
+    // adjust instantLocal using the estimate and recalc the offset
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    // if the offsets differ, we must be near a DST boundary
+    if (offsetLocal != offsetAdjusted) {
+        // we need to ensure that time is always after the DST gap
+        // this happens naturally for positive offsets, but not for negative
+        if ((offsetLocal - offsetAdjusted) < 0) {
+            // if we just return offsetAdjusted then the time is pushed
+            // back before the transition, whereas it should be
+            // on or after the transition
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal > 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetPrev - offsetLocal;
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/zip/ZipException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/zip/ZipException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:251: error: cannot find symbol
+    [javac]     final int offsetLocal = getOffset(instantLocal);
+    [javac]                             ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:254: error: cannot find symbol
+    [javac]     final int offsetAdjusted = getOffset(instantAdjusted);
+    [javac]                                ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:263: error: cannot find symbol
+    [javac]             long nextLocal = nextTransition(instantAdjusted);
+    [javac]                              ^
+    [javac]   symbol:   method nextTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:264: error: cannot find symbol
+    [javac]             long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+    [javac]                                 ^
+    [javac]   symbol:   method nextTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:270: error: cannot find symbol
+    [javac]         long prev = previousTransition(instantAdjusted);
+    [javac]                     ^
+    [javac]   symbol:   method previousTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:272: error: cannot find symbol
+    [javac]             int offsetPrev = getOffset(prev);
+    [javac]                              ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] 6 errors
+    [javac] 23 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 2.95 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public int getOffsetFromLocal(long instantLocal) {
+    // get the offset at instantLocal (first estimate)
+    final int offsetLocal = getOffset(instantLocal);
+    // adjust instantLocal using the estimate and recalc the offset
+    final long instantAdjusted = instantLocal - offsetLocal;
+    final int offsetAdjusted = getOffset(instantAdjusted);
+    // if the offsets differ, we must be near a DST boundary
+    if (offsetLocal != offsetAdjusted) {
+        // we need to ensure that time is always after the DST gap
+        // this happens naturally for positive offsets, but not for negative
+        if ((offsetLocal - offsetAdjusted) < 0) {
+            // if we just return offsetAdjusted then the time is pushed
+            // back before the transition, whereas it should be
+            // on or after the transition
+            long nextLocal = nextTransition(instantAdjusted);
+            long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+            if (nextLocal != nextAdjusted) {
+                return offsetLocal;
+            }
+        }
+    } else if (offsetLocal >= 0) {
+        long prev = previousTransition(instantAdjusted);
+        if (prev < instantAdjusted) {
+            int offsetPrev = getOffset(prev);
+            int diff = offsetPrev - offsetLocal;
+            if (instantAdjusted - prev <= diff) {
+                return offsetPrev;
+            }
+        }
+    }
+    return offsetAdjusted;
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/maven-build.xml:80: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/zip/ZipException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/zip/ZipException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:251: error: cannot find symbol
+    [javac]     final int offsetLocal = getOffset(instantLocal);
+    [javac]                             ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:254: error: cannot find symbol
+    [javac]     final int offsetAdjusted = getOffset(instantAdjusted);
+    [javac]                                ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:263: error: cannot find symbol
+    [javac]             long nextLocal = nextTransition(instantAdjusted);
+    [javac]                              ^
+    [javac]   symbol:   method nextTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:264: error: cannot find symbol
+    [javac]             long nextAdjusted = nextTransition(instantLocal - offsetAdjusted);
+    [javac]                                 ^
+    [javac]   symbol:   method nextTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:270: error: cannot find symbol
+    [javac]         long prev = previousTransition(instantAdjusted);
+    [javac]                     ^
+    [javac]   symbol:   method previousTransition(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/src/main/java/org/apache/commons/compress/archivers/zip/Zip64ExtendedInformationExtraField.java:272: error: cannot find symbol
+    [javac]             int offsetPrev = getOffset(prev);
+    [javac]                              ^
+    [javac]   symbol:   method getOffset(long)
+    [javac]   location: class Zip64ExtendedInformationExtraField
+    [javac] 6 errors
+    [javac] 23 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Compress_19_04e1453edd394011b01f6a823ff36282/maven-build.xml:80: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 7.59 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void reparseCentralDirectoryData(boolean hasUncompressedSize,
+                                        boolean hasCompressedSize,
+                                        boolean hasRelativeHeaderOffset,
+                                        boolean hasDiskStart)
+    throws ZipException {
+    if (rawCentralDirectoryData != null) {
+        int expectedLength = (hasUncompressedSize ? DWORD : 0)
+            + (hasCompressedSize ? DWORD : 0)
+            + (hasRelativeHeaderOffset ? DWORD : 0)
+            + (hasDiskStart ? WORD : 0);
+        if (rawCentralDirectoryData.length != expectedLength) {
+            throw new ZipException("central directory zip64 extended"
+                                   + " information extra field's length"
+                                   + " doesn't match central directory"
+                                   + " data.  Expected length "
+                                   + expectedLength + " but is "
+                                   + rawCentralDirectoryData.length);
+        }
+        int offset = 0;
+        if (hasUncompressedSize) {
+            size = new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasCompressedSize) {
+            compressedSize = new ZipEightByteInteger(rawCentralDirectoryData,
+                                                     offset);
+            offset += DWORD;
+        }
+        if (hasRelativeHeaderOffset) {
+            relativeHeaderOffset =
+                new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasDiskStart) {
+            diskStart = new ZipLong(rawCentralDirectoryData, offset);
+            offset += WORD;
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.ZipFileTest::testExcessDataInZip64ExtraField
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 9.37 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void reparseCentralDirectoryData(boolean hasUncompressedSize,
+                                        boolean hasCompressedSize,
+                                        boolean hasRelativeHeaderOffset,
+                                        boolean hasDiskStart)
+    throws ZipException {
+    if (rawCentralDirectoryData != null) {
+        int expectedLength = (hasUncompressedSize ? DWORD : 0)
+            + (hasCompressedSize ? DWORD : 0)
+            + (hasRelativeHeaderOffset ? DWORD : 0)
+            + (hasDiskStart ? WORD : 0);
+        if (rawCentralDirectoryData.length != expectedLength) {
+            throw new ZipException("central directory zip64 extended"
+                    + " information extra field's length"
+                    + " doesn't match central directory"
+                    + " data.  Expected length "
+                    + expectedLength + " but is "
+                    + rawCentralDirectoryData.length);
+        }
+        int offset = 0;
+        if (hasUncompressedSize) {
+            size = new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasCompressedSize) {
+            compressedSize = new ZipEightByteInteger(rawCentralDirectoryData,
+                                                     offset);
+            offset += DWORD;
+        }
+        if (hasRelativeHeaderOffset) {
+            relativeHeaderOffset =
+                new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasDiskStart) {
+            diskStart = new ZipLong(rawCentralDirectoryData, offset);
+            offset += WORD;
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.ZipFileTest::testExcessDataInZip64ExtraField
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 7.75 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void reparseCentralDirectoryData(boolean hasUncompressedSize,
+                                            boolean hasCompressedSize,
+                                            boolean hasRelativeHeaderOffset,
+                                            boolean hasDiskStart)
+        throws ZipException {
+        if (rawCentralDirectoryData != null) {
+            int expectedLength = (hasUncompressedSize ? DWORD : 0)
+                + (hasCompressedSize ? DWORD : 0)
+                + (hasRelativeHeaderOffset ? DWORD : 0)
+                + (hasDiskStart ? WORD : 0);
+            if (rawCentralDirectoryData.length != expectedLength) {
+                        throw new ZipException("central directory zip64 extended"
+                                   + " information extra field's length"
+                                   + " doesn't match central directory"
+                                   + " data.  Expected length "
+                                   + expectedLength + " but is "
+                                   + rawCentralDirectoryData.length);
+            }
+            int offset = 0;
+            if (hasUncompressedSize) {
+                size = new ZipEightByteInteger(rawCentralDirectoryData, offset);
+                offset += DWORD;
+            }
+            if (hasCompressedSize) {
+                compressedSize = new ZipEightByteInteger(rawCentralDirectoryData,
+                                                         offset);
+                offset += DWORD;
+            }
+            if (hasRelativeHeaderOffset) {
+                relativeHeaderOffset =
+                    new ZipEightByteInteger(rawCentralDirectoryData, offset);
+                offset += DWORD;
+            }
+            if (hasDiskStart) {
+                diskStart = new ZipLong(rawCentralDirectoryData, offset);
+                offset += WORD;
+            }
+        }
+    }
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.ZipFileTest::testExcessDataInZip64ExtraField
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 9.33 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void reparseCentralDirectoryData(boolean hasUncompressedSize,
+                                        boolean hasCompressedSize,
+                                        boolean hasRelativeHeaderOffset,
+                                        boolean hasDiskStart)
+    throws ZipException {
+    if (rawCentralDirectoryData != null) {
+        int expectedLength = (hasUncompressedSize ? DWORD : 0)
+            + (hasCompressedSize ? DWORD : 0)
+            + (hasRelativeHeaderOffset ? DWORD : 0)
+            + (hasDiskStart ? WORD : 0);
+        if (rawCentralDirectoryData.length != expectedLength) {
+                    throw new ZipException("central directory zip64 extended"
+                                   + " information extra field's length"
+                                   + " doesn't match central directory"
+                                   + " data.  Expected length "
+                                   + expectedLength + " but is "
+                                   + rawCentralDirectoryData.length);
+        }
+        int offset = 0;
+        if (hasUncompressedSize) {
+            size = new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasCompressedSize) {
+            compressedSize = new ZipEightByteInteger(rawCentralDirectoryData,
+                                                     offset);
+            offset += DWORD;
+        }
+        if (hasRelativeHeaderOffset) {
+            relativeHeaderOffset =
+                new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasDiskStart) {
+            diskStart = new ZipLong(rawCentralDirectoryData, offset);
+            offset += WORD;
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.ZipFileTest::testExcessDataInZip64ExtraField
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 7.34 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void reparseCentralDirectoryData(boolean hasUncompressedSize,
+                                        boolean hasCompressedSize,
+                                        boolean hasRelativeHeaderOffset,
+                                        boolean hasDiskStart)
+    throws ZipException {
+    if (rawCentralDirectoryData != null) {
+        int expectedLength = (hasUncompressedSize ? DWORD : 0)
+            + (hasCompressedSize ? DWORD : 0)
+            + (hasRelativeHeaderOffset ? DWORD : 0)
+            + (hasDiskStart ? WORD : 0);
+        if (rawCentralDirectoryData.length != expectedLength) {
+                    throw new ZipException("central directory zip64 extended"
+                                   + " information extra field's length"
+                                   + " doesn't match central directory"
+                                   + " data.  Expected length "
+                                   + expectedLength + " but is "
+                                   + rawCentralDirectoryData.length);
+        }
+        int offset = 0;
+        if (hasUncompressedSize) {
+            size = new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasCompressedSize) {
+            compressedSize = new ZipEightByteInteger(rawCentralDirectoryData,
+                                                     offset);
+            offset += DWORD;
+        }
+        if (hasRelativeHeaderOffset) {
+            relativeHeaderOffset =
+                new ZipEightByteInteger(rawCentralDirectoryData, offset);
+            offset += DWORD;
+        }
+        if (hasDiskStart) {
+            diskStart = new ZipLong(rawCentralDirectoryData, offset);
+            offset += WORD;
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.ZipFileTest::testExcessDataInZip64ExtraField
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

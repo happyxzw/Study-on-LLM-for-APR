@@ -1,0 +1,1524 @@
+==================================================
+                Project: Math
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 9.82 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // P-value for diagonal elements should be 1
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) { 
+                    out[i][j] = 0d; // Perfect correlation leads to p-value of 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 9.07 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // Corrected to reflect p-value of 1 for diagonal elements
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) >= 1.0) { // Handle edge cases where |r| >= 1
+                    out[i][j] = 0d;
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2)/(1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 10.81 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // Diagonal elements should have p-value of 1
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0d; // Perfect correlation (1 or -1) gives p-value of 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 8.85 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // Corrected to represent p-value of 1 for diagonal
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0d; // Perfect correlation has p-value of 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 9.08 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // P-value for diagonal should be 1 as correlation with itself is perfect
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) { // Handle edge case where r is exactly 1 or -1
+                    out[i][j] = 0d; // Perfect correlation has a p-value of 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 9.31 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 0d;
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) { 
+                    out[i][j] = 0d; 
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 10.15 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d;
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0d;
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 7.79 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // P-value for diagonal elements should be 1 (not 0)
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0d; // Perfect correlation, p-value is 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 9.23 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // Diagonal entries should have a p-value of 1
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0d; // Perfect correlation results in a p-value of 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 9.52 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // P-value of diagonal elements should be 1, not 0
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) < 1.0) { // Ensure r is within valid range before calculation
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                } else {
+                    out[i][j] = 0d; // If r is invalid (e.g., exactly ±1), set p-value to 0
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 5.58 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // P-value for diagonal elements should be 1
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0d; // Perfect correlation has a p-value of 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 4.97 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1.0; // P-value for diagonal elements should be 1.0
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) { // Handle special case when r is exactly 1 or -1
+                    out[i][j] = 0.0;
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 4.93 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // P-value for diagonal elements should be 1, as the correlation is perfect.
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0d; // Perfect correlation results in a p-value of 0.
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 5.68 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1.0; // P-value for diagonal elements should be 1.0 since correlation is perfect (r=1)
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0.0; // P-value is 0.0 for perfect correlation (|r|=1)
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 5.03 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // p-value for diagonal elements should be 1, not 0
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) { 
+                    out[i][j] = 0d; // Perfect correlation, p-value is 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 5.02 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // p-value for diagonal elements should be 1 (perfect correlation)
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) >= 1.0) {
+                    out[i][j] = 0d; // Handle edge cases where r is exactly 1 or -1
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 5.23 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // P-value for diagonal elements should be 1, as correlation is perfect
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) { // Handle edge case where r is exactly 1 or -1
+                    out[i][j] = 0d; // Perfect correlation leads to a p-value of 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 5.06 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1.0; // Corrected to 1.0 for diagonal entries
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) >= 1.0) { // Check for edge cases
+                    out[i][j] = 0.0; // Perfect correlation (1 or -1)
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 4.94 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // P-value for self-correlation should be 1
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0d; // Perfect correlation leads to a p-value of 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 5.33 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // P-value for diagonal elements should be 1, as correlation is perfect (1 or -1)
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0d; // P-value is 0 for perfect correlation
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 6.41 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // Corrected: p-value for diagonal should be 1
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1) {
+                    out[i][j] = 0d; // Handle perfect correlation case
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 6.59 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1.0; // Diagonal elements represent self-correlation, p-value is 1
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) > 1.0) {
+                    throw new MathException("Correlation coefficient out of range [-1, 1]: " + r);
+                }
+                double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 6.51 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // Corrected to reflect the p-value of the diagonal
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) { // Handle case where correlation is exactly ±1
+                    out[i][j] = 0d;
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2)/(1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 7.59 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // Corrected to return 1 for diagonal elements
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0d; // Perfect correlation case
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 8.00 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1.0; // P-value for diagonal should be 1 (not 0)
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) { // Handle edge case where r = ±1
+                    out[i][j] = 0.0; // Perfect correlation has a p-value of 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 7.01 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // P-value for diagonal should be 1 (no correlation significance)
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0d; // Perfect correlation leads to P-value 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 8.08 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // Corrected to 1 for diagonal elements as p-value for self-correlation should be 1
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (r > -1 && r < 1) { // Added check to ensure correlation coefficient is valid
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                } else {
+                    out[i][j] = Double.NaN; // Assign NaN for invalid correlation coefficients
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 6.62 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // Corrected: P-value for diagonal should be 1 (not 0)
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (r > -1 && r < 1) { // Ensure valid range for correlation coefficient
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                } else {
+                    out[i][j] = Double.NaN; // Assign NaN for invalid correlation coefficients
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 7.12 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = 1d; // Corrected value for diagonal elements
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    out[i][j] = 0d; // Perfect correlation, p-value is 0
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 5
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testSwissFertility', 'org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testLongly', 'org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testSwissFertility']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Math
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 6.67 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public RealMatrix getCorrelationPValues() throws MathException {
+    TDistribution tDistribution = new TDistributionImpl(nObs - 2);
+    int nVars = correlationMatrix.getColumnDimension();
+    double[][] out = new double[nVars][nVars];
+    for (int i = 0; i < nVars; i++) {
+        for (int j = 0; j < nVars; j++) {
+            if (i == j) {
+                out[i][j] = Double.NaN; // Use NaN for diagonal elements as p-values are not defined
+            } else {
+                double r = correlationMatrix.getEntry(i, j);
+                if (Math.abs(r) == 1.0) {
+                    // Handle edge case where r is ±1
+                    out[i][j] = 0.0;
+                } else {
+                    double t = Math.abs(r * Math.sqrt((nObs - 2) / (1 - r * r)));
+                    out[i][j] = 2 * (1 - tDistribution.cumulativeProbability(t));
+                }
+            }
+        }
+    }
+    return new BlockRealMatrix(out);
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.math.stat.correlation.PearsonsCorrelationTest::testPValueNearZero
+  - org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest::testPValueNearZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

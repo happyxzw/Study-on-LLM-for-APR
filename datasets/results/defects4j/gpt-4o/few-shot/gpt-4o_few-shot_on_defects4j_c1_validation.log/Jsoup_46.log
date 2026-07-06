@@ -1,0 +1,1590 @@
+==================================================
+                Project: Jsoup
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 0.98 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite) {
+                    lastWasWhite = true;
+                    continue;
+                }
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append(c);
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c)) 
+                accum.append(c);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jsoup-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/maven-build.xml:74: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:152: error: illegal start of expression
+    [javac]     static String unescape(String string) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:152: error: ';' expected
+    [javac]     static String unescape(String string) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:152: error: ';' expected
+    [javac]     static String unescape(String string) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:162: error: illegal start of expression
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:162: error: ';' expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:162: error: <identifier> expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:162: error: not a statement
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:162: error: ';' expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: not a statement
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: <identifier> expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:192: error: illegal start of expression
+    [javac]     private enum CoreCharset {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:192: error: enum types must not be local
+    [javac]     private enum CoreCharset {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:206: error: illegal start of expression
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:206: error: illegal start of expression
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:206: error: ';' expected
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:213: error: illegal start of expression
+    [javac]     static {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:226: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:226: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:226: error: ';' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:226: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:226: error: ')' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:226: error: not a statement
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:226: error: ';' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:245: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:245: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:245: error: ';' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:245: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:245: error: ')' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:245: error: not a statement
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:245: error: ';' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:261: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 38 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/maven-build.xml:74: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 1.10 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite) {
+                    lastWasWhite = true;
+                    continue;
+                }
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jsoup-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/maven-build.xml:74: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:106: error: illegal start of expression
+    [javac]     static String unescape(String string) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:106: error: ';' expected
+    [javac]     static String unescape(String string) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:106: error: ';' expected
+    [javac]     static String unescape(String string) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:116: error: illegal start of expression
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:116: error: ';' expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:116: error: <identifier> expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:116: error: not a statement
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:116: error: ';' expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:134: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:134: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:134: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:134: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:134: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:134: error: not a statement
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:134: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:134: error: <identifier> expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:134: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:146: error: illegal start of expression
+    [javac]     private enum CoreCharset {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:146: error: enum types must not be local
+    [javac]     private enum CoreCharset {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:160: error: illegal start of expression
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:160: error: illegal start of expression
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:160: error: ';' expected
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:167: error: illegal start of expression
+    [javac]     static {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: ';' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: ')' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: not a statement
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:180: error: ';' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:199: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:199: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:199: error: ';' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:199: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:199: error: ')' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:199: error: not a statement
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:199: error: ';' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:215: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 38 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/maven-build.xml:74: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 1.39 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite) {
+                    lastWasWhite = true;
+                    continue;
+                }
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append(c);
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                case '\'':
+                    if (inAttribute)
+                        accum.append("&#x27;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jsoup-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/maven-build.xml:74: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:151: error: illegal start of expression
+    [javac]     static String unescape(String string) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:151: error: ';' expected
+    [javac]     static String unescape(String string) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:151: error: ';' expected
+    [javac]     static String unescape(String string) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:161: error: illegal start of expression
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:161: error: ';' expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:161: error: <identifier> expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:161: error: not a statement
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:161: error: ';' expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: not a statement
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: <identifier> expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:191: error: illegal start of expression
+    [javac]     private enum CoreCharset {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:191: error: enum types must not be local
+    [javac]     private enum CoreCharset {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:205: error: illegal start of expression
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:205: error: illegal start of expression
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:205: error: ';' expected
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:212: error: illegal start of expression
+    [javac]     static {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: ';' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: ')' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: not a statement
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: ';' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: ';' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: ')' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: not a statement
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: ';' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:260: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 38 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/maven-build.xml:74: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 6.57 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite) {
+                    lastWasWhite = true;
+                    continue;
+                }
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append(c);
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c))
+                accum.append(c);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.jsoup.nodes.DocumentTest::testShiftJisRoundtrip
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 5.28 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite) {
+                    lastWasWhite = true;
+                    continue;
+                }
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append(c);
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c))
+                accum.append(c);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.jsoup.nodes.DocumentTest::testShiftJisRoundtrip
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 5.13 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite) {
+                    lastWasWhite = true;
+                    continue;
+                }
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append(c);
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c))
+                accum.append(c);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.jsoup.nodes.DocumentTest::testShiftJisRoundtrip
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 4.98 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite) {
+                    lastWasWhite = true;
+                    continue;
+                }
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append(c);
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c))
+                accum.append(c);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.jsoup.nodes.DocumentTest::testShiftJisRoundtrip
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 4.94 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite) {
+                    lastWasWhite = true;
+                    continue;
+                }
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append(c);
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(c)).append(';');
+            }
+        } else {
+            final String c = new String(Character.toChars(codePoint));
+            if (encoder.canEncode(c)) 
+                accum.append(c);
+            else
+                accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+        }
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.jsoup.nodes.DocumentTest::testShiftJisRoundtrip
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 1.12 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite) {
+                    lastWasWhite = true;
+                    continue;
+                }
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append((char) 0xA0);
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append('<');
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append('>');
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append('"');
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jsoup-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/maven-build.xml:74: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:145: error: illegal start of expression
+    [javac]     static String unescape(String string) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:145: error: ';' expected
+    [javac]     static String unescape(String string) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:145: error: ';' expected
+    [javac]     static String unescape(String string) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:155: error: illegal start of expression
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:155: error: ';' expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:155: error: <identifier> expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:155: error: not a statement
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:155: error: ';' expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:173: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:173: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:173: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:173: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:173: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:173: error: not a statement
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:173: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:173: error: <identifier> expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:173: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:185: error: illegal start of expression
+    [javac]     private enum CoreCharset {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:185: error: enum types must not be local
+    [javac]     private enum CoreCharset {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:199: error: illegal start of expression
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:199: error: illegal start of expression
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:199: error: ';' expected
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:206: error: illegal start of expression
+    [javac]     static {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:219: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:219: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:219: error: ';' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:219: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:219: error: ')' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:219: error: not a statement
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:219: error: ';' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:238: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:238: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:238: error: ';' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:238: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:238: error: ')' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:238: error: not a statement
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:238: error: ';' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:254: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 38 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/maven-build.xml:74: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Jsoup
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 0.99 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                static void escape(StringBuilder accum, String string, Document.OutputSettings out,
+                   boolean inAttribute, boolean normaliseWhite, boolean stripLeadingWhite) {
+    boolean lastWasWhite = false;
+    boolean reachedNonWhite = false;
+    final EscapeMode escapeMode = out.escapeMode();
+    final CharsetEncoder encoder = out.encoder();
+    final CoreCharset coreCharset = CoreCharset.byName(encoder.charset().name());
+    final Map<Character, String> map = escapeMode.getMap();
+    final int length = string.length();
+    int codePoint;
+    for (int offset = 0; offset < length; offset += Character.charCount(codePoint)) {
+        codePoint = string.codePointAt(offset);
+        if (normaliseWhite) {
+            if (StringUtil.isWhitespace(codePoint)) {
+                if ((stripLeadingWhite && !reachedNonWhite) || lastWasWhite) {
+                    lastWasWhite = true;
+                    continue;
+                }
+                accum.append(' ');
+                lastWasWhite = true;
+                continue;
+            } else {
+                lastWasWhite = false;
+                reachedNonWhite = true;
+            }
+        }
+        if (codePoint < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            final char c = (char) codePoint;
+            switch (c) {
+                case '&':
+                    accum.append("&amp;");
+                    break;
+                case 0xA0:
+                    if (escapeMode != EscapeMode.xhtml)
+                        accum.append("&nbsp;");
+                    else
+                        accum.append(c);
+                    break;
+                case '<':
+                    if (!inAttribute)
+                        accum.append("&lt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '>':
+                    if (!inAttribute)
+                        accum.append("&gt;");
+                    else
+                        accum.append(c);
+                    break;
+                case '"':
+                    if (inAttribute)
+                        accum.append("&quot;");
+                    else
+                        accum.append(c);
+                    break;
+                case '\'':
+                    if (inAttribute)
+                        accum.append("&#x27;");
+                    else
+                        accum.append(c);
+                    break;
+                default:
+                    if (canEncode(coreCharset, c, encoder))
+                        accum.append(c);
+                    else if (map.containsKey(c))
+                        accum.append('&').append(map.get(c)).append(';');
+                    else
+                        accum.append("&#x").append(Integer.toHexString(codePoint)).append(';');
+            }
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+jsoup-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/maven-build.xml:74: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.5
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:151: error: illegal start of expression
+    [javac]     static String unescape(String string) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:151: error: ';' expected
+    [javac]     static String unescape(String string) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:151: error: ';' expected
+    [javac]     static String unescape(String string) {
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:161: error: illegal start of expression
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:161: error: ';' expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:161: error: <identifier> expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:161: error: not a statement
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:161: error: ';' expected
+    [javac]     static String unescape(String string, boolean strict) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: illegal start of expression
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: not a statement
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: <identifier> expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:179: error: ';' expected
+    [javac]     private static boolean canEncode(final CoreCharset charset, final char c, final CharsetEncoder fallback) {
+    [javac]                                                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:191: error: illegal start of expression
+    [javac]     private enum CoreCharset {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:191: error: enum types must not be local
+    [javac]     private enum CoreCharset {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:205: error: illegal start of expression
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:205: error: illegal start of expression
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:205: error: ';' expected
+    [javac]     private static final Object[][] xhtmlArray = {
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:212: error: illegal start of expression
+    [javac]     static {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: ';' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: illegal start of expression
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: ')' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: not a statement
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:225: error: ';' expected
+    [javac]     private static Map<String, Character> loadEntities(String filename) {
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: ';' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: illegal start of expression
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: ')' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: not a statement
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:244: error: ';' expected
+    [javac]     private static Map<Character, String> toCharacterKey(Map<String, Character> inMap) {
+    [javac]                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/src/main/java/org/jsoup/nodes/Entities.java:260: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 38 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260531_235025/Jsoup_46_00bc2a73379248f0b4208941e4b3353c/maven-build.xml:74: Compile failed; see the compiler error output for details.
+
+Total time: 0 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

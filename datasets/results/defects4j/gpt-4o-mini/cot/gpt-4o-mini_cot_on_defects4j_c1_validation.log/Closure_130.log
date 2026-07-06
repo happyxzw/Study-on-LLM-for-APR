@@ -1,0 +1,2140 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 7.65 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      List<Ref> refsToRemove = new ArrayList<>();
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            refsToRemove.add(ref);
+          }
+        }
+      }
+      for (Ref ref : refsToRemove) {
+        name.removeRef(ref);
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:171: error: diamond operator is not supported in -source 1.6
+    [javac]       List<Ref> refsToRemove = new ArrayList<>();
+    [javac]                                              ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 6 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 35.40 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testIssue931
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 31.72 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testIssue931
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 8.24 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      List<Ref> refsToRemove = new ArrayList<>();
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            refsToRemove.add(ref);
+          }
+        }
+      }
+      for (Ref ref : refsToRemove) {
+        name.removeRef(ref);
+      }
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:171: error: diamond operator is not supported in -source 1.6
+    [javac]       List<Ref> refsToRemove = new ArrayList<>();
+    [javac]                                              ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:184: error: illegal start of expression
+    [javac]   private boolean inlineAliasIfPossible(Ref alias, GlobalNamespace namespace) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:184: error: ';' expected
+    [javac]   private boolean inlineAliasIfPossible(Ref alias, GlobalNamespace namespace) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:184: error: ';' expected
+    [javac]   private boolean inlineAliasIfPossible(Ref alias, GlobalNamespace namespace) {
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:184: error: not a statement
+    [javac]   private boolean inlineAliasIfPossible(Ref alias, GlobalNamespace namespace) {
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:184: error: ';' expected
+    [javac]   private boolean inlineAliasIfPossible(Ref alias, GlobalNamespace namespace) {
+    [javac]                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:234: error: illegal start of expression
+    [javac]   private void checkNamespaces() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:234: error: illegal start of expression
+    [javac]   private void checkNamespaces() {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:234: error: ';' expected
+    [javac]   private void checkNamespaces() {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:271: error: illegal start of expression
+    [javac]   private void warnAboutNamespaceAliasing(Name nameObj, Ref ref) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:271: error: illegal start of expression
+    [javac]   private void warnAboutNamespaceAliasing(Name nameObj, Ref ref) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:271: error: ';' expected
+    [javac]   private void warnAboutNamespaceAliasing(Name nameObj, Ref ref) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:271: error: ';' expected
+    [javac]   private void warnAboutNamespaceAliasing(Name nameObj, Ref ref) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:271: error: not a statement
+    [javac]   private void warnAboutNamespaceAliasing(Name nameObj, Ref ref) {
+    [javac]                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:271: error: ';' expected
+    [javac]   private void warnAboutNamespaceAliasing(Name nameObj, Ref ref) {
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:283: error: illegal start of expression
+    [javac]   private void warnAboutNamespaceRedefinition(Name nameObj, Ref ref) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:283: error: illegal start of expression
+    [javac]   private void warnAboutNamespaceRedefinition(Name nameObj, Ref ref) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:283: error: ';' expected
+    [javac]   private void warnAboutNamespaceRedefinition(Name nameObj, Ref ref) {
+    [javac]                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:283: error: ';' expected
+    [javac]   private void warnAboutNamespaceRedefinition(Name nameObj, Ref ref) {
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:283: error: not a statement
+    [javac]   private void warnAboutNamespaceRedefinition(Name nameObj, Ref ref) {
+    [javac]                                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:283: error: ';' expected
+    [javac]   private void warnAboutNamespaceRedefinition(Name nameObj, Ref ref) {
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:296: error: illegal start of expression
+    [javac]   private void flattenReferencesToCollapsibleDescendantNames(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:296: error: illegal start of expression
+    [javac]   private void flattenReferencesToCollapsibleDescendantNames(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:296: error: ';' expected
+    [javac]   private void flattenReferencesToCollapsibleDescendantNames(
+    [javac]                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:297: error: ';' expected
+    [javac]       Name n, String alias) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:297: error: not a statement
+    [javac]       Name n, String alias) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:297: error: ';' expected
+    [javac]       Name n, String alias) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:318: error: illegal start of expression
+    [javac]   private void flattenSimpleStubDeclaration(Name name, String alias) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:318: error: illegal start of expression
+    [javac]   private void flattenSimpleStubDeclaration(Name name, String alias) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:318: error: ';' expected
+    [javac]   private void flattenSimpleStubDeclaration(Name name, String alias) {
+    [javac]                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:318: error: ';' expected
+    [javac]   private void flattenSimpleStubDeclaration(Name name, String alias) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:318: error: not a statement
+    [javac]   private void flattenSimpleStubDeclaration(Name name, String alias) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:318: error: ';' expected
+    [javac]   private void flattenSimpleStubDeclaration(Name name, String alias) {
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:341: error: illegal start of expression
+    [javac]   private void flattenReferencesTo(Name n, String alias) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:341: error: illegal start of expression
+    [javac]   private void flattenReferencesTo(Name n, String alias) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:341: error: ';' expected
+    [javac]   private void flattenReferencesTo(Name n, String alias) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:341: error: ';' expected
+    [javac]   private void flattenReferencesTo(Name n, String alias) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:341: error: not a statement
+    [javac]   private void flattenReferencesTo(Name n, String alias) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:341: error: ';' expected
+    [javac]   private void flattenReferencesTo(Name n, String alias) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: illegal start of expression
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: illegal start of expression
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: ';' expected
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: ';' expected
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: not a statement
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: ';' expected
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: ';' expected
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:420: error: illegal start of expression
+    [javac]   private void flattenNameRefAtDepth(String alias, Node n, int depth,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:420: error: illegal start of expression
+    [javac]   private void flattenNameRefAtDepth(String alias, Node n, int depth,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:420: error: ';' expected
+    [javac]   private void flattenNameRefAtDepth(String alias, Node n, int depth,
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:420: error: ';' expected
+    [javac]   private void flattenNameRefAtDepth(String alias, Node n, int depth,
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:420: error: not a statement
+    [javac]   private void flattenNameRefAtDepth(String alias, Node n, int depth,
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:420: error: ';' expected
+    [javac]   private void flattenNameRefAtDepth(String alias, Node n, int depth,
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:421: error: ';' expected
+    [javac]       String originalName) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:421: error: not a statement
+    [javac]       String originalName) {
+    [javac]              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:421: error: ';' expected
+    [javac]       String originalName) {
+    [javac]                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:447: error: illegal start of expression
+    [javac]   private void flattenNameRef(String alias, Node n, Node parent,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:447: error: illegal start of expression
+    [javac]   private void flattenNameRef(String alias, Node n, Node parent,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:447: error: ';' expected
+    [javac]   private void flattenNameRef(String alias, Node n, Node parent,
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:447: error: ';' expected
+    [javac]   private void flattenNameRef(String alias, Node n, Node parent,
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:447: error: not a statement
+    [javac]   private void flattenNameRef(String alias, Node n, Node parent,
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:447: error: ';' expected
+    [javac]   private void flattenNameRef(String alias, Node n, Node parent,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:448: error: ';' expected
+    [javac]       String originalName) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:448: error: not a statement
+    [javac]       String originalName) {
+    [javac]              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:448: error: ';' expected
+    [javac]       String originalName) {
+    [javac]                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:482: error: illegal start of expression
+    [javac]   private void collapseDeclarationOfNameAndDescendants(Name n, String alias) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:482: error: illegal start of expression
+    [javac]   private void collapseDeclarationOfNameAndDescendants(Name n, String alias) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:482: error: ';' expected
+    [javac]   private void collapseDeclarationOfNameAndDescendants(Name n, String alias) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:482: error: ';' expected
+    [javac]   private void collapseDeclarationOfNameAndDescendants(Name n, String alias) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:482: error: not a statement
+    [javac]   private void collapseDeclarationOfNameAndDescendants(Name n, String alias) {
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:482: error: ';' expected
+    [javac]   private void collapseDeclarationOfNameAndDescendants(Name n, String alias) {
+    [javac]                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: illegal start of expression
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: illegal start of expression
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: ';' expected
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: ';' expected
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: not a statement
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: ';' expected
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: ';' expected
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:606: error: illegal start of expression
+    [javac]   private void updateObjLitOrFunctionDeclaration(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:606: error: illegal start of expression
+    [javac]   private void updateObjLitOrFunctionDeclaration(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:606: error: ';' expected
+    [javac]   private void updateObjLitOrFunctionDeclaration(
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:607: error: ';' expected
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:607: error: not a statement
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:607: error: ';' expected
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:607: error: ';' expected
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:643: error: illegal start of expression
+    [javac]   private void updateObjLitOrFunctionDeclarationAtAssignNode(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:643: error: illegal start of expression
+    [javac]   private void updateObjLitOrFunctionDeclarationAtAssignNode(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:643: error: ';' expected
+    [javac]   private void updateObjLitOrFunctionDeclarationAtAssignNode(
+    [javac]                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:644: error: ';' expected
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:644: error: not a statement
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:644: error: ';' expected
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:644: error: ';' expected
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:715: error: illegal start of expression
+    [javac]   private void checkForHosedThisReferences(Node function, JSDocInfo docInfo,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:715: error: illegal start of expression
+    [javac]   private void checkForHosedThisReferences(Node function, JSDocInfo docInfo,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:715: error: ';' expected
+    [javac]   private void checkForHosedThisReferences(Node function, JSDocInfo docInfo,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:715: error: ';' expected
+    [javac]   private void checkForHosedThisReferences(Node function, JSDocInfo docInfo,
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:715: error: not a statement
+    [javac]   private void checkForHosedThisReferences(Node function, JSDocInfo docInfo,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:715: error: ';' expected
+    [javac]   private void checkForHosedThisReferences(Node function, JSDocInfo docInfo,
+    [javac]                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:716: error: ';' expected
+    [javac]       final Name name) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:742: error: illegal start of expression
+    [javac]   private void updateObjLitOrFunctionDeclarationAtVarNode(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:742: error: illegal start of expression
+    [javac]   private void updateObjLitOrFunctionDeclarationAtVarNode(
+    [javac]           ^
+    [javac] 100 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 5 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 30.17 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testIssue931
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 32.31 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.poll(); // Use poll() to retrieve and remove the head of the queue
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testIssue931
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: timeout
+                Validation Time: 100.10 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 && name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+      // Re-check the conditions after potentially removing refs
+      if (name.globalSets == 1 && name.localSets == 0 && name.aliasingGets > 0) {
+        workList.add(name); // Add back to worklist if it still qualifies
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT || name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 35.98 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      for (Name prop : name.props) {
+        workList.add(prop);
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testIssue931
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: timeout
+                Validation Time: 100.10 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.globalSets == 1 && name.localSets == 0 && name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+    // Re-add GET and SET types if needed for processing later
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      workList.add(name); // Add them back to workList for further processing
+    }
+  }
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 9.12 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      List<Ref> refsToRemove = new ArrayList<>(); // To hold references to remove
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            refsToRemove.add(ref); // Collect refs to remove
+          }
+        }
+      }
+      for (Ref ref : refsToRemove) {
+        name.removeRef(ref); // Remove after iteration
+      }
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:171: error: diamond operator is not supported in -source 1.6
+    [javac]       List<Ref> refsToRemove = new ArrayList<>(); // To hold references to remove
+    [javac]                                              ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:184: error: illegal start of expression
+    [javac]   private boolean inlineAliasIfPossible(Ref alias, GlobalNamespace namespace) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:184: error: ';' expected
+    [javac]   private boolean inlineAliasIfPossible(Ref alias, GlobalNamespace namespace) {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:184: error: ';' expected
+    [javac]   private boolean inlineAliasIfPossible(Ref alias, GlobalNamespace namespace) {
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:184: error: not a statement
+    [javac]   private boolean inlineAliasIfPossible(Ref alias, GlobalNamespace namespace) {
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:184: error: ';' expected
+    [javac]   private boolean inlineAliasIfPossible(Ref alias, GlobalNamespace namespace) {
+    [javac]                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:234: error: illegal start of expression
+    [javac]   private void checkNamespaces() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:234: error: illegal start of expression
+    [javac]   private void checkNamespaces() {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:234: error: ';' expected
+    [javac]   private void checkNamespaces() {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:271: error: illegal start of expression
+    [javac]   private void warnAboutNamespaceAliasing(Name nameObj, Ref ref) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:271: error: illegal start of expression
+    [javac]   private void warnAboutNamespaceAliasing(Name nameObj, Ref ref) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:271: error: ';' expected
+    [javac]   private void warnAboutNamespaceAliasing(Name nameObj, Ref ref) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:271: error: ';' expected
+    [javac]   private void warnAboutNamespaceAliasing(Name nameObj, Ref ref) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:271: error: not a statement
+    [javac]   private void warnAboutNamespaceAliasing(Name nameObj, Ref ref) {
+    [javac]                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:271: error: ';' expected
+    [javac]   private void warnAboutNamespaceAliasing(Name nameObj, Ref ref) {
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:283: error: illegal start of expression
+    [javac]   private void warnAboutNamespaceRedefinition(Name nameObj, Ref ref) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:283: error: illegal start of expression
+    [javac]   private void warnAboutNamespaceRedefinition(Name nameObj, Ref ref) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:283: error: ';' expected
+    [javac]   private void warnAboutNamespaceRedefinition(Name nameObj, Ref ref) {
+    [javac]                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:283: error: ';' expected
+    [javac]   private void warnAboutNamespaceRedefinition(Name nameObj, Ref ref) {
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:283: error: not a statement
+    [javac]   private void warnAboutNamespaceRedefinition(Name nameObj, Ref ref) {
+    [javac]                                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:283: error: ';' expected
+    [javac]   private void warnAboutNamespaceRedefinition(Name nameObj, Ref ref) {
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:296: error: illegal start of expression
+    [javac]   private void flattenReferencesToCollapsibleDescendantNames(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:296: error: illegal start of expression
+    [javac]   private void flattenReferencesToCollapsibleDescendantNames(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:296: error: ';' expected
+    [javac]   private void flattenReferencesToCollapsibleDescendantNames(
+    [javac]                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:297: error: ';' expected
+    [javac]       Name n, String alias) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:297: error: not a statement
+    [javac]       Name n, String alias) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:297: error: ';' expected
+    [javac]       Name n, String alias) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:318: error: illegal start of expression
+    [javac]   private void flattenSimpleStubDeclaration(Name name, String alias) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:318: error: illegal start of expression
+    [javac]   private void flattenSimpleStubDeclaration(Name name, String alias) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:318: error: ';' expected
+    [javac]   private void flattenSimpleStubDeclaration(Name name, String alias) {
+    [javac]                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:318: error: ';' expected
+    [javac]   private void flattenSimpleStubDeclaration(Name name, String alias) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:318: error: not a statement
+    [javac]   private void flattenSimpleStubDeclaration(Name name, String alias) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:318: error: ';' expected
+    [javac]   private void flattenSimpleStubDeclaration(Name name, String alias) {
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:341: error: illegal start of expression
+    [javac]   private void flattenReferencesTo(Name n, String alias) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:341: error: illegal start of expression
+    [javac]   private void flattenReferencesTo(Name n, String alias) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:341: error: ';' expected
+    [javac]   private void flattenReferencesTo(Name n, String alias) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:341: error: ';' expected
+    [javac]   private void flattenReferencesTo(Name n, String alias) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:341: error: not a statement
+    [javac]   private void flattenReferencesTo(Name n, String alias) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:341: error: ';' expected
+    [javac]   private void flattenReferencesTo(Name n, String alias) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: illegal start of expression
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: illegal start of expression
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: ';' expected
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: ';' expected
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: not a statement
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: ';' expected
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:381: error: ';' expected
+    [javac]   private void flattenPrefixes(String alias, Name n, int depth) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:420: error: illegal start of expression
+    [javac]   private void flattenNameRefAtDepth(String alias, Node n, int depth,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:420: error: illegal start of expression
+    [javac]   private void flattenNameRefAtDepth(String alias, Node n, int depth,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:420: error: ';' expected
+    [javac]   private void flattenNameRefAtDepth(String alias, Node n, int depth,
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:420: error: ';' expected
+    [javac]   private void flattenNameRefAtDepth(String alias, Node n, int depth,
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:420: error: not a statement
+    [javac]   private void flattenNameRefAtDepth(String alias, Node n, int depth,
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:420: error: ';' expected
+    [javac]   private void flattenNameRefAtDepth(String alias, Node n, int depth,
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:421: error: ';' expected
+    [javac]       String originalName) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:421: error: not a statement
+    [javac]       String originalName) {
+    [javac]              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:421: error: ';' expected
+    [javac]       String originalName) {
+    [javac]                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:447: error: illegal start of expression
+    [javac]   private void flattenNameRef(String alias, Node n, Node parent,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:447: error: illegal start of expression
+    [javac]   private void flattenNameRef(String alias, Node n, Node parent,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:447: error: ';' expected
+    [javac]   private void flattenNameRef(String alias, Node n, Node parent,
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:447: error: ';' expected
+    [javac]   private void flattenNameRef(String alias, Node n, Node parent,
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:447: error: not a statement
+    [javac]   private void flattenNameRef(String alias, Node n, Node parent,
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:447: error: ';' expected
+    [javac]   private void flattenNameRef(String alias, Node n, Node parent,
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:448: error: ';' expected
+    [javac]       String originalName) {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:448: error: not a statement
+    [javac]       String originalName) {
+    [javac]              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:448: error: ';' expected
+    [javac]       String originalName) {
+    [javac]                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:482: error: illegal start of expression
+    [javac]   private void collapseDeclarationOfNameAndDescendants(Name n, String alias) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:482: error: illegal start of expression
+    [javac]   private void collapseDeclarationOfNameAndDescendants(Name n, String alias) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:482: error: ';' expected
+    [javac]   private void collapseDeclarationOfNameAndDescendants(Name n, String alias) {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:482: error: ';' expected
+    [javac]   private void collapseDeclarationOfNameAndDescendants(Name n, String alias) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:482: error: not a statement
+    [javac]   private void collapseDeclarationOfNameAndDescendants(Name n, String alias) {
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:482: error: ';' expected
+    [javac]   private void collapseDeclarationOfNameAndDescendants(Name n, String alias) {
+    [javac]                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: illegal start of expression
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: illegal start of expression
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: ';' expected
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: ';' expected
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: not a statement
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: ';' expected
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:520: error: ';' expected
+    [javac]   private void updateSimpleDeclaration(String alias, Name refName, Ref ref) {
+    [javac]                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:606: error: illegal start of expression
+    [javac]   private void updateObjLitOrFunctionDeclaration(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:606: error: illegal start of expression
+    [javac]   private void updateObjLitOrFunctionDeclaration(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:606: error: ';' expected
+    [javac]   private void updateObjLitOrFunctionDeclaration(
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:607: error: ';' expected
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:607: error: not a statement
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:607: error: ';' expected
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:607: error: ';' expected
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:643: error: illegal start of expression
+    [javac]   private void updateObjLitOrFunctionDeclarationAtAssignNode(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:643: error: illegal start of expression
+    [javac]   private void updateObjLitOrFunctionDeclarationAtAssignNode(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:643: error: ';' expected
+    [javac]   private void updateObjLitOrFunctionDeclarationAtAssignNode(
+    [javac]                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:644: error: ';' expected
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:644: error: not a statement
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:644: error: ';' expected
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:644: error: ';' expected
+    [javac]       Name n, String alias, boolean canCollapseChildNames) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:715: error: illegal start of expression
+    [javac]   private void checkForHosedThisReferences(Node function, JSDocInfo docInfo,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:715: error: illegal start of expression
+    [javac]   private void checkForHosedThisReferences(Node function, JSDocInfo docInfo,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:715: error: ';' expected
+    [javac]   private void checkForHosedThisReferences(Node function, JSDocInfo docInfo,
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:715: error: ';' expected
+    [javac]   private void checkForHosedThisReferences(Node function, JSDocInfo docInfo,
+    [javac]                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:715: error: not a statement
+    [javac]   private void checkForHosedThisReferences(Node function, JSDocInfo docInfo,
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:715: error: ';' expected
+    [javac]   private void checkForHosedThisReferences(Node function, JSDocInfo docInfo,
+    [javac]                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:716: error: ';' expected
+    [javac]       final Name name) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:742: error: illegal start of expression
+    [javac]   private void updateObjLitOrFunctionDeclarationAtVarNode(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/src/com/google/javascript/jscomp/CollapseProperties.java:742: error: illegal start of expression
+    [javac]   private void updateObjLitOrFunctionDeclarationAtVarNode(
+    [javac]           ^
+    [javac] 100 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260617_212242/Closure_130_9fab0b53fead434ea9305ea44bb0d444/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 6 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 29.19 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props); // This line was correct; we need to ensure we add properties for further processing.
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testIssue931
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 6.07 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed to ArrayList
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/src/com/google/javascript/jscomp/CollapseProperties.java:170: error: diamond operator is not supported in -source 1.6
+    [javac]       List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed to ArrayList
+    [javac]                                      ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 5 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 7.94 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed to ArrayList for direct instantiation
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/src/com/google/javascript/jscomp/CollapseProperties.java:170: error: diamond operator is not supported in -source 1.6
+    [javac]       List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed to ArrayList for direct instantiation
+    [javac]                                      ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 29.12 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    // Fixed the check for adding properties to the work list
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props); // Ensure that we only add props if they are valid
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testIssue931
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 5.42 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed to ArrayList for proper resizing
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/src/com/google/javascript/jscomp/CollapseProperties.java:170: error: diamond operator is not supported in -source 1.6
+    [javac]       List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed to ArrayList for proper resizing
+    [javac]                                      ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 6.43 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed from Lists.newArrayList to new ArrayList
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/src/com/google/javascript/jscomp/CollapseProperties.java:170: error: diamond operator is not supported in -source 1.6
+    [javac]       List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed from Lists.newArrayList to new ArrayList
+    [javac]                                      ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 6.87 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed to ArrayList to avoid ConcurrentModificationException
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/src/com/google/javascript/jscomp/CollapseProperties.java:170: error: diamond operator is not supported in -source 1.6
+    [javac]       List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed to ArrayList to avoid ConcurrentModificationException
+    [javac]                                      ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 5 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 7.04 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed to ArrayList to avoid ConcurrentModificationException
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/src/com/google/javascript/jscomp/CollapseProperties.java:170: error: diamond operator is not supported in -source 1.6
+    [javac]       List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed to ArrayList to avoid ConcurrentModificationException
+    [javac]                                      ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 5 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 29.57 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = Lists.newArrayList(name.getRefs());
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    // Fixed the condition to check for props in all cases where name.type is not GET or SET
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testIssue931
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: uncompilable
+                Validation Time: 5.37 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void inlineAliases(GlobalNamespace namespace) {
+  Deque<Name> workList = new ArrayDeque<Name>(namespace.getNameForest());
+  while (!workList.isEmpty()) {
+    Name name = workList.pop();
+    if (name.type == Name.Type.GET || name.type == Name.Type.SET) {
+      continue;
+    }
+    if (name.globalSets == 1 && name.localSets == 0 &&
+            name.aliasingGets > 0) {
+      List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed to ArrayList for better performance in some cases
+      for (Ref ref : refs) {
+        if (ref.type == Type.ALIASING_GET && ref.scope.isLocal()) {
+          if (inlineAliasIfPossible(ref, namespace)) {
+            name.removeRef(ref);
+          }
+        }
+      }
+    }
+    if ((name.type == Name.Type.OBJECTLIT ||
+         name.type == Name.Type.FUNCTION) &&
+        name.aliasingGets == 0 && name.props != null) {
+      workList.addAll(name.props);
+    }
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:255: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/src/com/google/javascript/jscomp/CollapseProperties.java:170: error: diamond operator is not supported in -source 1.6
+    [javac]       List<Ref> refs = new ArrayList<>(name.getRefs()); // Changed to ArrayList for better performance in some cases
+    [javac]                                      ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260624_204148/Closure_130_cb86bcf6174e4edb8b944523a90bc751/build.xml:261: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

@@ -1,0 +1,346 @@
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 192.36 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property == null) {
+        return this;
+    }
+    JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone()
+                : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return this;
+    }
+    DateFormat df0 = serializers.getConfig().getDateFormat();
+    if (df0 instanceof StdDateFormat) {
+        StdDateFormat std = (StdDateFormat) df0;
+        if (format.hasLocale()) {
+            std = std.withLocale(format.getLocale());
+        }
+        if (format.hasTimeZone()) {
+            std = std.withTimeZone(format.getTimeZone());
+        }
+        return withFormat(Boolean.FALSE, std);
+    }
+    if (!(df0 instanceof SimpleDateFormat)) {
+        serializers.reportBadDefinition(handledType(), String.format(
+"Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`",
+df0.getClass().getName()));
+    }
+    SimpleDateFormat df = (SimpleDateFormat) df0;
+    if (hasLocale) {
+        df = new SimpleDateFormat(df.toPattern(), format.getLocale());
+    } else {
+        df = (SimpleDateFormat) df.clone();
+    }
+    TimeZone newTz = format.getTimeZone();
+    boolean changeTZ = (newTz != null) && !newTz.equals(df.getTimeZone());
+    if (changeTZ) {
+        df.setTimeZone(newTz);
+    }
+    return withFormat(Boolean.FALSE, df);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.ser.jdk.SqlDateSerializationTest::testSqlDateConfigOverride
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 191.89 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property == null) {
+        return this;
+    }
+        JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone()
+                : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return this;
+    }
+    DateFormat df0 = serializers.getConfig().getDateFormat();
+    if (df0 instanceof StdDateFormat) {
+        StdDateFormat std = (StdDateFormat) df0;
+        if (format.hasLocale()) {
+            std = std.withLocale(format.getLocale());
+        }
+        if (format.hasTimeZone()) {
+            std = std.withTimeZone(format.getTimeZone());
+        }
+        return withFormat(Boolean.FALSE, std);
+    }
+    if (!(df0 instanceof SimpleDateFormat)) {
+        serializers.reportBadDefinition(handledType(), String.format(
+"Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`",
+df0.getClass().getName()));
+    }
+    SimpleDateFormat df = (SimpleDateFormat) df0;
+    if (hasLocale) {
+        df = new SimpleDateFormat(df.toPattern(), format.getLocale());
+    } else {
+        df = (SimpleDateFormat) df.clone();
+    }
+    TimeZone newTz = format.getTimeZone();
+    boolean changeTZ = (newTz != null) && !newTz.equals(df.getTimeZone());
+    if (changeTZ) {
+        df.setTimeZone(newTz);
+    }
+    return withFormat(Boolean.FALSE, df);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.ser.jdk.SqlDateSerializationTest::testSqlDateConfigOverride
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 195.17 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property == null) {
+        return this;
+    }
+        JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone()
+                : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return withFormat(Boolean.FALSE, serializers.getConfig().getDateFormat());
+    }
+    DateFormat df0 = serializers.getConfig().getDateFormat();
+    if (df0 instanceof StdDateFormat) {
+        StdDateFormat std = (StdDateFormat) df0;
+        if (format.hasLocale()) {
+            std = std.withLocale(format.getLocale());
+        }
+        if (format.hasTimeZone()) {
+            std = std.withTimeZone(format.getTimeZone());
+        }
+        return withFormat(Boolean.FALSE, std);
+    }
+    if (!(df0 instanceof SimpleDateFormat)) {
+        serializers.reportBadDefinition(handledType(), String.format(
+"Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`",
+df0.getClass().getName()));
+    }
+    SimpleDateFormat df = (SimpleDateFormat) df0;
+    if (hasLocale) {
+        df = new SimpleDateFormat(df.toPattern(), format.getLocale());
+    } else {
+        df = (SimpleDateFormat) df.clone();
+    }
+    TimeZone newTz = format.getTimeZone();
+    boolean changeTZ = (newTz != null) && !newTz.equals(df.getTimeZone());
+    if (changeTZ) {
+        df.setTimeZone(newTz);
+    }
+    return withFormat(Boolean.FALSE, df);
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - com.fasterxml.jackson.databind.jsontype.TestPolymorphicDeserialization676::testDeSerCorrect
+  - com.fasterxml.jackson.databind.jsontype.TestPolymorphicDeserialization676::testDeSerFail
+  - com.fasterxml.jackson.databind.ser.filter.JsonIncludeTest::testInclusionOfCalendar
+  - com.fasterxml.jackson.databind.ser.filter.JsonIncludeTest::testInclusionOfDate
+  - com.fasterxml.jackson.databind.ser.jdk.DateSerializationTest::testDateDefaultShape
+  - com.fasterxml.jackson.databind.ser.jdk.SqlDateSerializationTest::testSqlDateConfigOverride
+  - com.fasterxml.jackson.databind.ser.jdk.SqlDateSerializationTest::testSqlDate
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.ser.filter.JsonIncludeTest::testInclusionOfCalendar', 'com.fasterxml.jackson.databind.jsontype.TestPolymorphicDeserialization676::testDeSerCorrect', 'com.fasterxml.jackson.databind.ser.jdk.DateSerializationTest::testDateDefaultShape', 'com.fasterxml.jackson.databind.jsontype.TestPolymorphicDeserialization676::testDeSerFail', 'com.fasterxml.jackson.databind.ser.jdk.SqlDateSerializationTest::testSqlDate', 'com.fasterxml.jackson.databind.ser.filter.JsonIncludeTest::testInclusionOfDate']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 182.41 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public JsonSerializer<?> createContextual(SerializerProvider serializers,
+        BeanProperty property) throws JsonMappingException
+{
+    if (property == null) {
+        return this;
+    }
+        JsonFormat.Value format = findFormatOverrides(serializers, property, handledType());
+    if (format == null) {
+        return this;
+    }
+    JsonFormat.Shape shape = format.getShape();
+    if (shape.isNumeric()) {
+        return withFormat(Boolean.TRUE, null);
+    }
+    if (format.hasPattern()) {
+        final Locale loc = format.hasLocale()
+                        ? format.getLocale()
+                        : serializers.getLocale();
+        SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);
+        TimeZone tz = format.hasTimeZone() ? format.getTimeZone()
+                : serializers.getTimeZone();
+        df.setTimeZone(tz);
+        return withFormat(Boolean.FALSE, df);
+    }
+    final boolean hasLocale = format.hasLocale();
+    final boolean hasTZ = format.hasTimeZone();
+    final boolean asString = (shape == JsonFormat.Shape.STRING);
+    if (!hasLocale && !hasTZ && !asString) {
+        return this;
+    }
+    DateFormat df0 = serializers.getConfig().getDateFormat();
+    if (df0 instanceof StdDateFormat) {
+        StdDateFormat std = (StdDateFormat) df0;
+        if (format.hasLocale()) {
+            std = std.withLocale(format.getLocale());
+        }
+        if (format.hasTimeZone()) {
+            std = std.withTimeZone(format.getTimeZone());
+        }
+        return withFormat(Boolean.FALSE, std);
+    }
+    if (!(df0 instanceof SimpleDateFormat)) {
+        serializers.reportBadDefinition(handledType(), String.format(
+"Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`",
+df0.getClass().getName()));
+    }
+    SimpleDateFormat df = (SimpleDateFormat) df0;
+    if (hasLocale) {
+        df = new SimpleDateFormat(df.toPattern(), format.getLocale());
+    } else {
+        df = (SimpleDateFormat) df.clone();
+    }
+    TimeZone newTz = format.getTimeZone();
+    boolean changeTZ = (newTz != null) && !newTz.equals(df.getTimeZone());
+    if (changeTZ) {
+        df.setTimeZone(newTz);
+    }
+    return withFormat(Boolean.FALSE, df);
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.fasterxml.jackson.databind.ser.jdk.SqlDateSerializationTest::testSqlDateConfigOverride
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

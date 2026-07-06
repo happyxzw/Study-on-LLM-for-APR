@@ -1,0 +1,777 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 56.45 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void processRequireCall(NodeTraversal t, Node n, Node parent) {
+  Node left = n.getFirstChild();
+  Node arg = left.getNext();
+  if (verifyLastArgumentIsString(t, left, arg)) {
+    String ns = arg.getString();
+    ProvidedName provided = providedNames.get(ns);
+    if (provided == null || !provided.isExplicitlyProvided()) {
+      unrecognizedRequires.add(
+          new UnrecognizedRequire(n, ns, t.getSourceName()));
+    } else {
+      JSModule providedModule = provided.explicitModule;
+      Preconditions.checkNotNull(providedModule);
+      JSModule module = t.getModule();
+      if (moduleGraph != null &&
+          module != providedModule &&
+          !moduleGraph.dependsOn(module, providedModule)) {
+        compiler.report(
+            t.makeError(n, XMODULE_REQUIRE_ERROR, ns,
+                providedModule.getName(),
+                module.getName()));
+      }
+    }
+    maybeAddToSymbolTable(left);
+    maybeAddStringNodeToSymbolTable(arg);
+// buggy lines start
+    if (provided != null) {
+// buggy lines end
+          parent.detachFromParent();
+      compiler.reportCodeChange();
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.VarCheckTest::testNoUndeclaredVarWhenUsingClosurePass
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 6.77 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                String opt = Util.stripLeadingHyphens(arg);
+
+  if (options.hasOption(opt)) {
+    tokens.add(arg);
+  } else {
+    if (opt.indexOf('=') != -1 && options.hasOption(opt.substring(0, opt.indexOf('=')))) {
+      // the format is --foo=value or -foo=value
+      tokens.add(arg.substring(0, arg.indexOf('='))); // --foo
+      tokens.add(arg.substring(arg.indexOf('=') + 1)); // value
+    } else if (options.hasOption(arg.substring(0, 2))) {
+      // the format is a special properties option (-Dproperty=value)
+      tokens.add(arg.substring(0, 2)); // -D
+      tokens.add(arg.substring(2)); // property=value
+    } else {
+      eatTheRest = stopAtNonOption;
+      tokens.add(arg);
+    }
+  }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build/lib/rhino.jar
+
+relversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build.xml:259: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build.xml:265: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:297: error: illegal start of type
+    [javac]   if (options.hasOption(opt)) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:297: error: <identifier> expected
+    [javac]   if (options.hasOption(opt)) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:297: error: ';' expected
+    [javac]   if (options.hasOption(opt)) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:297: error: illegal start of type
+    [javac]   if (options.hasOption(opt)) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:297: error: <identifier> expected
+    [javac]   if (options.hasOption(opt)) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:297: error: ';' expected
+    [javac]   if (options.hasOption(opt)) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:298: error: <identifier> expected
+    [javac]     tokens.add(arg);
+    [javac]               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:298: error: <identifier> expected
+    [javac]     tokens.add(arg);
+    [javac]                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:299: error: class, interface, or enum expected
+    [javac]   } else {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:303: error: class, interface, or enum expected
+    [javac]       tokens.add(arg.substring(arg.indexOf('=') + 1)); // value
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:304: error: class, interface, or enum expected
+    [javac]     } else if (options.hasOption(arg.substring(0, 2))) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:307: error: class, interface, or enum expected
+    [javac]       tokens.add(arg.substring(2)); // property=value
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:308: error: class, interface, or enum expected
+    [javac]     } else {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:310: error: class, interface, or enum expected
+    [javac]       tokens.add(arg);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:311: error: class, interface, or enum expected
+    [javac]     }
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:319: error: class, interface, or enum expected
+    [javac]     Node arg = left.getNext();
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:320: error: class, interface, or enum expected
+    [javac]     if (verifyProvide(t, left, arg)) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:323: error: class, interface, or enum expected
+    [javac]       maybeAddToSymbolTable(left);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:324: error: class, interface, or enum expected
+    [javac]       maybeAddStringNodeToSymbolTable(arg);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:326: error: class, interface, or enum expected
+    [javac]       if (providedNames.containsKey(ns)) {
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:328: error: class, interface, or enum expected
+    [javac]         if (!previouslyProvided.isExplicitlyProvided()) {
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:330: error: class, interface, or enum expected
+    [javac]         } else {
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:333: error: class, interface, or enum expected
+    [javac]         }
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:336: error: class, interface, or enum expected
+    [javac]         providedNames.put(
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:338: error: class, interface, or enum expected
+    [javac]       }
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:347: error: class, interface, or enum expected
+    [javac]     Node args = left.getNext();
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:348: error: class, interface, or enum expected
+    [javac]     if (verifyDefine(t, parent, left, args)) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:350: error: class, interface, or enum expected
+    [javac]       String name = args.getString();
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:351: error: class, interface, or enum expected
+    [javac]       Node value = args.getNext();
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:353: error: class, interface, or enum expected
+    [javac]       maybeAddToSymbolTable(left);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:354: error: class, interface, or enum expected
+    [javac]       maybeAddStringNodeToSymbolTable(nameNode);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:356: error: class, interface, or enum expected
+    [javac]       this.defineCalls.add(n);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:357: error: class, interface, or enum expected
+    [javac]     }
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:367: error: class, interface, or enum expected
+    [javac]     if (t.inGlobalScope() && info != null && info.hasTypedefType()) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:369: error: class, interface, or enum expected
+    [javac]       if (name != null) {
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:371: error: class, interface, or enum expected
+    [javac]         if (pn != null) {
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:373: error: class, interface, or enum expected
+    [javac]         }
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:385: error: class, interface, or enum expected
+    [javac]       if (n.isName() && parent.isVar()) {
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:387: error: class, interface, or enum expected
+    [javac]       } else if (n.isAssign() &&
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:390: error: class, interface, or enum expected
+    [javac]       }
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:395: error: class, interface, or enum expected
+    [javac]         } else {
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:397: error: class, interface, or enum expected
+    [javac]           if (pn != null) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:399: error: class, interface, or enum expected
+    [javac]           }
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:437: error: class, interface, or enum expected
+    [javac]     Node thisArg = callee.getNext();
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:438: error: class, interface, or enum expected
+    [javac]     if (thisArg == null || !thisArg.isThis()) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:440: error: class, interface, or enum expected
+    [javac]       return;
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:441: error: class, interface, or enum expected
+    [javac]     }
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:444: error: class, interface, or enum expected
+    [javac]     if (enclosingFnNameNode == null) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:446: error: class, interface, or enum expected
+    [javac]       return;
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:447: error: class, interface, or enum expected
+    [javac]     }
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:450: error: class, interface, or enum expected
+    [javac]     if (enclosingQname.indexOf(".prototype.") == -1) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:453: error: class, interface, or enum expected
+    [javac]       Node maybeInheritsExpr = (enclosingParent.isAssign() ?
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:455: error: class, interface, or enum expected
+    [javac]       Node baseClassNode = null;
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:456: error: class, interface, or enum expected
+    [javac]       if (maybeInheritsExpr != null &&
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:460: error: class, interface, or enum expected
+    [javac]         if ("goog.inherits".equals(
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:464: error: class, interface, or enum expected
+    [javac]         }
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:470: error: class, interface, or enum expected
+    [javac]         return;
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:471: error: class, interface, or enum expected
+    [javac]       }
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:480: error: class, interface, or enum expected
+    [javac]       compiler.reportCodeChange();
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:481: error: class, interface, or enum expected
+    [javac]     } else {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:484: error: class, interface, or enum expected
+    [javac]       if (methodNameNode == null || !methodNameNode.isString()) {
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:486: error: class, interface, or enum expected
+    [javac]         return;
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:487: error: class, interface, or enum expected
+    [javac]       }
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:490: error: class, interface, or enum expected
+    [javac]       String ending = ".prototype." + methodName;
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:491: error: class, interface, or enum expected
+    [javac]       if (enclosingQname == null ||
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:495: error: class, interface, or enum expected
+    [javac]         return;
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:496: error: class, interface, or enum expected
+    [javac]       }
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:501: error: class, interface, or enum expected
+    [javac]       n.replaceChild(
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:508: error: class, interface, or enum expected
+    [javac]       n.removeChild(methodNameNode);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:509: error: class, interface, or enum expected
+    [javac]       compiler.reportCodeChange();
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:510: error: class, interface, or enum expected
+    [javac]     }
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:519: error: class, interface, or enum expected
+    [javac]     if (NodeUtil.isFunctionDeclaration(scopeRoot)) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:522: error: class, interface, or enum expected
+    [javac]     } else {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:524: error: class, interface, or enum expected
+    [javac]       if (parent != null) {
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:530: error: class, interface, or enum expected
+    [javac]         } else if (parent.isName()) {
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:533: error: class, interface, or enum expected
+    [javac]         }
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:538: error: class, interface, or enum expected
+    [javac]   }
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:544: error: class, interface, or enum expected
+    [javac]   }
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:557: error: class, interface, or enum expected
+    [javac]       expr.copyInformationFromForTree(parent);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:558: error: class, interface, or enum expected
+    [javac]       parent.getParent().addChildBefore(expr, parent);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:559: error: class, interface, or enum expected
+    [javac]       compiler.reportCodeChange();
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:561: error: class, interface, or enum expected
+    [javac]       JSModule module = t.getModule();
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:562: error: class, interface, or enum expected
+    [javac]       registerAnyProvidedPrefixes(name, expr, module);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:564: error: class, interface, or enum expected
+    [javac]       ProvidedName provided = new ProvidedName(name, expr, module, true);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:565: error: class, interface, or enum expected
+    [javac]       providedNames.put(name, provided);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:566: error: class, interface, or enum expected
+    [javac]       provided.addDefinition(parent, module);
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:567: error: class, interface, or enum expected
+    [javac]     } else {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:572: error: class, interface, or enum expected
+    [javac]         compiler.reportCodeChange();
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:573: error: class, interface, or enum expected
+    [javac]       }
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:586: error: class, interface, or enum expected
+    [javac]     Node arg = left.getNext();
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:587: error: class, interface, or enum expected
+    [javac]     if (verifySetCssNameMapping(t, left, arg)) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:590: error: class, interface, or enum expected
+    [javac]       final Map<String, String> cssNames = Maps.newHashMap();
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:592: error: class, interface, or enum expected
+    [javac]       for (Node key = arg.getFirstChild(); key != null;
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:592: error: class, interface, or enum expected
+    [javac]       for (Node key = arg.getFirstChild(); key != null;
+    [javac]                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:593: error: class, interface, or enum expected
+    [javac]           key = key.getNext()) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:595: error: class, interface, or enum expected
+    [javac]         if (!key.isStringKey()
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:601: error: class, interface, or enum expected
+    [javac]           return;
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:602: error: class, interface, or enum expected
+    [javac]         }
+    [javac]         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:604: error: class, interface, or enum expected
+    [javac]       }
+    [javac]       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:607: error: class, interface, or enum expected
+    [javac]       if (arg.getNext() != null) {
+    [javac]       ^
+    [javac] 100 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build.xml:265: Compile failed; see the compiler error output for details.
+
+Total time: 5 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 9.76 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public static void main(String[] args) {
+    String input = args[0];
+    List<String> tokens = new ArrayList<>();
+
+    if ("-".equals(input)) {
+      tokens.add("-");
+    } else if (input.startsWith("-")) {
+      String opt = Util.stripLeadingHyphens(input);
+
+      if (options.hasOption(opt)) {
+        tokens.add(input);
+      } else {
+        if (opt.indexOf('=') != -1 && options.hasOption(opt.substring(0, opt.indexOf('=')))) {
+          // the format is --foo=value or -foo=value
+          tokens.add(input.substring(0, input.indexOf('='))); // --foo
+          tokens.add(input.substring(input.indexOf('=') + 1)); // value
+        } else if (options.hasOption(input.substring(0, 2))) {
+          // the format is a special properties option (-Dproperty=value)
+          tokens.add(input.substring(0, 2)); // -D
+          tokens.add(input.substring(2)); // property=value
+        } else {
+          eatTheRest = stopAtNonOption;
+          tokens.add(input);
+        }
+      }
+    } else {
+      tokens.add(input);
+    }
+
+    for (String token : tokens) {
+      System.out.println(token);
+    }
+  }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build/lib/rhino.jar
+
+relversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build.xml:259: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build.xml:265: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:297: error: diamond operator is not supported in -source 1.6
+    [javac]     List<String> tokens = new ArrayList<>();
+    [javac]                                         ^
+    [javac]   (use -source 7 or higher to enable diamond operator)
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build.xml:265: Compile failed; see the compiler error output for details.
+
+Total time: 5 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 54.49 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private void processRequireCall(NodeTraversal t, Node n, Node parent) {
+  Node left = n.getFirstChild();
+  Node arg = left.getNext();
+  if (verifyLastArgumentIsString(t, left, arg)) {
+    String ns = arg.getString();
+    ProvidedName provided = providedNames.get(ns);
+    if (provided == null || !provided.isExplicitlyProvided()) {
+      unrecognizedRequires.add(
+          new UnrecognizedRequire(n, ns, t.getSourceName()));
+    } else {
+      JSModule providedModule = provided.explicitModule;
+      Preconditions.checkNotNull(providedModule);
+      JSModule module = t.getModule();
+      if (moduleGraph != null &&
+          module != providedModule &&
+          !moduleGraph.dependsOn(module, providedModule)) {
+        compiler.report(
+            t.makeError(n, XMODULE_REQUIRE_ERROR, ns,
+                providedModule.getName(),
+                module.getName()));
+      }
+    }
+    maybeAddToSymbolTable(left);
+    maybeAddStringNodeToSymbolTable(arg);
+    if (provided != null) {
+      parent.detachFromParent();
+      compiler.reportCodeChange();
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.VarCheckTest::testNoUndeclaredVarWhenUsingClosurePass
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 8.43 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void processRequireCall(NodeTraversal t, Node n, Node parent) {
+  Node left = n.getFirstChild();
+  Node arg = left.getNext();
+  if (verifyLastArgumentIsString(t, left, arg)) {
+    String ns = arg.getString();
+    ProvidedName provided = providedNames.get(ns);
+    if (provided == null || !provided.isExplicitlyProvided()) {
+      unrecognizedRequires.add(
+          new UnrecognizedRequire(n, ns, t.getSourceName()));
+    } else {
+      JSModule providedModule = provided.explicitModule;
+      Preconditions.checkNotNull(providedModule);
+      JSModule module = t.getModule();
+      if (moduleGraph != null &&
+          module != providedModule &&
+          !moduleGraph.dependsOn(module, providedModule)) {
+        compiler.report(
+            t.makeError(n, XMODULE_REQUIRE_ERROR, ns,
+                providedModule.getName(),
+                module.getName()));
+      }
+    }
+    maybeAddToSymbolTable(left);
+    maybeAddStringNodeToSymbolTable(arg);
+// buggy lines start
+    (provided != null) && (parent.detachFromParent());
+    compiler.reportCodeChange();
+// buggy lines end
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build/lib/rhino.jar
+
+relversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build.xml:259: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build.xml:265: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/src/com/google/javascript/jscomp/ProcessClosurePrimitives.java:320: error: not a statement
+    [javac]     (provided != null) && (parent.detachFromParent());
+    [javac]                        ^
+    [javac] 1 error
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260607_151631/Closure_113_d9b80552983f4ef6ad2e9053090b6b7e/build.xml:265: Compile failed; see the compiler error output for details.
+
+Total time: 5 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 57.79 seconds
+                Failure reason: Regression
+
+                PATCH:
+                private void processRequireCall(NodeTraversal t, Node n, Node parent) {
+  Node left = n.getFirstChild();
+  Node arg = left.getNext();
+  if (verifyLastArgumentIsString(t, left, arg)) {
+    String ns = arg.getString();
+    ProvidedName provided = providedNames.get(ns);
+    if (provided != null && !provided.isExplicitlyProvided()) {
+      unrecognizedRequires.add(
+          new UnrecognizedRequire(n, ns, t.getSourceName()));
+    }
+    maybeAddToSymbolTable(left);
+    maybeAddStringNodeToSymbolTable(arg);
+    if (provided != null) {
+      parent.detachFromParent();
+      compiler.reportCodeChange();
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - com.google.javascript.jscomp.IntegrationTest::testClosurePassOn
+  - com.google.javascript.jscomp.IntegrationTest::testSortingOff
+  - com.google.javascript.jscomp.ProcessClosurePrimitivesTest::testLateProvides
+  - com.google.javascript.jscomp.ProcessClosurePrimitivesTest::testMissingProvides
+  - com.google.javascript.jscomp.ProcessClosurePrimitivesTest::testBadCrossModuleRequire
+  - com.google.javascript.jscomp.ProcessClosurePrimitivesTest::testMissingRequireWithAdditionalProvide
+  - com.google.javascript.jscomp.VarCheckTest::testNoUndeclaredVarWhenUsingClosurePass
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.ProcessClosurePrimitivesTest::testMissingRequireWithAdditionalProvide', 'com.google.javascript.jscomp.IntegrationTest::testSortingOff', 'com.google.javascript.jscomp.ProcessClosurePrimitivesTest::testLateProvides', 'com.google.javascript.jscomp.ProcessClosurePrimitivesTest::testBadCrossModuleRequire', 'com.google.javascript.jscomp.IntegrationTest::testClosurePassOn', 'com.google.javascript.jscomp.ProcessClosurePrimitivesTest::testMissingProvides']
+
+                EXCEPTIONS
+                None
+
+

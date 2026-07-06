@@ -1,0 +1,843 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 47.54 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private static Node computeFollowNode(
+    Node fromNode, Node node, ControlFlowAnalysis cfa) {
+  Node parent = node.getParent();
+  if (parent == null || parent.isFunction() ||
+      (cfa != null && node == cfa.root)) {
+    return null;
+  }
+  switch (parent.getType()) {
+    case Token.IF:
+      return computeFollowNode(fromNode, parent, cfa);
+    case Token.CASE:
+    case Token.DEFAULT_CASE:
+      if (parent.getNext() != null) {
+        if (parent.getNext().isCase()) {
+          return parent.getNext().getFirstChild().getNext();
+        } else if (parent.getNext().isDefaultCase()) {
+          return parent.getNext().getFirstChild();
+        } else {
+          Preconditions.checkState(false, "Not reachable");
+        }
+      } else {
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+      break;
+    case Token.FOR:
+      if (NodeUtil.isForIn(parent)) {
+        return parent;
+      } else {
+        return parent.getFirstChild().getNext().getNext();
+      }
+    case Token.WHILE:
+    case Token.DO:
+      return parent;
+    case Token.TRY:
+      if (parent.getFirstChild() == node) {
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(parent.getLastChild());
+        } else { 
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (NodeUtil.getCatchBlock(parent) == node){
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(node.getNext());
+        } else {
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (parent.getLastChild() == node){
+        if (cfa != null) {
+          for (Node finallyNode : cfa.finallyMap.get(parent)) {
+            cfa.createEdge(fromNode, Branch.UNCOND, finallyNode);
+                      }
+        }
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+  }
+  Node nextSibling = node.getNext();
+  while (nextSibling != null && nextSibling.isFunction()) {
+    nextSibling = nextSibling.getNext();
+  }
+  if (nextSibling != null) {
+    return computeFallThrough(nextSibling);
+  } else {
+    return computeFollowNode(fromNode, parent, cfa);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - com.google.javascript.jscomp.CheckMissingReturnTest::testIssue779
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedFinally
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedBreakwithFinally
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 50.41 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private static Node computeFollowNode(
+    Node fromNode, Node node, ControlFlowAnalysis cfa) {
+  Node parent = node.getParent();
+  if (parent == null || parent.isFunction() ||
+      (cfa != null && node == cfa.root)) {
+    return null;
+  }
+  switch (parent.getType()) {
+    case Token.IF:
+      return computeFollowNode(fromNode, parent, cfa);
+    case Token.CASE:
+    case Token.DEFAULT_CASE:
+      if (parent.getNext() != null) {
+        if (parent.getNext().isCase()) {
+          return parent.getNext().getFirstChild().getNext();
+        } else if (parent.getNext().isDefaultCase()) {
+          return parent.getNext().getFirstChild();
+        } else {
+          Preconditions.checkState(false, "Not reachable");
+        }
+      } else {
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+      break;
+    case Token.FOR:
+      if (NodeUtil.isForIn(parent)) {
+        return parent;
+      } else {
+        return parent.getFirstChild().getNext().getNext();
+      }
+    case Token.WHILE:
+    case Token.DO:
+      return parent;
+    case Token.TRY:
+      if (parent.getFirstChild() == node) {
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(parent.getLastChild());
+        } else { 
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (NodeUtil.getCatchBlock(parent) == node){
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(node.getNext());
+        } else {
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (parent.getLastChild() == node){
+        if (cfa != null) {
+          for (Node finallyNode : cfa.finallyMap.get(parent)) {
+            cfa.createEdge(fromNode, Branch.UNCOND, finallyNode);
+          }
+        }
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+  }
+  Node nextSibling = node.getNext();
+  while (nextSibling != null && nextSibling.isFunction()) {
+    nextSibling = nextSibling.getNext();
+  }
+  if (nextSibling != null) {
+    return computeFallThrough(nextSibling);
+  } else {
+    return computeFollowNode(fromNode, parent, cfa);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - com.google.javascript.jscomp.CheckMissingReturnTest::testIssue779
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedFinally
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedBreakwithFinally
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 49.88 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private static Node computeFollowNode(
+    Node fromNode, Node node, ControlFlowAnalysis cfa) {
+  Node parent = node.getParent();
+  if (parent == null || parent.isFunction() ||
+      (cfa != null && node == cfa.root)) {
+    return null;
+  }
+  switch (parent.getType()) {
+    case Token.IF:
+      return computeFollowNode(fromNode, parent, cfa);
+    case Token.CASE:
+    case Token.DEFAULT_CASE:
+      if (parent.getNext() != null) {
+        if (parent.getNext().isCase()) {
+          return parent.getNext().getFirstChild().getNext();
+        } else if (parent.getNext().isDefaultCase()) {
+          return parent.getNext().getFirstChild();
+        } else {
+          Preconditions.checkState(false, "Not reachable");
+        }
+      } else {
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+      break;
+    case Token.FOR:
+      if (NodeUtil.isForIn(parent)) {
+        return parent;
+      } else {
+        return parent.getFirstChild().getNext().getNext();
+      }
+    case Token.WHILE:
+    case Token.DO:
+      return parent;
+    case Token.TRY:
+      if (parent.getFirstChild() == node) {
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(parent.getLastChild());
+        } else { 
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (NodeUtil.getCatchBlock(parent) == node){
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(node.getNext());
+        } else {
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (parent.getLastChild() == node){
+        if (cfa != null) {
+          for (Node finallyNode : cfa.finallyMap.get(parent)) {
+            cfa.createEdge(fromNode, Branch.UNCOND, finallyNode);
+                      }
+        }
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+  }
+  Node nextSibling = node.getNext();
+  while (nextSibling != null && nextSibling.isFunction()) {
+    nextSibling = nextSibling.getNext();
+  }
+  if (nextSibling != null) {
+    return computeFallThrough(nextSibling);
+  } else {
+    return computeFollowNode(fromNode, parent, cfa);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - com.google.javascript.jscomp.CheckMissingReturnTest::testIssue779
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedFinally
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedBreakwithFinally
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 49.46 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private static Node computeFollowNode(
+    Node fromNode, Node node, ControlFlowAnalysis cfa) {
+  Node parent = node.getParent();
+  if (parent == null || parent.isFunction() ||
+      (cfa != null && node == cfa.root)) {
+    return null;
+  }
+  switch (parent.getType()) {
+    case Token.IF:
+      return computeFollowNode(fromNode, parent, cfa);
+    case Token.CASE:
+    case Token.DEFAULT_CASE:
+      if (parent.getNext() != null) {
+        if (parent.getNext().isCase()) {
+          return parent.getNext().getFirstChild().getNext();
+        } else if (parent.getNext().isDefaultCase()) {
+          return parent.getNext().getFirstChild();
+        } else {
+          Preconditions.checkState(false, "Not reachable");
+        }
+      } else {
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+      break;
+    case Token.FOR:
+      if (NodeUtil.isForIn(parent)) {
+        return parent;
+      } else {
+        return parent.getFirstChild().getNext().getNext();
+      }
+    case Token.WHILE:
+    case Token.DO:
+      return parent;
+    case Token.TRY:
+      if (parent.getFirstChild() == node) {
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(parent.getLastChild());
+        } else { 
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (NodeUtil.getCatchBlock(parent) == node){
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(node.getNext());
+        } else {
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (parent.getLastChild() == node){
+        if (cfa != null) {
+          for (Node finallyNode : cfa.finallyMap.get(parent)) {
+            cfa.createEdge(fromNode, Branch.UNCOND, finallyNode);
+                      }
+        }
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+  }
+  Node nextSibling = node.getNext();
+  while (nextSibling != null && nextSibling.isFunction()) {
+    nextSibling = nextSibling.getNext();
+  }
+  if (nextSibling != null) {
+    return computeFallThrough(nextSibling);
+  } else {
+    return computeFollowNode(fromNode, parent, cfa);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - com.google.javascript.jscomp.CheckMissingReturnTest::testIssue779
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedFinally
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedBreakwithFinally
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 50.69 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private static Node computeFollowNode(
+    Node fromNode, Node node, ControlFlowAnalysis cfa) {
+  Node parent = node.getParent();
+  if (parent == null || parent.isFunction() ||
+      (cfa != null && node == cfa.root)) {
+    return null;
+  }
+  switch (parent.getType()) {
+    case Token.IF:
+      return computeFollowNode(fromNode, parent, cfa);
+    case Token.CASE:
+    case Token.DEFAULT_CASE:
+      if (parent.getNext() != null) {
+        if (parent.getNext().isCase()) {
+          return parent.getNext().getFirstChild().getNext();
+        } else if (parent.getNext().isDefaultCase()) {
+          return parent.getNext().getFirstChild();
+        } else {
+          Preconditions.checkState(false, "Not reachable");
+        }
+      } else {
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+      break;
+    case Token.FOR:
+      if (NodeUtil.isForIn(parent)) {
+        return parent;
+      } else {
+        return parent.getFirstChild().getNext().getNext();
+      }
+    case Token.WHILE:
+    case Token.DO:
+      return parent;
+    case Token.TRY:
+      if (parent.getFirstChild() == node) {
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(parent.getLastChild());
+        } else { 
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (NodeUtil.getCatchBlock(parent) == node){
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(node.getNext());
+        } else {
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (parent.getLastChild() == node){
+        if (cfa != null) {
+          for (Node finallyNode : cfa.finallyMap.get(parent)) {
+            cfa.createEdge(fromNode, Branch.UNCOND, finallyNode);
+          }
+        }
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+      break;
+  }
+  Node nextSibling = node.getNext();
+  while (nextSibling != null && nextSibling.isFunction()) {
+    nextSibling = nextSibling.getNext();
+  }
+  if (nextSibling != null) {
+    return computeFallThrough(nextSibling);
+  } else {
+    return computeFollowNode(fromNode, parent, cfa);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - com.google.javascript.jscomp.CheckMissingReturnTest::testIssue779
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedFinally
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedBreakwithFinally
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 51.04 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private static Node computeFollowNode(
+    Node fromNode, Node node, ControlFlowAnalysis cfa) {
+  Node parent = node.getParent();
+  if (parent == null || parent.isFunction() ||
+      (cfa != null && node == cfa.root)) {
+    return null;
+  }
+  switch (parent.getType()) {
+    case Token.IF:
+      return computeFollowNode(fromNode, parent, cfa);
+    case Token.CASE:
+    case Token.DEFAULT_CASE:
+      if (parent.getNext() != null) {
+        if (parent.getNext().isCase()) {
+          return parent.getNext().getFirstChild().getNext();
+        } else if (parent.getNext().isDefaultCase()) {
+          return parent.getNext().getFirstChild();
+        } else {
+          Preconditions.checkState(false, "Not reachable");
+        }
+      } else {
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+      break;
+    case Token.FOR:
+      if (NodeUtil.isForIn(parent)) {
+        return parent;
+      } else {
+        return parent.getFirstChild().getNext().getNext();
+      }
+    case Token.WHILE:
+    case Token.DO:
+      return parent;
+    case Token.TRY:
+      if (parent.getFirstChild() == node) {
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(parent.getLastChild());
+        } else { 
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (NodeUtil.getCatchBlock(parent) == node){
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(node.getNext());
+        } else {
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (parent.getLastChild() == node){
+        if (cfa != null) {
+          for (Node finallyNode : cfa.finallyMap.get(parent)) {
+            cfa.createEdge(fromNode, Branch.UNCOND, finallyNode);
+                      }
+        }
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+  }
+  Node nextSibling = node.getNext();
+  while (nextSibling != null && nextSibling.isFunction()) {
+    nextSibling = nextSibling.getNext();
+  }
+  if (nextSibling != null) {
+    return computeFallThrough(nextSibling);
+  } else {
+    return computeFollowNode(fromNode, parent, cfa);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - com.google.javascript.jscomp.CheckMissingReturnTest::testIssue779
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedFinally
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedBreakwithFinally
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 51.02 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private static Node computeFollowNode(
+    Node fromNode, Node node, ControlFlowAnalysis cfa) {
+  Node parent = node.getParent();
+  if (parent == null || parent.isFunction() ||
+      (cfa != null && node == cfa.root)) {
+    return null;
+  }
+  switch (parent.getType()) {
+    case Token.IF:
+      return computeFollowNode(fromNode, parent, cfa);
+    case Token.CASE:
+    case Token.DEFAULT_CASE:
+      if (parent.getNext() != null) {
+        if (parent.getNext().isCase()) {
+          return parent.getNext().getFirstChild().getNext();
+        } else if (parent.getNext().isDefaultCase()) {
+          return parent.getNext().getFirstChild();
+        } else {
+          Preconditions.checkState(false, "Not reachable");
+        }
+      } else {
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+      break;
+    case Token.FOR:
+      if (NodeUtil.isForIn(parent)) {
+        return parent;
+      } else {
+        return parent.getFirstChild().getNext().getNext();
+      }
+    case Token.WHILE:
+    case Token.DO:
+      return parent;
+    case Token.TRY:
+      if (parent.getFirstChild() == node) {
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(parent.getLastChild());
+        } else { 
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (NodeUtil.getCatchBlock(parent) == node){
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(node.getNext());
+        } else {
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (parent.getLastChild() == node){
+        if (cfa != null) {
+          for (Node finallyNode : cfa.finallyMap.get(parent)) {
+            cfa.createEdge(fromNode, Branch.UNCOND, finallyNode);
+                      }
+        }
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+  }
+  Node nextSibling = node.getNext();
+  while (nextSibling != null && nextSibling.isFunction()) {
+    nextSibling = nextSibling.getNext();
+  }
+  if (nextSibling != null) {
+    return computeFallThrough(nextSibling);
+  } else {
+    return computeFollowNode(fromNode, parent, cfa);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - com.google.javascript.jscomp.CheckMissingReturnTest::testIssue779
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedFinally
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedBreakwithFinally
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 49.12 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private static Node computeFollowNode(
+    Node fromNode, Node node, ControlFlowAnalysis cfa) {
+  Node parent = node.getParent();
+  if (parent == null || parent.isFunction() ||
+      (cfa != null && node == cfa.root)) {
+    return null;
+  }
+  switch (parent.getType()) {
+    case Token.IF:
+      return computeFollowNode(fromNode, parent, cfa);
+    case Token.CASE:
+    case Token.DEFAULT_CASE:
+      if (parent.getNext() != null) {
+        if (parent.getNext().isCase()) {
+          return parent.getNext().getFirstChild().getNext();
+        } else if (parent.getNext().isDefaultCase()) {
+          return parent.getNext().getFirstChild();
+        } else {
+          Preconditions.checkState(false, "Not reachable");
+        }
+      } else {
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+      break;
+    case Token.FOR:
+      if (NodeUtil.isForIn(parent)) {
+        return parent;
+      } else {
+        return parent.getFirstChild().getNext().getNext();
+      }
+    case Token.WHILE:
+    case Token.DO:
+      return parent;
+    case Token.TRY:
+      if (parent.getFirstChild() == node) {
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(parent.getLastChild());
+        } else { 
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (NodeUtil.getCatchBlock(parent) == node){
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(node.getNext());
+        } else {
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (parent.getLastChild() == node){
+        if (cfa != null) {
+          for (Node finallyNode : cfa.finallyMap.get(parent)) {
+            cfa.createEdge(fromNode, Branch.UNCOND, finallyNode);
+                      }
+        }
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+  }
+  Node nextSibling = node.getNext();
+  while (nextSibling != null && nextSibling.isFunction()) {
+    nextSibling = nextSibling.getNext();
+  }
+  if (nextSibling != null) {
+    return computeFallThrough(nextSibling);
+  } else {
+    return computeFollowNode(fromNode, parent, cfa);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 3
+  - com.google.javascript.jscomp.CheckMissingReturnTest::testIssue779
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedFinally
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedBreakwithFinally
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 48.49 seconds
+                Failure reason: Regression
+
+                PATCH:
+                private static Node computeFollowNode(
+    Node fromNode, Node node, ControlFlowAnalysis cfa) {
+  Node parent = node.getParent();
+  if (parent == null || parent.isFunction() ||
+      (cfa != null && node == cfa.root)) {
+    return null;
+  }
+  switch (parent.getType()) {
+    case Token.IF:
+      return computeFollowNode(fromNode, parent, cfa);
+    case Token.CASE:
+      if (parent.getParent().getType() == Token.SWITCH) {
+        return computeFallThrough(parent.getParent());
+      }
+      return null;
+    case Token.DEFAULT_CASE:
+      if (parent.getParent().getType() == Token.SWITCH) {
+        return computeFallThrough(parent.getParent());
+      }
+      return null;
+    case Token.FOR:
+      if (NodeUtil.isForIn(parent)) {
+        return parent;
+      } else {
+        return parent.getFirstChild().getNext().getNext();
+      }
+    case Token.WHILE:
+    case Token.DO:
+      return parent;
+    case Token.TRY:
+      if (parent.getFirstChild() == node) {
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(parent.getLastChild());
+        } else { 
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (NodeUtil.getCatchBlock(parent) == node){
+        if (NodeUtil.hasFinally(parent)) { 
+          return computeFallThrough(node.getNext());
+        } else {
+          return computeFollowNode(fromNode, parent, cfa);
+        }
+      } else if (parent.getLastChild() == node){
+        if (cfa != null) {
+          for (Node finallyNode : cfa.finallyMap.get(parent)) {
+            cfa.createEdge(fromNode, Branch.UNCOND, finallyNode);
+                      }
+        }
+        return computeFollowNode(fromNode, parent, cfa);
+      }
+  }
+  Node nextSibling = node.getNext();
+  while (nextSibling != null && nextSibling.isFunction()) {
+    nextSibling = nextSibling.getNext();
+  }
+  if (nextSibling != null) {
+    return computeFallThrough(nextSibling);
+  } else {
+    return computeFollowNode(fromNode, parent, cfa);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 12
+  - com.google.javascript.jscomp.CheckMissingReturnTest::testIssue779
+  - com.google.javascript.jscomp.CheckUnreachableCodeTest::testCorrectSwitchReturn
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedFinally
+  - com.google.javascript.jscomp.ControlFlowAnalysisTest::testDeepNestedBreakwithFinally
+  - com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testRemoveDuplicateThrow
+  - com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testRemoveDuplicateReturn
+  - com.google.javascript.jscomp.TypeInferenceTest::testSwitch4
+  - com.google.javascript.jscomp.UnreachableCodeEliminationTest::testCascadedRemovalOfUnlessUnconditonalJumps
+  - com.google.javascript.jscomp.UnreachableCodeEliminationTest::testRemoveUnreachableCode
+  - com.google.javascript.jscomp.UnreachableCodeEliminationTest::testUselessUnconditionalReturn
+  - com.google.javascript.jscomp.UnreachableCodeEliminationTest::testIssue311
+  - com.google.javascript.jscomp.UnreachableCodeEliminationTest::testUnlessUnconditonalBreak
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.UnreachableCodeEliminationTest::testIssue311', 'com.google.javascript.jscomp.UnreachableCodeEliminationTest::testUselessUnconditionalReturn', 'com.google.javascript.jscomp.UnreachableCodeEliminationTest::testUnlessUnconditonalBreak', 'com.google.javascript.jscomp.CheckUnreachableCodeTest::testCorrectSwitchReturn', 'com.google.javascript.jscomp.UnreachableCodeEliminationTest::testRemoveUnreachableCode', 'com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testRemoveDuplicateThrow', 'com.google.javascript.jscomp.PeepholeSubstituteAlternateSyntaxTest::testRemoveDuplicateReturn', 'com.google.javascript.jscomp.UnreachableCodeEliminationTest::testCascadedRemovalOfUnlessUnconditonalJumps', 'com.google.javascript.jscomp.TypeInferenceTest::testSwitch4']
+
+                EXCEPTIONS
+                None
+
+

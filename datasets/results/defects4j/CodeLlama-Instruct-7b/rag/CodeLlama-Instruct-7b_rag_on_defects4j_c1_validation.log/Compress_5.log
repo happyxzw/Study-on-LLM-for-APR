@@ -1,0 +1,881 @@
+==================================================
+                Project: Compress
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 9.02 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int read(byte[] buffer, int start, int length) throws IOException {
+    if (closed) {
+        throw new IOException("The stream is closed");
+    }
+    if (inf.finished() || current == null) {
+        return -1;
+    }
+    if (start <= buffer.length && length >= 0 && start >= 0
+        && buffer.length - start >= length) {
+        if (current.getMethod() == ZipArchiveOutputStream.STORED) {
+            int csize = (int) current.getSize();
+            if (readBytesOfEntry >= csize) {
+                return -1;
+            }
+            if (offsetInBuffer >= lengthOfLastRead) {
+                offsetInBuffer = 0;
+                if ((lengthOfLastRead = in.read(buf)) == -1) {
+                    return -1;
+                }
+                count(lengthOfLastRead);
+                bytesReadFromStream += lengthOfLastRead;
+            }
+            int toRead = length > lengthOfLastRead
+                ? lengthOfLastRead - offsetInBuffer
+                : length;
+            if ((csize - readBytesOfEntry) < toRead) {
+                toRead = csize - readBytesOfEntry;
+            }
+            System.arraycopy(buf, offsetInBuffer, buffer, start, toRead);
+            offsetInBuffer += toRead;
+            readBytesOfEntry += toRead;
+            crc.update(buffer, start, toRead);
+            return toRead;
+        }
+        if (inf.needsInput()) {
+            fill();
+            if (lengthOfLastRead > 0) {
+                bytesReadFromStream += lengthOfLastRead;
+            }
+        }
+        int read = 0;
+        try {
+            read = inf.inflate(buffer, start, length);
+        } catch (DataFormatException e) {
+            throw new ZipException(e.getMessage());
+        }
+        if (read == 0 && inf.finished()) {
+            return -1;
+        }
+        crc.update(buffer, start, read);
+        return read;
+    }
+    throw new ArrayIndexOutOfBoundsException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.Maven221MultiVolumeTest::testRead7ZipMultiVolumeArchiveForStream
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 2.85 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                Here is the fixed version of the `read` function:
+```
+public int read(byte[] buffer, int start, int length) throws IOException {
+    if (closed) {
+        throw new IOException("The stream is closed");
+    }
+    if (inf.finished() || current == null) {
+        return -1;
+    }
+    if (start <= buffer.length && length >= 0 && start >= 0
+        && buffer.length - start >= length) {
+        if (current.getMethod() == ZipArchiveOutputStream.STORED) {
+            int csize = (int) current.getSize();
+            if (readBytesOfEntry >= csize) {
+                return -1;
+            }
+            if (offsetInBuffer >= lengthOfLastRead) {
+                offsetInBuffer = 0;
+                if ((lengthOfLastRead = in.read(buf)) == -1) {
+                    return -1;
+                }
+                count(lengthOfLastRead);
+                bytesReadFromStream += lengthOfLastRead;
+            }
+            int toRead = length > lengthOfLastRead
+                ? lengthOfLastRead - offsetInBuffer
+                : length;
+            if ((csize - readBytesOfEntry) < toRead) {
+                toRead = csize - readBytesOfEntry;
+            }
+            System.arraycopy(buf, offsetInBuffer, buffer, start, toRead);
+            offsetInBuffer += toRead;
+            readBytesOfEntry += toRead;
+            crc.update(buffer, start, toRead);
+            return toRead;
+        }
+        if (inf.needsInput()) {
+            fill();
+            if (lengthOfLastRead > 0) {
+                bytesReadFromStream += lengthOfLastRead;
+            }
+        }
+        int read = 0;
+        try {
+            read = inf.inflate(buffer, start, length);
+        } catch (DataFormatException e) {
+            throw new ZipException(e.getMessage());
+        }
+        if (read == 0 && inf.finished()) {
+            return -1;
+        }
+        crc.update(buffer, start, read);
+        return read;
+    }
+    throw new ArrayIndexOutOfBoundsException();
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/maven-build.xml:74: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.4
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] Here is the fixed version of the `read` function:
+    [javac]        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] Here is the fixed version of the `read` function:
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] Here is the fixed version of the `read` function:
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: illegal character: \96
+    [javac] Here is the fixed version of the `read` function:
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: illegal character: \96
+    [javac] Here is the fixed version of the `read` function:
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: <identifier> expected
+    [javac] Here is the fixed version of the `read` function:
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:192: error: illegal character: \96
+    [javac] ```
+    [javac] ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:192: error: illegal character: \96
+    [javac] ```
+    [javac]  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:192: error: illegal character: \96
+    [javac] ```
+    [javac]   ^
+    [javac] 9 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/maven-build.xml:74: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 8.77 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                // The fixed function is the same as the buggy function, except for the additional check `if (readBytesOfEntry >= csize)` before copying the bytes to the buffer.
+
+// Buggy Function
+public int read(byte[] buffer, int start, int length) throws IOException {
+    if (closed) {
+        throw new IOException("The stream is closed");
+    }
+    if (inf.finished() || current == null) {
+        return -1;
+    }
+    if (start <= buffer.length && length >= 0 && start >= 0
+        && buffer.length - start >= length) {
+        if (current.getMethod() == ZipArchiveOutputStream.STORED) {
+            int csize = (int) current.getSize();
+            if (readBytesOfEntry >= csize) {
+                return -1;
+            }
+            if (offsetInBuffer >= lengthOfLastRead) {
+                offsetInBuffer = 0;
+                if ((lengthOfLastRead = in.read(buf)) == -1) {
+                    return -1;
+                }
+                count(lengthOfLastRead);
+                bytesReadFromStream += lengthOfLastRead;
+            }
+            int toRead = length > lengthOfLastRead
+                ? lengthOfLastRead - offsetInBuffer
+                : length;
+            if ((csize - readBytesOfEntry) < toRead) {
+                toRead = csize - readBytesOfEntry;
+            }
+            System.arraycopy(buf, offsetInBuffer, buffer, start, toRead);
+            offsetInBuffer += toRead;
+            readBytesOfEntry += toRead;
+            crc.update(buffer, start, toRead);
+            return toRead;
+        }
+        if (inf.needsInput()) {
+            fill();
+            if (lengthOfLastRead > 0) {
+                bytesReadFromStream += lengthOfLastRead;
+            }
+        }
+        int read = 0;
+        try {
+            read = inf.inflate(buffer, start, length);
+        } catch (DataFormatException e) {
+            throw new ZipException(e.getMessage());
+        }
+        if (read == 0 && inf.finished()) {
+            return -1;
+                }
+        crc.update(buffer, start, read);
+        return read;
+    }
+    throw new ArrayIndexOutOfBoundsException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.Maven221MultiVolumeTest::testRead7ZipMultiVolumeArchiveForStream
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 4.40 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+
+Here's the fixed function with the boundary checks fixed:
+```
+public int read(byte[] buffer, int start, int length) throws IOException {
+    if (closed) {
+        throw new IOException("The stream is closed");
+    }
+    if (inf.finished() || current == null) {
+        return -1;
+    }
+    if (start >= 0 && start <= buffer.length && length >= 0 && buffer.length - start >= length) {
+        if (current.getMethod() == ZipArchiveOutputStream.STORED) {
+            int csize = (int) current.getSize();
+            if (readBytesOfEntry >= csize) {
+                return -1;
+            }
+            if (offsetInBuffer >= lengthOfLastRead) {
+                offsetInBuffer = 0;
+                if ((lengthOfLastRead = in.read(buf)) == -1) {
+                    return -1;
+                }
+                count(lengthOfLastRead);
+                bytesReadFromStream += lengthOfLastRead;
+            }
+            int toRead = length > lengthOfLastRead
+                ? lengthOfLastRead - offsetInBuffer
+                : length;
+            if ((csize - readBytesOfEntry) < toRead) {
+                toRead = csize - readBytesOfEntry;
+            }
+            System.arraycopy(buf, offsetInBuffer, buffer, start, toRead);
+            offsetInBuffer += toRead;
+            readBytesOfEntry += toRead;
+            crc.update(buffer, start, toRead);
+            return toRead;
+        }
+        if (inf.needsInput()) {
+            fill();
+            if (lengthOfLastRead > 0) {
+                bytesReadFromStream += lengthOfLastRead;
+            }
+        }
+        int read = 0;
+        try {
+            read = inf.inflate(buffer, start, length);
+        } catch (DataFormatException e) {
+            throw new ZipException(e.getMessage());
+        }
+        if (read == 0 && inf.finished()) {
+            return -1;
+        }
+        crc.update(buffer, start, read);
+        return read;
+    }
+    throw new ArrayIndexOutOfBoundsException();
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+test-offline:
+
+get-deps:
+
+commons-compress-from-maven.compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/maven-build.xml:74: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/target/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.4
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: illegal character: \96
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: illegal character: \96
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: <identifier> expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                                                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                                                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                                                                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                                                                                                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                                                                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:191: error: ';' expected
+    [javac] The buggy function contains a bug in its boundary checks for the `read` method. It is possible to read data from the stream beyond the end of the stream, which can cause a buffer overflow and potentially lead to a security vulnerability.
+    [javac]                                                                                                                                                                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:193: error: unclosed character literal
+    [javac] Here's the fixed function with the boundary checks fixed:
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:193: error: ';' expected
+    [javac] Here's the fixed function with the boundary checks fixed:
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:193: error: ';' expected
+    [javac] Here's the fixed function with the boundary checks fixed:
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:193: error: ';' expected
+    [javac] Here's the fixed function with the boundary checks fixed:
+    [javac]                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:193: error: ';' expected
+    [javac] Here's the fixed function with the boundary checks fixed:
+    [javac]                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:194: error: illegal character: \96
+    [javac] ```
+    [javac] ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:194: error: illegal character: \96
+    [javac] ```
+    [javac]  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveInputStream.java:194: error: illegal character: \96
+    [javac] ```
+    [javac]   ^
+    [javac] 30 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Compress_5_930079cbbb8f44c69ae852645ab57721/maven-build.xml:74: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 7.41 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int read(byte[] buffer, int start, int length) throws IOException {
+    if (closed) {
+        throw new IOException("The stream is closed");
+    }
+    if (inf.finished() || current == null) {
+        return -1;
+    }
+    if (start <= buffer.length && length >= 0 && start >= 0
+        && buffer.length - start >= length) {
+        if (current.getMethod() == ZipArchiveOutputStream.STORED) {
+            int csize = (int) current.getSize();
+            if (readBytesOfEntry >= csize) {
+                return -1;
+            }
+            if (offsetInBuffer >= lengthOfLastRead) {
+                offsetInBuffer = 0;
+                if ((lengthOfLastRead = in.read(buf)) == -1) {
+                    return -1;
+                }
+                count(lengthOfLastRead);
+                bytesReadFromStream += lengthOfLastRead;
+            }
+            int toRead = length > lengthOfLastRead
+                ? lengthOfLastRead - offsetInBuffer
+                : length;
+            if ((csize - readBytesOfEntry) < toRead) {
+                toRead = csize - readBytesOfEntry;
+            }
+            System.arraycopy(buf, offsetInBuffer, buffer, start, toRead);
+            offsetInBuffer += toRead;
+            readBytesOfEntry += toRead;
+            crc.update(buffer, start, toRead);
+            return toRead;
+        }
+        if (inf.needsInput()) {
+            fill();
+            if (lengthOfLastRead > 0) {
+                bytesReadFromStream += lengthOfLastRead;
+            }
+        }
+        int read = 0;
+        try {
+            read = inf.inflate(buffer, start, length);
+        } catch (DataFormatException e) {
+            throw new ZipException(e.getMessage());
+        }
+        if (read == 0 && inf.finished()) {
+            return -1;
+        }
+        crc.update(buffer, start, read);
+        return read;
+    }
+    throw new ArrayIndexOutOfBoundsException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.Maven221MultiVolumeTest::testRead7ZipMultiVolumeArchiveForStream
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 5.64 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int read(byte[] buffer, int start, int length) throws IOException {
+    if (closed) {
+        throw new IOException("The stream is closed");
+    }
+    if (inf.finished() || current == null) {
+        return -1;
+    }
+    if (start <= buffer.length && length >= 0 && start >= 0
+        && buffer.length - start >= length) {
+        if (current.getMethod() == ZipArchiveOutputStream.STORED) {
+            int csize = (int) current.getSize();
+            if (readBytesOfEntry >= csize) {
+                return -1;
+            }
+            if (offsetInBuffer >= lengthOfLastRead) {
+                offsetInBuffer = 0;
+                if ((lengthOfLastRead = in.read(buf)) == -1) {
+                    return -1;
+                }
+                count(lengthOfLastRead);
+                bytesReadFromStream += lengthOfLastRead;
+            }
+            int toRead = length > lengthOfLastRead
+                ? lengthOfLastRead - offsetInBuffer
+                : length;
+            if ((csize - readBytesOfEntry) < toRead) {
+                toRead = csize - readBytesOfEntry;
+            }
+            System.arraycopy(buf, offsetInBuffer, buffer, start, toRead);
+            offsetInBuffer += toRead;
+            readBytesOfEntry += toRead;
+            crc.update(buffer, start, toRead);
+            return toRead;
+        }
+        if (inf.needsInput()) {
+            fill();
+            if (lengthOfLastRead > 0) {
+                bytesReadFromStream += lengthOfLastRead;
+            }
+        }
+        int read = 0;
+        try {
+            read = inf.inflate(buffer, start, length);
+        } catch (DataFormatException e) {
+            throw new ZipException(e.getMessage());
+        }
+        if (read == 0 && inf.finished()) {
+            return -1;
+        }
+        crc.update(buffer, start, read);
+        return read;
+    }
+    throw new ArrayIndexOutOfBoundsException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.Maven221MultiVolumeTest::testRead7ZipMultiVolumeArchiveForStream
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 5.55 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int read(byte[] buffer, int start, int length) throws IOException {
+    if (closed) {
+        throw new IOException("The stream is closed");
+    }
+    if (inf.finished() || current == null) {
+        return -1;
+    }
+    if (start <= buffer.length && length >= 0 && start >= 0
+        && buffer.length - start >= length) {
+        if (current.getMethod() == ZipArchiveOutputStream.STORED) {
+            int csize = (int) current.getSize();
+            if (readBytesOfEntry >= csize) {
+                return -1;
+            }
+            if (offsetInBuffer >= lengthOfLastRead) {
+                offsetInBuffer = 0;
+                if ((lengthOfLastRead = in.read(buf)) == -1) {
+                    return -1;
+                }
+                count(lengthOfLastRead);
+                bytesReadFromStream += lengthOfLastRead;
+            }
+            int toRead = length > lengthOfLastRead
+                ? lengthOfLastRead - offsetInBuffer
+                : length;
+            if ((csize - readBytesOfEntry) < toRead) {
+                toRead = csize - readBytesOfEntry;
+            }
+            System.arraycopy(buf, offsetInBuffer, buffer, start, toRead);
+            offsetInBuffer += toRead;
+            readBytesOfEntry += toRead;
+            crc.update(buffer, start, toRead);
+            return toRead;
+        }
+        if (inf.needsInput()) {
+            fill();
+            if (lengthOfLastRead > 0) {
+                bytesReadFromStream += lengthOfLastRead;
+            }
+        }
+        int read = 0;
+        try {
+            read = inf.inflate(buffer, start, length);
+        } catch (DataFormatException e) {
+            throw new ZipException(e.getMessage());
+        }
+        if (read == 0 && inf.finished()) {
+            return -1;
+        }
+        crc.update(buffer, start, read);
+        return read;
+    }
+    throw new ArrayIndexOutOfBoundsException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.Maven221MultiVolumeTest::testRead7ZipMultiVolumeArchiveForStream
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 7.35 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int read(byte[] buffer, int start, int length) throws IOException {
+    if (closed) {
+        throw new IOException("The stream is closed");
+    }
+    if (inf.finished() || current == null) {
+        return -1;
+    }
+    if (start <= buffer.length && length >= 0 && start >= 0
+        && buffer.length - start >= length) {
+        if (current.getMethod() == ZipArchiveOutputStream.STORED) {
+            int csize = (int) current.getSize();
+            if (readBytesOfEntry >= csize) {
+                return -1;
+            }
+            if (offsetInBuffer >= lengthOfLastRead) {
+                offsetInBuffer = 0;
+                if ((lengthOfLastRead = in.read(buf)) == -1) {
+                    return -1;
+                }
+                count(lengthOfLastRead);
+                bytesReadFromStream += lengthOfLastRead;
+            }
+            int toRead = length > lengthOfLastRead
+                ? lengthOfLastRead - offsetInBuffer
+                : length;
+            if ((csize - readBytesOfEntry) < toRead) {
+                toRead = csize - readBytesOfEntry;
+            }
+            System.arraycopy(buf, offsetInBuffer, buffer, start, toRead);
+            offsetInBuffer += toRead;
+            readBytesOfEntry += toRead;
+            crc.update(buffer, start, toRead);
+            return toRead;
+        }
+        if (inf.needsInput()) {
+            fill();
+            if (lengthOfLastRead > 0) {
+                bytesReadFromStream += lengthOfLastRead;
+            }
+        }
+        int read = 0;
+        try {
+            read = inf.inflate(buffer, start, length);
+        } catch (DataFormatException e) {
+            throw new ZipException(e.getMessage());
+        }
+        if (read == 0 && inf.finished()) {
+            return -1;
+        }
+        crc.update(buffer, start, read);
+        return read;
+    }
+    throw new ArrayIndexOutOfBoundsException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.Maven221MultiVolumeTest::testRead7ZipMultiVolumeArchiveForStream
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Compress
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 6.78 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int read(byte[] buffer, int start, int length) throws IOException {
+    if (closed) {
+        throw new IOException("The stream is closed");
+    }
+    if (inf.finished() || current == null) {
+        return -1;
+    }
+    if (start <= buffer.length && length >= 0 && start >= 0
+        && buffer.length - start >= length) {
+        if (current.getMethod() == ZipArchiveOutputStream.STORED) {
+            int csize = (int) current.getSize();
+            if (readBytesOfEntry >= csize) {
+                return -1;
+            }
+            if (offsetInBuffer >= lengthOfLastRead) {
+                offsetInBuffer = 0;
+                if ((lengthOfLastRead = in.read(buf)) == -1) {
+                    return -1;
+                }
+                count(lengthOfLastRead);
+                bytesReadFromStream += lengthOfLastRead;
+            }
+            int toRead = length > lengthOfLastRead
+                ? lengthOfLastRead - offsetInBuffer
+                : length;
+            if ((csize - readBytesOfEntry) < toRead) {
+                toRead = csize - readBytesOfEntry;
+            }
+            System.arraycopy(buf, offsetInBuffer, buffer, start, toRead);
+            offsetInBuffer += toRead;
+            readBytesOfEntry += toRead;
+            crc.update(buffer, start, toRead);
+            return toRead;
+        }
+        if (inf.needsInput()) {
+            fill();
+            if (lengthOfLastRead > 0) {
+                bytesReadFromStream += lengthOfLastRead;
+            }
+        }
+        int read = 0;
+        try {
+            read = inf.inflate(buffer, start, length);
+        } catch (DataFormatException e) {
+            throw new ZipException(e.getMessage());
+        }
+        if (read == 0 && inf.finished()) {
+            return -1;
+        }
+        crc.update(buffer, start, read);
+        return read;
+    }
+    throw new ArrayIndexOutOfBoundsException();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.compress.archivers.zip.Maven221MultiVolumeTest::testRead7ZipMultiVolumeArchiveForStream
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

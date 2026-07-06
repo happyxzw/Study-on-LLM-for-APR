@@ -1,0 +1,840 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 81.75 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          if (s.regionMatches(true, i + 1, "]]>", 0, 3)) {
+            // Check for the ']]>' sequence
+            sb.append("\\");
+          }
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 73.42 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                                   END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+                      sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.CodePrinterTest::testPrint
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CodePrinterTest::testPrint']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 80.88 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '<':
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else if (i + 1 < s.length() &&
+                   s.charAt(i + 1) == '/') {
+          if (s.regionMatches(true, i + 2, "script", 0, "script".length())) {
+            // Skip escaping the "<" character
+          } else {
+            sb.append("\\<");
+          }
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '>':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.CodePrinterTest::testPrint
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CodePrinterTest::testPrint']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 80.18 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 78.79 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 76.79 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '<':
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else if (i >= 1 && s.charAt(i - 1) == '\\') {
+          sb.append(c);
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '>':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.CodePrinterTest::testPrint
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CodePrinterTest::testPrint']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 76.13 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 77.79 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 82.43 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 83.39 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '<':
+        if (i < s.length() - 1 && s.charAt(i + 1) == '>') {
+          sb.append("\\<");
+        } else if (i < s.length() - 2 && s.charAt(i + 1) == '-' &&
+                   s.charAt(i + 2) == '>') {
+          sb.append("\\<");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.CodePrinterTest::testPrint
+  - com.google.javascript.jscomp.CodePrinterTest::testUnicode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CodePrinterTest::testPrint']
+
+                EXCEPTIONS
+                None
+
+

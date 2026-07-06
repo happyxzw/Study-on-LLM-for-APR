@@ -1,0 +1,2300 @@
+==================================================
+                Project: Gson
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 17.85 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 20.06 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 22.40 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 19.28 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 18.12 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0;
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE;
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 18.91 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 17.38 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 17.52 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+    char[] buffer = this.buffer;
+    int p = pos;
+    int l = limit;
+    long value = 0;
+    boolean negative = false;
+    boolean fitsInLong = true;
+    int last = NUMBER_CHAR_NONE;
+    int i = 0;
+    charactersOfNumber:
+    for (; true; i++) {
+        if (p + i == l) {
+            if (i == buffer.length) {
+                return PEEKED_NONE;
+            }
+            if (!fillBuffer(i + 1)) {
+                break;
+            }
+            p = pos;
+            l = limit;
+        }
+        char c = buffer[p + i];
+        switch (c) {
+        case '-':
+            if (last == NUMBER_CHAR_NONE) {
+                negative = true;
+                last = NUMBER_CHAR_SIGN;
+                continue;
+            } else if (last == NUMBER_CHAR_EXP_E) {
+                last = NUMBER_CHAR_EXP_SIGN;
+                continue;
+            }
+            return PEEKED_NONE;
+        case '+':
+            if (last == NUMBER_CHAR_EXP_E) {
+                last = NUMBER_CHAR_EXP_SIGN;
+                continue;
+            }
+            return PEEKED_NONE;
+        case 'e':
+        case 'E':
+            if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+                last = NUMBER_CHAR_EXP_E;
+                continue;
+            }
+            return PEEKED_NONE;
+        case '.':
+            if (last == NUMBER_CHAR_DIGIT) {
+                last = NUMBER_CHAR_DECIMAL;
+                continue;
+            }
+            return PEEKED_NONE;
+        default:
+            if (c < '0' || c > '9') {
+                if (!isLiteral(c)) {
+                    break charactersOfNumber;
+                }
+                return PEEKED_NONE;
+            }
+            if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+                value = -(c - '0');
+                last = NUMBER_CHAR_DIGIT;
+            } else if (last == NUMBER_CHAR_DIGIT) {
+                if (value == 0) {
+                    return PEEKED_NONE; 
+                }
+                long newValue = value * 10 - (c - '0');
+                fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+                    || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+                value = newValue;
+            } else if (last == NUMBER_CHAR_DECIMAL) {
+                last = NUMBER_CHAR_FRACTION_DIGIT;
+            } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+                last = NUMBER_CHAR_EXP_DIGIT;
+            }
+        }
+    }
+    if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+        peekedLong = negative ? value : -value;
+        pos += i;
+        return peeked = PEEKED_LONG;
+    } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+        || last == NUMBER_CHAR_EXP_DIGIT) {
+        peekedNumberLength = i;
+        return peeked = PEEKED_NUMBER;
+    } else {
+        return PEEKED_NONE;
+    }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 16.10 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0;
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE;
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 16.79 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 16.25 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 12.98 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 17.13 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 16.21 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 18.90 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 15.06 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 13.61 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 13.98 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 15.56 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Gson
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 15.83 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                private int peekNumber() throws IOException {
+  char[] buffer = this.buffer;
+  int p = pos;
+  int l = limit;
+  long value = 0; 
+  boolean negative = false;
+  boolean fitsInLong = true;
+  int last = NUMBER_CHAR_NONE;
+  int i = 0;
+  charactersOfNumber:
+  for (; true; i++) {
+    if (p + i == l) {
+      if (i == buffer.length) {
+        return PEEKED_NONE;
+      }
+      if (!fillBuffer(i + 1)) {
+        break;
+      }
+      p = pos;
+      l = limit;
+    }
+    char c = buffer[p + i];
+    switch (c) {
+    case '-':
+      if (last == NUMBER_CHAR_NONE) {
+        negative = true;
+        last = NUMBER_CHAR_SIGN;
+        continue;
+      } else if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '+':
+      if (last == NUMBER_CHAR_EXP_E) {
+        last = NUMBER_CHAR_EXP_SIGN;
+        continue;
+      }
+      return PEEKED_NONE;
+    case 'e':
+    case 'E':
+      if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
+        last = NUMBER_CHAR_EXP_E;
+        continue;
+      }
+      return PEEKED_NONE;
+    case '.':
+      if (last == NUMBER_CHAR_DIGIT) {
+        last = NUMBER_CHAR_DECIMAL;
+        continue;
+      }
+      return PEEKED_NONE;
+    default:
+      if (c < '0' || c > '9') {
+        if (!isLiteral(c)) {
+          break charactersOfNumber;
+        }
+        return PEEKED_NONE;
+      }
+      if (last == NUMBER_CHAR_SIGN || last == NUMBER_CHAR_NONE) {
+        value = -(c - '0');
+        last = NUMBER_CHAR_DIGIT;
+      } else if (last == NUMBER_CHAR_DIGIT) {
+        if (value == 0) {
+          return PEEKED_NONE; 
+        }
+        long newValue = value * 10 - (c - '0');
+        fitsInLong &= value > MIN_INCOMPLETE_INTEGER
+            || (value == MIN_INCOMPLETE_INTEGER && newValue < value);
+        value = newValue;
+      } else if (last == NUMBER_CHAR_DECIMAL) {
+        last = NUMBER_CHAR_FRACTION_DIGIT;
+      } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
+        last = NUMBER_CHAR_EXP_DIGIT;
+      }
+    }
+  }
+  if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative)) {
+      peekedLong = negative ? value : -value;
+    pos += i;
+    return peeked = PEEKED_LONG;
+  } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT
+      || last == NUMBER_CHAR_EXP_DIGIT) {
+    peekedNumberLength = i;
+    return peeked = PEEKED_NUMBER;
+  } else {
+    return PEEKED_NONE;
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.gson.stream.JsonReaderTest::testNegativeZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

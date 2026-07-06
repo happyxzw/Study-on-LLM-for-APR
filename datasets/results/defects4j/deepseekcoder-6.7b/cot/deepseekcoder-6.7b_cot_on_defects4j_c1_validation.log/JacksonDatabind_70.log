@@ -1,0 +1,359 @@
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 74.32 seconds
+                Failure reason: None
+
+                PATCH:
+                public void remove(SettableBeanProperty propToRm)
+{
+    ArrayList<SettableBeanProperty> props = new ArrayList<SettableBeanProperty>(_size);
+    String key = getPropertyName(propToRm);
+    for (int i = 1, end = _hashArea.length; i < end; i += 2) {
+        SettableBeanProperty prop = (SettableBeanProperty) _hashArea[i];
+        if (prop == null) {
+            continue;
+        }
+        if (key.equals(prop.getName())) {
+            _propsInOrder[_findFromOrdered(prop)] = null;
+        } else {
+            props.add(prop);
+        }
+    }
+    if (_hashArea.length == props.size()) {
+        throw new NoSuchElementException("No entry '"+propToRm.getName()+"' found, can't remove");
+    }
+    init(props);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 81.75 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void remove(SettableBeanProperty propToRm) {
+    ArrayList<SettableBeanProperty> props = new ArrayList<SettableBeanProperty>(_size);
+    String key = getPropertyName(propToRm);
+    boolean found = false;
+    for (int i = 1, end = _hashArea.length; i < end; i += 2) {
+        SettableBeanProperty prop = (SettableBeanProperty) _hashArea[i];
+        if (prop == null) {
+            continue;
+        }
+        if (!found) {
+            found = key.equals(prop.getName());
+        }
+        if (!found || prop.equals(propToRm)) {
+            props.add(prop);
+        }
+    }
+    if (!found) {
+        throw new NoSuchElementException("No entry '"+propToRm.getName()+"' found, can't remove");
+    }
+    init(props);
+}
+
+                TEST STDOUT:
+                Failing tests: 22
+  - com.fasterxml.jackson.databind.creators.DelegatingExternalProperty1003Test::testExtrnalPropertyDelegatingCreator
+  - com.fasterxml.jackson.databind.jsontype.TestCustomTypeIdResolver::testCustomWithExternal
+  - com.fasterxml.jackson.databind.jsontype.TestVisibleTypeId::testVisibleTypeId408
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId198Test::testFails
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId198Test::testWorks
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testExternalTypeWithCreator
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testBigDecimal965
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testWithAsValue
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testExternalTypeIdWithNull
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testWithScalar118
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue798
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue831
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testSimpleDeserialization
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testMultipleTypeIdsDeserialization
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationPresent
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationEmpty
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationNull
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testDoubleUnwrapping
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testCaseInsensitiveUnwrap
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigDeserialize
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testIssue226
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigRoundTrip
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationEmpty', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testIssue226', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationPresent', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigRoundTrip', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testExternalTypeWithCreator', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue831', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testBigDecimal965', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue798', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId198Test::testFails', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId198Test::testWorks', 'com.fasterxml.jackson.databind.struct.TestUnwrapped::testDoubleUnwrapping', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testMultipleTypeIdsDeserialization', 'com.fasterxml.jackson.databind.creators.DelegatingExternalProperty1003Test::testExtrnalPropertyDelegatingCreator', 'com.fasterxml.jackson.databind.jsontype.TestCustomTypeIdResolver::testCustomWithExternal', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testSimpleDeserialization', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigDeserialize', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationNull', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testExternalTypeIdWithNull', 'com.fasterxml.jackson.databind.jsontype.TestVisibleTypeId::testVisibleTypeId408', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testWithAsValue', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testWithScalar118']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 71.75 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void remove(SettableBeanProperty propToRm)
+{
+    ArrayList<SettableBeanProperty> props = new ArrayList<SettableBeanProperty>(_size);
+    String key = getPropertyName(propToRm);
+    boolean found = false;
+    for (int i = 1, end = _hashArea.length; i < end; i += 2) {
+        SettableBeanProperty prop = (SettableBeanProperty) _hashArea[i];
+        if (prop == null) {
+            continue;
+        }
+        if (!found) {
+            found = key.equals(prop.getName());
+                        if (found) {
+                _propsInOrder[_findFromOrdered(prop)] = null;
+                continue;
+            }
+        }
+        if (!found) {
+            throw new NoSuchElementException("No entry '"+propToRm.getName()+"' found, can't remove");
+        }
+        props.add(prop);
+    }
+    init(props);
+}
+
+                TEST STDOUT:
+                Failing tests: 15
+  - com.fasterxml.jackson.databind.deser.AnySetter349Test::testUnwrappedWithAny
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId999Test::testExternalTypeId
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue831
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationMissingRequired
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationPresent
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationEmpty
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationMissing
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationNull
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testDeepUnwrapping
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testCaseInsensitiveUnwrap
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testSimpleUnwrappedDeserialize
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testUnwrappedDeserializeWithCreator
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testPrefixedUnwrapping
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testDeepPrefixedUnwrappingDeserialize
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigRoundTrip
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.deser.AnySetter349Test::testUnwrappedWithAny', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationEmpty', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId999Test::testExternalTypeId', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationMissing', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationPresent', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigRoundTrip', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue831', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testDeepPrefixedUnwrappingDeserialize', 'com.fasterxml.jackson.databind.struct.TestUnwrapped::testUnwrappedDeserializeWithCreator', 'com.fasterxml.jackson.databind.struct.TestUnwrapped::testDeepUnwrapping', 'com.fasterxml.jackson.databind.struct.TestUnwrapped::testSimpleUnwrappedDeserialize', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationNull', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationMissingRequired', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testPrefixedUnwrapping']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 90.94 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void remove(SettableBeanProperty propToRm)
+{
+    ArrayList<SettableBeanProperty> props = new ArrayList<SettableBeanProperty>(_size);
+    String key = getPropertyName(propToRm);
+    boolean found = false;
+    for (int i = 1, end = _hashArea.length; i < end; i += 2) {
+        SettableBeanProperty prop = (SettableBeanProperty) _hashArea[i];
+        if (prop == null) {
+            continue;
+        }
+        if (!found) {
+            found = key.equals(prop.getName());
+            if (found) {
+                _propsInOrder[_findFromOrdered(prop)] = null;
+            }
+        }
+        if (!found) {
+            props.add(prop);
+        }
+    }
+    if (!found) {
+        throw new NoSuchElementException("No entry '"+propToRm.getName()+"' found, can't remove");
+    }
+    init(props);
+}
+
+                TEST STDOUT:
+                Failing tests: 12
+  - com.fasterxml.jackson.databind.jsontype.TestVisibleTypeId::testVisibleTypeId408
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId198Test::testFails
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId198Test::testWorks
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testExternalTypeWithCreator
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testBigDecimal965
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue798
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testMultipleTypeIdsDeserialization
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testDoubleUnwrapping
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testCaseInsensitiveUnwrap
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigDeserialize
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testIssue226
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigRoundTrip
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testMultipleTypeIdsDeserialization', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testIssue226', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigRoundTrip', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testExternalTypeWithCreator', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId198Test::testWorks', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testBigDecimal965', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigDeserialize', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue798', 'com.fasterxml.jackson.databind.jsontype.TestVisibleTypeId::testVisibleTypeId408', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId198Test::testFails', 'com.fasterxml.jackson.databind.struct.TestUnwrapped::testDoubleUnwrapping']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 85.54 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void remove(SettableBeanProperty propToRm)
+{
+    ArrayList<SettableBeanProperty> props = new ArrayList<SettableBeanProperty>(_size);
+    String key = getPropertyName(propToRm);
+    boolean found = false;
+    for (int i = 1, end = _hashArea.length; i < end; i += 2) {
+        SettableBeanProperty prop = (SettableBeanProperty) _hashArea[i];
+        if (prop == null) {
+            continue;
+        }
+        if (key.equals(prop.getName())) {
+            _propsInOrder[_findFromOrdered(prop)] = null;
+            found = true;
+            continue;
+        }
+        if (found) {
+            props.add(prop);
+        }
+    }
+    if (!found) {
+        throw new NoSuchElementException("No entry '"+propToRm.getName()+"' found, can't remove");
+    }
+    init(props);
+}
+
+                TEST STDOUT:
+                Failing tests: 11
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId999Test::testExternalTypeId
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue831
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationPresent
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationEmpty
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationMissing
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationNull
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testDeepUnwrapping
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testCaseInsensitiveUnwrap
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testSimpleUnwrappedDeserialize
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testPrefixedUnwrapping
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigRoundTrip
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId999Test::testExternalTypeId', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationEmpty', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationMissing', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationPresent', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigRoundTrip', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue831', 'com.fasterxml.jackson.databind.struct.TestUnwrapped::testDeepUnwrapping', 'com.fasterxml.jackson.databind.struct.TestUnwrapped::testSimpleUnwrappedDeserialize', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationNull', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testPrefixedUnwrapping']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 77.88 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void remove(SettableBeanProperty propToRm)
+{
+    ArrayList<SettableBeanProperty> props = new ArrayList<SettableBeanProperty>(_size);
+    String key = getPropertyName(propToRm);
+    boolean found = false;
+    for (int i = 1, end = _hashArea.length; i < end; i += 2) {
+        SettableBeanProperty prop = (SettableBeanProperty) _hashArea[i];
+        if (prop == null) {
+            continue;
+        }
+        if (!found) {
+            found = key.equals(prop.getName());
+                        if (found) {
+                _propsInOrder[_findFromOrdered(prop)] = null;
+            }
+        } else {
+            props.add(prop);
+        }
+    }
+    if (!found) {
+        throw new NoSuchElementException("No entry '"+propToRm.getName()+"' found, can't remove");
+    }
+    init(props);
+}
+
+                TEST STDOUT:
+                Failing tests: 11
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId999Test::testExternalTypeId
+  - com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue831
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationPresent
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationEmpty
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationMissing
+  - com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationNull
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testDeepUnwrapping
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testCaseInsensitiveUnwrap
+  - com.fasterxml.jackson.databind.struct.TestUnwrapped::testSimpleUnwrappedDeserialize
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testPrefixedUnwrapping
+  - com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigRoundTrip
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeId999Test::testExternalTypeId', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationEmpty', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationMissing', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationPresent', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testHierarchicConfigRoundTrip', 'com.fasterxml.jackson.databind.jsontype.ext.ExternalTypeIdTest::testIssue831', 'com.fasterxml.jackson.databind.struct.TestUnwrapped::testDeepUnwrapping', 'com.fasterxml.jackson.databind.struct.TestUnwrapped::testSimpleUnwrappedDeserialize', 'com.fasterxml.jackson.databind.jsontype.ext.TestSubtypesExternalPropertyMissingProperty::testDeserializationNull', 'com.fasterxml.jackson.databind.struct.TestUnwrappedWithPrefix::testPrefixedUnwrapping']
+
+                EXCEPTIONS
+                None
+
+

@@ -1,0 +1,871 @@
+==================================================
+                Project: Codec
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 4.74 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 3.56 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    int chunkSize = isChunked ? MIME_CHUNK_SIZE : 0;
+    byte[] chunkSeparator = isChunked ? CHUNK_SEPARATOR : new byte[0];
+    long len = getEncodeLength(binaryData, chunkSize, chunkSeparator);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = new Base64(chunkSize, chunkSeparator, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 27
+  - org.apache.commons.codec.binary.Base64Codec13Test::testStaticEncode
+  - org.apache.commons.codec.binary.Base64InputStreamTest::testBase64InputStreamByChunk
+  - org.apache.commons.codec.binary.Base64InputStreamTest::testBase64InputStreamByteByByte
+  - org.apache.commons.codec.binary.Base64OutputStreamTest::testBase64OutputStreamByteByByte
+  - org.apache.commons.codec.binary.Base64OutputStreamTest::testBase64OutputStreamByChunk
+  - org.apache.commons.codec.binary.Base64Test::testTriplets
+  - org.apache.commons.codec.binary.Base64Test::testPairs
+  - org.apache.commons.codec.binary.Base64Test::testUUID
+  - org.apache.commons.codec.binary.Base64Test::testEncodeDecodeSmall
+  - org.apache.commons.codec.binary.Base64Test::testObjectDecodeWithValidParameter
+  - org.apache.commons.codec.binary.Base64Test::testCodeInteger1
+  - org.apache.commons.codec.binary.Base64Test::testCodeInteger2
+  - org.apache.commons.codec.binary.Base64Test::testCodeInteger3
+  - org.apache.commons.codec.binary.Base64Test::testCodeInteger4
+  - org.apache.commons.codec.binary.Base64Test::testUrlSafe
+  - org.apache.commons.codec.binary.Base64Test::testEncodeDecodeRandom
+  - org.apache.commons.codec.binary.Base64Test::testDecodeWithWhitespace
+  - org.apache.commons.codec.binary.Base64Test::testKnownEncodings
+  - org.apache.commons.codec.binary.Base64Test::testCodec112
+  - org.apache.commons.codec.binary.Base64Test::testSingletons
+  - org.apache.commons.codec.binary.Base64Test::testBase64
+  - org.apache.commons.codec.binary.Base64Test::testByteToStringVariations
+  - org.apache.commons.codec.binary.Base64Test::testRfc4648Section10Encode
+  - org.apache.commons.codec.binary.Base64Test::testRfc4648Section10EncodeDecode
+  - org.apache.commons.codec.net.BCodecTest::testUTF8RoundTrip
+  - org.apache.commons.codec.net.BCodecTest::testBasicEncodeDecode
+  - org.apache.commons.codec.net.BCodecTest::testEncodeObjects
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.codec.binary.Base64Test::testTriplets', 'org.apache.commons.codec.binary.Base64Test::testCodeInteger2', 'org.apache.commons.codec.binary.Base64Test::testCodeInteger4', 'org.apache.commons.codec.net.BCodecTest::testUTF8RoundTrip', 'org.apache.commons.codec.binary.Base64Test::testCodeInteger3', 'org.apache.commons.codec.binary.Base64Test::testByteToStringVariations', 'org.apache.commons.codec.binary.Base64Test::testObjectDecodeWithValidParameter', 'org.apache.commons.codec.net.BCodecTest::testEncodeObjects', 'org.apache.commons.codec.binary.Base64Test::testUUID', 'org.apache.commons.codec.binary.Base64Test::testDecodeWithWhitespace', 'org.apache.commons.codec.binary.Base64Test::testRfc4648Section10EncodeDecode', 'org.apache.commons.codec.binary.Base64Test::testCodeInteger1', 'org.apache.commons.codec.binary.Base64Test::testEncodeDecodeRandom', 'org.apache.commons.codec.binary.Base64Test::testRfc4648Section10Encode', 'org.apache.commons.codec.binary.Base64InputStreamTest::testBase64InputStreamByChunk', 'org.apache.commons.codec.binary.Base64Test::testEncodeDecodeSmall', 'org.apache.commons.codec.net.BCodecTest::testBasicEncodeDecode', 'org.apache.commons.codec.binary.Base64Codec13Test::testStaticEncode', 'org.apache.commons.codec.binary.Base64Test::testKnownEncodings', 'org.apache.commons.codec.binary.Base64Test::testBase64', 'org.apache.commons.codec.binary.Base64InputStreamTest::testBase64InputStreamByteByByte', 'org.apache.commons.codec.binary.Base64Test::testSingletons', 'org.apache.commons.codec.binary.Base64OutputStreamTest::testBase64OutputStreamByChunk', 'org.apache.commons.codec.binary.Base64Test::testPairs', 'org.apache.commons.codec.binary.Base64Test::testUrlSafe', 'org.apache.commons.codec.binary.Base64OutputStreamTest::testBase64OutputStreamByteByByte']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 4.78 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, CHUNK_SEPARATOR, urlSafe);
+    byte[] encodedData = b64.encode(binaryData);
+    if (maxResultSize > 0 && encodedData.length > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            encodedData.length +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    return encodedData;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - org.apache.commons.codec.binary.Base64Test::testEncodeOverMaxSize
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.codec.binary.Base64Test::testEncodeOverMaxSize']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 3
+                Correctness: plausible
+                Validation Time: 5.08 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    byte[] encodedData = b64.encode(binaryData);
+    if (encodedData.length > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            encodedData.length +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    return encodedData;
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 4.28 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    int chunkSize = isChunked ? MIME_CHUNK_SIZE : 0;
+    byte[] chunkSeparator = isChunked ? CHUNK_SEPARATOR : new byte[0];
+    long len = getEncodeLength(binaryData, chunkSize, chunkSeparator);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = new Base64(chunkSize, chunkSeparator, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 27
+  - org.apache.commons.codec.binary.Base64Codec13Test::testStaticEncode
+  - org.apache.commons.codec.binary.Base64InputStreamTest::testBase64InputStreamByChunk
+  - org.apache.commons.codec.binary.Base64InputStreamTest::testBase64InputStreamByteByByte
+  - org.apache.commons.codec.binary.Base64OutputStreamTest::testBase64OutputStreamByteByByte
+  - org.apache.commons.codec.binary.Base64OutputStreamTest::testBase64OutputStreamByChunk
+  - org.apache.commons.codec.binary.Base64Test::testTriplets
+  - org.apache.commons.codec.binary.Base64Test::testPairs
+  - org.apache.commons.codec.binary.Base64Test::testUUID
+  - org.apache.commons.codec.binary.Base64Test::testEncodeDecodeSmall
+  - org.apache.commons.codec.binary.Base64Test::testObjectDecodeWithValidParameter
+  - org.apache.commons.codec.binary.Base64Test::testCodeInteger1
+  - org.apache.commons.codec.binary.Base64Test::testCodeInteger2
+  - org.apache.commons.codec.binary.Base64Test::testCodeInteger3
+  - org.apache.commons.codec.binary.Base64Test::testCodeInteger4
+  - org.apache.commons.codec.binary.Base64Test::testUrlSafe
+  - org.apache.commons.codec.binary.Base64Test::testEncodeDecodeRandom
+  - org.apache.commons.codec.binary.Base64Test::testDecodeWithWhitespace
+  - org.apache.commons.codec.binary.Base64Test::testKnownEncodings
+  - org.apache.commons.codec.binary.Base64Test::testCodec112
+  - org.apache.commons.codec.binary.Base64Test::testSingletons
+  - org.apache.commons.codec.binary.Base64Test::testBase64
+  - org.apache.commons.codec.binary.Base64Test::testByteToStringVariations
+  - org.apache.commons.codec.binary.Base64Test::testRfc4648Section10Encode
+  - org.apache.commons.codec.binary.Base64Test::testRfc4648Section10EncodeDecode
+  - org.apache.commons.codec.net.BCodecTest::testUTF8RoundTrip
+  - org.apache.commons.codec.net.BCodecTest::testBasicEncodeDecode
+  - org.apache.commons.codec.net.BCodecTest::testEncodeObjects
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.codec.binary.Base64Test::testTriplets', 'org.apache.commons.codec.binary.Base64Test::testCodeInteger2', 'org.apache.commons.codec.binary.Base64Test::testCodeInteger4', 'org.apache.commons.codec.net.BCodecTest::testUTF8RoundTrip', 'org.apache.commons.codec.binary.Base64Test::testCodeInteger3', 'org.apache.commons.codec.binary.Base64Test::testByteToStringVariations', 'org.apache.commons.codec.binary.Base64Test::testObjectDecodeWithValidParameter', 'org.apache.commons.codec.net.BCodecTest::testEncodeObjects', 'org.apache.commons.codec.binary.Base64Test::testUUID', 'org.apache.commons.codec.binary.Base64Test::testDecodeWithWhitespace', 'org.apache.commons.codec.binary.Base64Test::testRfc4648Section10EncodeDecode', 'org.apache.commons.codec.binary.Base64Test::testCodeInteger1', 'org.apache.commons.codec.binary.Base64Test::testEncodeDecodeRandom', 'org.apache.commons.codec.binary.Base64Test::testRfc4648Section10Encode', 'org.apache.commons.codec.binary.Base64InputStreamTest::testBase64InputStreamByChunk', 'org.apache.commons.codec.binary.Base64Test::testEncodeDecodeSmall', 'org.apache.commons.codec.net.BCodecTest::testBasicEncodeDecode', 'org.apache.commons.codec.binary.Base64Codec13Test::testStaticEncode', 'org.apache.commons.codec.binary.Base64Test::testKnownEncodings', 'org.apache.commons.codec.binary.Base64Test::testBase64', 'org.apache.commons.codec.binary.Base64InputStreamTest::testBase64InputStreamByteByByte', 'org.apache.commons.codec.binary.Base64Test::testSingletons', 'org.apache.commons.codec.binary.Base64OutputStreamTest::testBase64OutputStreamByChunk', 'org.apache.commons.codec.binary.Base64Test::testPairs', 'org.apache.commons.codec.binary.Base64Test::testUrlSafe', 'org.apache.commons.codec.binary.Base64OutputStreamTest::testBase64OutputStreamByteByByte']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 5
+                Correctness: plausible
+                Validation Time: 5.11 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = isChunked ? getEncodeLength(binaryData, MIME_CHUNK_SIZE, CHUNK_SEPARATOR) : getEncodeLength(binaryData, 0, null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 4.43 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return new byte[0];
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - org.apache.commons.codec.binary.Base64Test::testEmptyBase64
+  - org.apache.commons.codec.binary.Base64Test::testByteToStringVariations
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.codec.binary.Base64Test::testEmptyBase64', 'org.apache.commons.codec.binary.Base64Test::testByteToStringVariations']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 4.12 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    int chunkSize = isChunked ? MIME_CHUNK_SIZE : 0;
+    byte[] chunkSeparator = isChunked ? CHUNK_SEPARATOR : new byte[0];
+    long len = getEncodeLength(binaryData, chunkSize, chunkSeparator);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = new Base64(chunkSize, chunkSeparator, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 27
+  - org.apache.commons.codec.binary.Base64Codec13Test::testStaticEncode
+  - org.apache.commons.codec.binary.Base64InputStreamTest::testBase64InputStreamByChunk
+  - org.apache.commons.codec.binary.Base64InputStreamTest::testBase64InputStreamByteByByte
+  - org.apache.commons.codec.binary.Base64OutputStreamTest::testBase64OutputStreamByteByByte
+  - org.apache.commons.codec.binary.Base64OutputStreamTest::testBase64OutputStreamByChunk
+  - org.apache.commons.codec.binary.Base64Test::testTriplets
+  - org.apache.commons.codec.binary.Base64Test::testPairs
+  - org.apache.commons.codec.binary.Base64Test::testUUID
+  - org.apache.commons.codec.binary.Base64Test::testEncodeDecodeSmall
+  - org.apache.commons.codec.binary.Base64Test::testObjectDecodeWithValidParameter
+  - org.apache.commons.codec.binary.Base64Test::testCodeInteger1
+  - org.apache.commons.codec.binary.Base64Test::testCodeInteger2
+  - org.apache.commons.codec.binary.Base64Test::testCodeInteger3
+  - org.apache.commons.codec.binary.Base64Test::testCodeInteger4
+  - org.apache.commons.codec.binary.Base64Test::testUrlSafe
+  - org.apache.commons.codec.binary.Base64Test::testEncodeDecodeRandom
+  - org.apache.commons.codec.binary.Base64Test::testDecodeWithWhitespace
+  - org.apache.commons.codec.binary.Base64Test::testKnownEncodings
+  - org.apache.commons.codec.binary.Base64Test::testCodec112
+  - org.apache.commons.codec.binary.Base64Test::testSingletons
+  - org.apache.commons.codec.binary.Base64Test::testBase64
+  - org.apache.commons.codec.binary.Base64Test::testByteToStringVariations
+  - org.apache.commons.codec.binary.Base64Test::testRfc4648Section10Encode
+  - org.apache.commons.codec.binary.Base64Test::testRfc4648Section10EncodeDecode
+  - org.apache.commons.codec.net.BCodecTest::testUTF8RoundTrip
+  - org.apache.commons.codec.net.BCodecTest::testBasicEncodeDecode
+  - org.apache.commons.codec.net.BCodecTest::testEncodeObjects
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.apache.commons.codec.binary.Base64Test::testTriplets', 'org.apache.commons.codec.binary.Base64Test::testCodeInteger2', 'org.apache.commons.codec.binary.Base64Test::testCodeInteger4', 'org.apache.commons.codec.net.BCodecTest::testUTF8RoundTrip', 'org.apache.commons.codec.binary.Base64Test::testCodeInteger3', 'org.apache.commons.codec.binary.Base64Test::testByteToStringVariations', 'org.apache.commons.codec.binary.Base64Test::testObjectDecodeWithValidParameter', 'org.apache.commons.codec.net.BCodecTest::testEncodeObjects', 'org.apache.commons.codec.binary.Base64Test::testUUID', 'org.apache.commons.codec.binary.Base64Test::testDecodeWithWhitespace', 'org.apache.commons.codec.binary.Base64Test::testRfc4648Section10EncodeDecode', 'org.apache.commons.codec.binary.Base64Test::testCodeInteger1', 'org.apache.commons.codec.binary.Base64Test::testEncodeDecodeRandom', 'org.apache.commons.codec.binary.Base64Test::testRfc4648Section10Encode', 'org.apache.commons.codec.binary.Base64InputStreamTest::testBase64InputStreamByChunk', 'org.apache.commons.codec.binary.Base64Test::testEncodeDecodeSmall', 'org.apache.commons.codec.net.BCodecTest::testBasicEncodeDecode', 'org.apache.commons.codec.binary.Base64Codec13Test::testStaticEncode', 'org.apache.commons.codec.binary.Base64Test::testKnownEncodings', 'org.apache.commons.codec.binary.Base64Test::testBase64', 'org.apache.commons.codec.binary.Base64InputStreamTest::testBase64InputStreamByteByByte', 'org.apache.commons.codec.binary.Base64Test::testSingletons', 'org.apache.commons.codec.binary.Base64OutputStreamTest::testBase64OutputStreamByChunk', 'org.apache.commons.codec.binary.Base64Test::testPairs', 'org.apache.commons.codec.binary.Base64Test::testUrlSafe', 'org.apache.commons.codec.binary.Base64OutputStreamTest::testBase64OutputStreamByteByByte']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 8
+                Correctness: plausible
+                Validation Time: 5.06 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    int chunkSize = isChunked ? MIME_CHUNK_SIZE : 0;
+    long len = getEncodeLength(binaryData, chunkSize, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = new Base64(chunkSize, isChunked ? CHUNK_SEPARATOR : null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 5.06 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 0
+                Correctness: plausible
+                Validation Time: 2.23 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 1
+                Correctness: plausible
+                Validation Time: 2.25 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 2
+                Correctness: plausible
+                Validation Time: 2.29 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 3
+                Correctness: plausible
+                Validation Time: 2.20 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 4
+                Correctness: plausible
+                Validation Time: 2.24 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 5
+                Correctness: plausible
+                Validation Time: 2.23 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 6
+                Correctness: plausible
+                Validation Time: 2.18 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 7
+                Correctness: plausible
+                Validation Time: 2.23 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 8
+                Correctness: plausible
+                Validation Time: 2.22 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Codec
+                Rank: 9
+                Correctness: plausible
+                Validation Time: 2.27 seconds
+                Failure reason: None
+
+                PATCH:
+                public static byte[] encodeBase64(byte[] binaryData, boolean isChunked, boolean urlSafe, int maxResultSize) {
+    if (binaryData == null || binaryData.length == 0) {
+        return binaryData;
+    }
+    long len = getEncodeLength(binaryData, isChunked ? MIME_CHUNK_SIZE : 0, isChunked ? CHUNK_SEPARATOR : null);
+    if (len > maxResultSize) {
+        throw new IllegalArgumentException("Input array too big, the output array would be bigger (" +
+            len +
+            ") than the specified maximum size of " +
+            maxResultSize);
+    }
+    Base64 b64 = isChunked ? new Base64(MIME_CHUNK_SIZE, CHUNK_SEPARATOR, urlSafe) : new Base64(0, null, urlSafe);
+    return b64.encode(binaryData);
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

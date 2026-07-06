@@ -1,0 +1,1672 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 81.13 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 75.55 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+// buggy lines start
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 77.96 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 86.90 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 86.10 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 77.20 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 221
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testLateDefinedName4
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testBadInterfacePropRef
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToDescendantOfUndefinedProperty1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToDescendantOfUndefinedProperty2
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToDescendantOfUndefinedProperty3
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testUndefinedModuleDep1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGoogInheritsAlias2
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testNamespaceInjection
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToDescendantOfUndefinedPropertyGivesCorrectWarning
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToUndefinedProperty1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToUndefinedProperty2
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToUndefinedProperty3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForEnumOfObjects2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testResetObjectPropertyInLocalScope
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitDeclarationWithDuplicateKeys
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForCtorDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForPropertyOfEnumOfObjects2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalFunctionNameInBooleanExpressionDepth1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalFunctionNameInBooleanExpressionDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitRedefinedInLocalScope
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testSafeReferenceOfThis
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForObjectDepth2_1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForObjectDepth2_2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassDepth1_1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassDepth1_2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassDepth1_3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassDepth2_1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassDepth2_2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassDepth2_3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testTypeDefAlias1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testTypeDefAlias2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testNamespaceDefinedInLocalScope
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitWithQuotedKeyThatDoesNotGetRead
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGetPropOnUndefinedProperty
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testConstructorReferencingThis
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitWithQuotedKeyThatGetsRead
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testChainedAssignments1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testChainedAssignments2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testChainedAssignments3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testChainedAssignments5
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testChainedAssignments6
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testChainedAssignments7
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionWithQuotedPropertyThatDoesNotGetRead
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForPropertyOfEnumOfObjects
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testMethodCall
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testPeerAndSubpropertyOfUncollapsibleProperty
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionCallDepth1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionCallDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToUncollapsibleObjectInLocalScopeDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForEnumOfObjects
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasedTopLevelEnum
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForEnumDepth2_1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForEnumDepth2_2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForEnumDepth2_3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testEnumOfObjects1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testEnumOfObjects2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitDeclarationUsedInSameVarList
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToUncollapsibleFunctionInLocalScopeDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionPropertySetToObjLitConditionally
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testComplexAssignmentAfterInitialAssignment
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAliasOfEnumWithInstanceofCheck
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testCollapsePropertiesOfClass1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalWriteToNonAncestor
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testCallOnUndefinedProperty
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalVarSetToObjLitConditionally1b
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionPropertyResetInLocalScope
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testTwiceDefinedGlobalNameDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAliasOfFunction
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionGivenTwoNames
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testIncrement
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectNameInBooleanExpressionDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectNameInBooleanExpressionDepth3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToChildOfUncollapsibleCtorInLocalScope
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToFunctionInLocalScopeDepth1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToFunctionInLocalScopeDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalVarSetToObjLitConditionally2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testCallUndefinedMethodOnObjLitDepth1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testCallUndefinedMethodOnObjLitDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectDeclaredToPreserveItsPreviousValue1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectDeclaredToPreserveItsPreviousValue2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectDeclaredToPreserveItsPreviousValue3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitDeclarationWithGet2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitDeclarationWithSet2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjectPropertyResetInLocalScope
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitAssignmentDepth1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitAssignmentDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitAssignmentDepth3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitAssignmentDepth4
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalNameReferencedInLocalScopeBeforeDefined1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalNameReferencedInLocalScopeBeforeDefined2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testNamespaceResetInLocalScope1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testNamespaceResetInLocalScope2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testResetFunctionPropertyInLocalScope
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testPropGetInsideAnObjLit
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testMultiLevelCollapse
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectNameInBooleanExpressionDepth1_1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectNameInBooleanExpressionDepth1_2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectNameInBooleanExpressionDepth1_3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectNameInBooleanExpressionDepth1_6
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionWithQuotedPropertyThatGetsRead
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testTwinReferenceCancelsChildCollapsing
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testTypedef2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testCollapse
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testNewOperator
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testReferencedPrototypeProperty
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testStaticFunctionReferencingThis1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testStaticFunctionReferencingThis2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias4
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias5
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias6
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias7
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testNamespaceResetInGlobalScope1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testNamespaceResetInGlobalScope2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToUncollapsibleCtorInLocalScopeDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testCrashInNestedAssign
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testCrashInCommaOperator
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testNoInlineGetpropIntoCall
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testPrototypePropertySetToAnObjectLiteral
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testCollapsePrototypeName
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassProperty
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToChildTypeOfUncollapsibleObjectInLocalScope
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForFunctionDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalAliasWithProperties1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalAliasWithProperties2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalAliasWithProperties3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testInlineAliasWithModifications
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToObjectInLocalScopeDepth1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToObjectInLocalScopeDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testReferenceInAnonymousObject0
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testReferenceInAnonymousObject1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testReferenceInAnonymousObject2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testReferenceInAnonymousObject3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testReferenceInAnonymousObject4
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testReferenceInAnonymousObject5
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitWithUnusedNumericKey
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testCallToRedefinedFunction
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testPropertyOfChildFuncOfUncollapsibleObjectDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testDelete2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testDelete4
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testDelete5
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testDelete6
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testDelete7
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testDelete8
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testSetStaticAndPrototypePropertiesOnFunction
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitDeclaration
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testDecrement
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testPreserveConstructorDoc
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testChainedVarAssignments1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testChainedVarAssignments2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testChainedVarAssignments3
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testChainedVarAssignments4
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testChainedVarAssignments5
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testReadUndefinedPropertyDepth1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testReadUndefinedPropertyDepth2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testIssue389
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionAlias1
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionAlias2
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjectPropertySetToObjLitConditionally
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testDelete11
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testRenamePrefixOfUncollapsibleProperty
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testNestedObjLit
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitDefinedInLocalScopeIsLeftAlone
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testBug1956277
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testLocalWriteToNonAncestor
+  - com.google.javascript.jscomp.CollapsePropertiesTest::testPropertiesOnBothSidesOfAssignment
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testCheckUndefinedProperties2
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag3
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag4
+  - com.google.javascript.jscomp.IntegrationTest::testGoogDefine1
+  - com.google.javascript.jscomp.IntegrationTest::testGoogDefine2
+  - com.google.javascript.jscomp.IntegrationTest::testProvidedNamespaceIsConst2
+  - com.google.javascript.jscomp.IntegrationTest::testProvidedNamespaceIsConst3
+  - com.google.javascript.jscomp.IntegrationTest::testRemoveAbstractMethods
+  - com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4
+  - com.google.javascript.jscomp.IntegrationTest::testBug1949424_v2
+  - com.google.javascript.jscomp.IntegrationTest::testAllChecksOn
+  - com.google.javascript.jscomp.IntegrationTest::testCheckGlobalNames
+  - com.google.javascript.jscomp.IntegrationTest::testTypedefBeforeOwner2
+  - com.google.javascript.jscomp.IntegrationTest::testGoogDefineClass1
+  - com.google.javascript.jscomp.IntegrationTest::testInlineProperties
+  - com.google.javascript.jscomp.IntegrationTest::testCollapseProperties1
+  - com.google.javascript.jscomp.IntegrationTest::testCollapseProperties2
+  - com.google.javascript.jscomp.IntegrationTest::testRenamePrefixNamespace
+  - com.google.javascript.jscomp.IntegrationTest::testBug1949424
+  - com.google.javascript.jscomp.IntegrationTest::testBug1956277
+  - com.google.javascript.jscomp.IntegrationTest::testBug1962380
+  - com.google.javascript.jscomp.NormalizeTest::testRenamingConstantProperties
+  - com.google.javascript.jscomp.ReplaceStringsTest::testRepeatedStringsWithDifferentMethods
+  - com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnVar
+  - com.google.javascript.jscomp.ReplaceStringsTest::testThrowError1
+  - com.google.javascript.jscomp.ReplaceStringsTest::testThrowError2
+  - com.google.javascript.jscomp.ReplaceStringsTest::testThrowError3
+  - com.google.javascript.jscomp.ReplaceStringsTest::testThrowError4
+  - com.google.javascript.jscomp.ReplaceStringsTest::testThrowNonStringError
+  - com.google.javascript.jscomp.ReplaceStringsTest::testThrowNewError1
+  - com.google.javascript.jscomp.ReplaceStringsTest::testThrowNewError2
+  - com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnObject1
+  - com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnObject2
+  - com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnObject4
+  - com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnObject5
+  - com.google.javascript.jscomp.ReplaceStringsTest::testThrowConstStringError
+  - com.google.javascript.jscomp.ReplaceStringsTest::testRepeatedErrorString1
+  - com.google.javascript.jscomp.ReplaceStringsTest::testRepeatedErrorString2
+  - com.google.javascript.jscomp.ReplaceStringsTest::testRepeatedErrorString3
+  - com.google.javascript.jscomp.ReplaceStringsTest::testStartTracer1
+  - com.google.javascript.jscomp.ReplaceStringsTest::testStartTracer2
+  - com.google.javascript.jscomp.ReplaceStringsTest::testStartTracer3
+  - com.google.javascript.jscomp.ReplaceStringsTest::testStartTracer4
+  - com.google.javascript.jscomp.ReplaceStringsTest::testRepeatedTracerString
+  - com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnThis
+  - com.google.javascript.jscomp.ReplaceStringsTest::testReserved
+  - com.google.javascript.jscomp.ReplaceStringsTest::testRepeatedLoggerString
+  - com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnObject3a
+  - com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnObject3b
+  - com.google.javascript.jscomp.ReplaceStringsTest::testLoggerInitialization
+  - com.google.javascript.jscomp.ReplaceStringsTest::testStable1
+  - com.google.javascript.jscomp.ReplaceStringsTest::testStable2
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToDescendantOfUndefinedProperty2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testDelete7', 'com.google.javascript.jscomp.ReplaceStringsTest::testThrowError1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectNameInBooleanExpressionDepth3', 'com.google.javascript.jscomp.CollapsePropertiesTest::testReadUndefinedPropertyDepth1', 'com.google.javascript.jscomp.IntegrationTest::testRemoveAbstractMethods', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassDepth2_2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAliasOfFunction', 'com.google.javascript.jscomp.CollapsePropertiesTest::testCrashInCommaOperator', 'com.google.javascript.jscomp.CommandLineRunnerTest::testCheckUndefinedProperties2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testNamespaceResetInGlobalScope2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testNamespaceDefinedInLocalScope', 'com.google.javascript.jscomp.CollapsePropertiesTest::testChainedAssignments7', 'com.google.javascript.jscomp.CollapsePropertiesTest::testDelete8', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectNameInBooleanExpressionDepth1_3', 'com.google.javascript.jscomp.CheckGlobalNamesTest::testNamespaceInjection', 'com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToUndefinedProperty2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testChainedVarAssignments3', 'com.google.javascript.jscomp.CollapsePropertiesTest::testDecrement', 'com.google.javascript.jscomp.IntegrationTest::testInlineProperties', 'com.google.javascript.jscomp.CollapsePropertiesTest::testCallToRedefinedFunction', 'com.google.javascript.jscomp.ReplaceStringsTest::testThrowError3', 'com.google.javascript.jscomp.CollapsePropertiesTest::testMultiLevelCollapse', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitDeclarationUsedInSameVarList', 'com.google.javascript.jscomp.CollapsePropertiesTest::testNamespaceResetInGlobalScope1', 'com.google.javascript.jscomp.IntegrationTest::testProvidedNamespaceIsConst2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testTypeDefAlias2', 'com.google.javascript.jscomp.IntegrationTest::testRenamePrefixNamespace', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitRedefinedInLocalScope', 'com.google.javascript.jscomp.CollapsePropertiesTest::testCrashInNestedAssign', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToUncollapsibleFunctionInLocalScopeDepth2', 'com.google.javascript.jscomp.IntegrationTest::testBug1949424', 'com.google.javascript.jscomp.ReplaceStringsTest::testRepeatedTracerString', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToObjectInLocalScopeDepth2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGetPropOnUndefinedProperty', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectDeclaredToPreserveItsPreviousValue3', 'com.google.javascript.jscomp.CheckGlobalNamesTest::testLateDefinedName4', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjectPropertyResetInLocalScope', 'com.google.javascript.jscomp.CollapsePropertiesTest::testChainedAssignments3', 'com.google.javascript.jscomp.IntegrationTest::testTypedefBeforeOwner2', 'com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag4', 'com.google.javascript.jscomp.CollapsePropertiesTest::testCallUndefinedMethodOnObjLitDepth2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testChainedAssignments6', 'com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias6', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitWithUnusedNumericKey', 'com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionPropertyResetInLocalScope', 'com.google.javascript.jscomp.IntegrationTest::testGoogDefineClass1', 'com.google.javascript.jscomp.ReplaceStringsTest::testStartTracer3', 'com.google.javascript.jscomp.IntegrationTest::testCollapseProperties1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testChainedVarAssignments4', 'com.google.javascript.jscomp.CollapsePropertiesTest::testDelete6', 'com.google.javascript.jscomp.CollapsePropertiesTest::testBug1956277', 'com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnObject4', 'com.google.javascript.jscomp.ReplaceStringsTest::testThrowNewError2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitDefinedInLocalScopeIsLeftAlone', 'com.google.javascript.jscomp.CollapsePropertiesTest::testReferenceInAnonymousObject0', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForEnumDepth2_2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testChainedAssignments1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForObjectDepth2_2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalAliasWithProperties2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testNewOperator', 'com.google.javascript.jscomp.ReplaceStringsTest::testReserved', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitDeclarationWithDuplicateKeys', 'com.google.javascript.jscomp.CollapsePropertiesTest::testCollapsePropertiesOfClass1', 'com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToDescendantOfUndefinedProperty3', 'com.google.javascript.jscomp.NormalizeTest::testRenamingConstantProperties', 'com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToDescendantOfUndefinedProperty1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassDepth1_2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testTwiceDefinedGlobalNameDepth2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testPropGetInsideAnObjLit', 'com.google.javascript.jscomp.CollapsePropertiesTest::testChainedAssignments5', 'com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnObject3a', 'com.google.javascript.jscomp.ReplaceStringsTest::testStable2', 'com.google.javascript.jscomp.ReplaceStringsTest::testStable1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionGivenTwoNames', 'com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionPropertySetToObjLitConditionally', 'com.google.javascript.jscomp.CollapsePropertiesTest::testNamespaceResetInLocalScope2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitDeclarationWithSet2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testRenamePrefixOfUncollapsibleProperty', 'com.google.javascript.jscomp.CollapsePropertiesTest::testCollapsePrototypeName', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalNameReferencedInLocalScopeBeforeDefined1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias4', 'com.google.javascript.jscomp.IntegrationTest::testBug1956277', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitDeclarationWithGet2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjectPropertySetToObjLitConditionally', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForEnumOfObjects', 'com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnObject3b', 'com.google.javascript.jscomp.ReplaceStringsTest::testRepeatedErrorString1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testChainedVarAssignments2', 'com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToDescendantOfUndefinedPropertyGivesCorrectWarning', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectDeclaredToPreserveItsPreviousValue2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForPropertyOfEnumOfObjects2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionCallDepth1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testStaticFunctionReferencingThis1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testStaticFunctionReferencingThis2', 'com.google.javascript.jscomp.CheckGlobalNamesTest::testBadInterfacePropRef', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassDepth2_1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForFunctionDepth2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testReferenceInAnonymousObject5', 'com.google.javascript.jscomp.CollapsePropertiesTest::testReferencedPrototypeProperty', 'com.google.javascript.jscomp.CollapsePropertiesTest::testChainedVarAssignments1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasedTopLevelEnum', 'com.google.javascript.jscomp.CheckGlobalNamesTest::testGoogInheritsAlias2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalFunctionNameInBooleanExpressionDepth1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias5', 'com.google.javascript.jscomp.CollapsePropertiesTest::testReferenceInAnonymousObject1', 'com.google.javascript.jscomp.IntegrationTest::testCheckGlobalNames', 'com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnObject2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testIncrement', 'com.google.javascript.jscomp.CollapsePropertiesTest::testEnumOfObjects1', 'com.google.javascript.jscomp.ReplaceStringsTest::testThrowNewError1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalNameReferencedInLocalScopeBeforeDefined2', 'com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnObject1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitDeclaration', 'com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionWithQuotedPropertyThatDoesNotGetRead', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectNameInBooleanExpressionDepth2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testChainedVarAssignments5', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectNameInBooleanExpressionDepth1_1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitWithQuotedKeyThatGetsRead', 'com.google.javascript.jscomp.CollapsePropertiesTest::testResetFunctionPropertyInLocalScope', 'com.google.javascript.jscomp.ReplaceStringsTest::testStartTracer2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionAlias1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForEnumDepth2_3', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToUncollapsibleCtorInLocalScopeDepth2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testTwinReferenceCancelsChildCollapsing', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitAssignmentDepth4', 'com.google.javascript.jscomp.CollapsePropertiesTest::testPrototypePropertySetToAnObjectLiteral', 'com.google.javascript.jscomp.CollapsePropertiesTest::testMethodCall', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToFunctionInLocalScopeDepth1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias3', 'com.google.javascript.jscomp.IntegrationTest::testGoogDefine1', 'com.google.javascript.jscomp.ReplaceStringsTest::testThrowConstStringError', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForObjectDepth2_1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testCallUndefinedMethodOnObjLitDepth1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitAssignmentDepth3', 'com.google.javascript.jscomp.CollapsePropertiesTest::testLocalWriteToNonAncestor', 'com.google.javascript.jscomp.CollapsePropertiesTest::testEnumOfObjects2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToObjectInLocalScopeDepth1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForEnumOfObjects2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testNestedObjLit', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassDepth1_1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testInlineAliasWithModifications', 'com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionWithQuotedPropertyThatGetsRead', 'com.google.javascript.jscomp.CollapsePropertiesTest::testReferenceInAnonymousObject3', 'com.google.javascript.jscomp.CollapsePropertiesTest::testDelete4', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForPropertyOfEnumOfObjects', 'com.google.javascript.jscomp.CollapsePropertiesTest::testResetObjectPropertyInLocalScope', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectDeclaredToPreserveItsPreviousValue1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectNameInBooleanExpressionDepth1_2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testTypedef2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalVarSetToObjLitConditionally2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testReadUndefinedPropertyDepth2', 'com.google.javascript.jscomp.CommandLineRunnerTest::testDebugFlag3', 'com.google.javascript.jscomp.ReplaceStringsTest::testRepeatedErrorString2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testDelete11', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForCtorDepth2', 'com.google.javascript.jscomp.IntegrationTest::testBug1949424_v2', 'com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToUndefinedProperty1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testPeerAndSubpropertyOfUncollapsibleProperty', 'com.google.javascript.jscomp.ReplaceStringsTest::testStartTracer4', 'com.google.javascript.jscomp.CollapsePropertiesTest::testPropertiesOnBothSidesOfAssignment', 'com.google.javascript.jscomp.CollapsePropertiesTest::testSetStaticAndPrototypePropertiesOnFunction', 'com.google.javascript.jscomp.CollapsePropertiesTest::testComplexAssignmentAfterInitialAssignment', 'com.google.javascript.jscomp.CheckGlobalNamesTest::testUndefinedModuleDep1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToChildTypeOfUncollapsibleObjectInLocalScope', 'com.google.javascript.jscomp.CollapsePropertiesTest::testPreserveConstructorDoc', 'com.google.javascript.jscomp.CollapsePropertiesTest::testTypeDefAlias1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalAliasWithProperties1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalWriteToNonAncestor', 'com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias7', 'com.google.javascript.jscomp.CollapsePropertiesTest::testCallOnUndefinedProperty', 'com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionCallDepth2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForEnumDepth2_1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToUncollapsibleObjectInLocalScopeDepth2', 'com.google.javascript.jscomp.ReplaceStringsTest::testRepeatedErrorString3', 'com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAliasOfEnumWithInstanceofCheck', 'com.google.javascript.jscomp.IntegrationTest::testProvidedNamespaceIsConst3', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToFunctionInLocalScopeDepth2', 'com.google.javascript.jscomp.ReplaceStringsTest::testThrowError4', 'com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnVar', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalVarSetToObjLitConditionally1b', 'com.google.javascript.jscomp.IntegrationTest::testGoogDefine2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testChainedAssignments2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testReferenceInAnonymousObject2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testCollapse', 'com.google.javascript.jscomp.CollapsePropertiesTest::testSafeReferenceOfThis', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassDepth1_3', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalAliasWithProperties3', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitWithQuotedKeyThatDoesNotGetRead', 'com.google.javascript.jscomp.ReplaceStringsTest::testThrowError2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testIssue389', 'com.google.javascript.jscomp.CheckGlobalNamesTest::testRefToUndefinedProperty3', 'com.google.javascript.jscomp.IntegrationTest::testAddFunctionProperties4', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassProperty', 'com.google.javascript.jscomp.ReplaceStringsTest::testStartTracer1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitAssignmentDepth2', 'com.google.javascript.jscomp.ReplaceStringsTest::testRepeatedLoggerString', 'com.google.javascript.jscomp.ReplaceStringsTest::testThrowNonStringError', 'com.google.javascript.jscomp.CollapsePropertiesTest::testDelete5', 'com.google.javascript.jscomp.IntegrationTest::testAllChecksOn', 'com.google.javascript.jscomp.IntegrationTest::testCollapseProperties2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testDelete2', 'com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnThis', 'com.google.javascript.jscomp.ReplaceStringsTest::testLoggerInitialization', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAddPropertyToChildOfUncollapsibleCtorInLocalScope', 'com.google.javascript.jscomp.CollapsePropertiesTest::testAliasCreatedForClassDepth2_3', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalObjectNameInBooleanExpressionDepth1_6', 'com.google.javascript.jscomp.ReplaceStringsTest::testLoggerOnObject5', 'com.google.javascript.jscomp.CollapsePropertiesTest::testConstructorReferencingThis', 'com.google.javascript.jscomp.CollapsePropertiesTest::testObjLitAssignmentDepth1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testNamespaceResetInLocalScope1', 'com.google.javascript.jscomp.CollapsePropertiesTest::testFunctionAlias2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testLocalAlias2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testPropertyOfChildFuncOfUncollapsibleObjectDepth2', 'com.google.javascript.jscomp.CollapsePropertiesTest::testGlobalFunctionNameInBooleanExpressionDepth2', 'com.google.javascript.jscomp.IntegrationTest::testBug1962380', 'com.google.javascript.jscomp.CollapsePropertiesTest::testNoInlineGetpropIntoCall', 'com.google.javascript.jscomp.CollapsePropertiesTest::testReferenceInAnonymousObject4', 'com.google.javascript.jscomp.ReplaceStringsTest::testRepeatedStringsWithDifferentMethods']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 77.15 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+// buggy lines start
+          case Token.INC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+// buggy lines end
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 74.63 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 83.42 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 77.06 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public void collect(JSModule module, Scope scope, Node n) {
+  Node parent = n.getParent();
+  String name;
+  boolean isSet = false;
+  Name.Type type = Name.Type.OTHER;
+  boolean isPropAssign = false;
+  switch (n.getType()) {
+    case Token.GETTER_DEF:
+    case Token.SETTER_DEF:
+    case Token.STRING_KEY:
+      name = null;
+      if (parent != null && parent.isObjectLit()) {
+        name = getNameForObjLitKey(n);
+      }
+      if (name == null) {
+        return;
+      }
+      isSet = true;
+      switch (n.getType()) {
+        case Token.STRING_KEY:
+          type = getValueType(n.getFirstChild());
+          break;
+        case Token.GETTER_DEF:
+          type = Name.Type.GET;
+          break;
+        case Token.SETTER_DEF:
+          type = Name.Type.SET;
+          break;
+        default:
+          throw new IllegalStateException("unexpected:" + n);
+      }
+      break;
+    case Token.NAME:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.VAR:
+            isSet = true;
+            Node rvalue = n.getFirstChild();
+            type = rvalue == null ? Name.Type.OTHER : getValueType(rvalue);
+            break;
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+            }
+            break;
+          case Token.GETPROP:
+            return;
+          case Token.FUNCTION:
+            Node gramps = parent.getParent();
+            if (gramps == null || NodeUtil.isFunctionExpression(parent)) {
+              return;
+            }
+            isSet = true;
+            type = Name.Type.FUNCTION;
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getString();
+      break;
+    case Token.GETPROP:
+      if (parent != null) {
+        switch (parent.getType()) {
+          case Token.ASSIGN:
+            if (parent.getFirstChild() == n) {
+              isSet = true;
+              type = getValueType(n.getNext());
+              isPropAssign = true;
+            }
+            break;
+          case Token.INC:
+          case Token.DEC:
+            isSet = true;
+            type = Name.Type.OTHER;
+            break;
+          case Token.GETPROP:
+            return;
+          default:
+            if (NodeUtil.isAssignmentOp(parent) &&
+                parent.getFirstChild() == n) {
+              isSet = true;
+              type = Name.Type.OTHER;
+            }
+        }
+      }
+      name = n.getQualifiedName();
+      if (name == null) {
+        return;
+      }
+      break;
+    default:
+      return;
+  }
+  if (!isGlobalNameReference(name, scope)) {
+    return;
+  }
+  if (isSet) {
+    if (isGlobalScope(scope)) {
+      handleSetFromGlobal(module, scope, n, parent, name, isPropAssign, type);
+    } else {
+      handleSetFromLocal(module, scope, n, parent, name);
+    }
+  } else {
+    handleGet(module, scope, n, parent, name);
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CheckGlobalNamesTest::testGlobalCatch
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

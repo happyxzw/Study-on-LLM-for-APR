@@ -1,0 +1,796 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 283.14 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void initOptions(CompilerOptions options) {
+  this.options = options;
+  if (errorManager == null) {
+    if (outStream == null) {
+      setErrorManager(
+          new LoggerErrorManager(createMessageFormatter(), logger));
+    } else {
+      PrintStreamErrorManager printer =
+          new PrintStreamErrorManager(createMessageFormatter(), outStream);
+      printer.setSummaryDetailLevel(options.summaryDetailLevel);
+      setErrorManager(printer);
+    }
+  }
+  if (options.enables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = true;
+  } else if (options.disables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = false;
+  } else if (!options.checkTypes) {
+    options.setWarningLevel(
+        DiagnosticGroup.forType(
+            RhinoErrorReporter.TYPE_PARSE_ERROR),
+        CheckLevel.OFF);
+  }
+  if (options.checkGlobalThisLevel != null && options.checkGlobalThisLevel.isOn()) {
+      options.setWarningLevel(
+        DiagnosticGroups.GLOBAL_THIS,
+        options.checkGlobalThisLevel);
+  }
+  if (options.getLanguageIn() == LanguageMode.ECMASCRIPT5_STRICT) {
+    options.setWarningLevel(
+        DiagnosticGroups.ES5_STRICT,
+        CheckLevel.ERROR);
+  }
+  List<WarningsGuard> guards = Lists.newArrayList();
+  guards.add(
+      new SuppressDocWarningsGuard(
+          getDiagnosticGroups().getRegisteredGroups()));
+  guards.add(options.getWarningsGuard());
+  ComposeWarningsGuard composedGuards = new ComposeWarningsGuard(guards);
+  if (!options.checkSymbols &&
+      !composedGuards.enables(DiagnosticGroups.CHECK_VARIABLES)) {
+    composedGuards.addGuard(new DiagnosticGroupWarningsGuard(
+        DiagnosticGroups.CHECK_VARIABLES, CheckLevel.OFF));
+  }
+  this.warningsGuard = composedGuards;
+}
+
+                TEST STDOUT:
+                Failing tests: 81
+  - com.google.javascript.jscomp.VarCheckTest::testRecursiveFunction
+  - com.google.javascript.jscomp.VarCheckTest::testMultiplyDeclaredVars1
+  - com.google.javascript.jscomp.VarCheckTest::testMultiplyDeclaredVars2
+  - com.google.javascript.jscomp.VarCheckTest::testMultiplyDeclaredVars3
+  - com.google.javascript.jscomp.VarCheckTest::testMultiplyDeclaredVars4
+  - com.google.javascript.jscomp.VarCheckTest::testRecursiveFunction2
+  - com.google.javascript.jscomp.VarCheckTest::testLocalVar
+  - com.google.javascript.jscomp.VarCheckTest::testParameter
+  - com.google.javascript.jscomp.VarCheckTest::testForwardVarReferenceInLocalScope1
+  - com.google.javascript.jscomp.VarCheckTest::testForwardVarReferenceInLocalScope2
+  - com.google.javascript.jscomp.VarCheckTest::testViolatedModuleDependencyNonStrictPromoted
+  - com.google.javascript.jscomp.VarCheckTest::testVarInWithBlock
+  - com.google.javascript.jscomp.VarCheckTest::testBreak
+  - com.google.javascript.jscomp.VarCheckTest::testVariableInNormalCodeUsedInExterns1
+  - com.google.javascript.jscomp.VarCheckTest::testVariableInNormalCodeUsedInExterns2
+  - com.google.javascript.jscomp.VarCheckTest::testVariableInNormalCodeUsedInExterns3
+  - com.google.javascript.jscomp.VarCheckTest::testVariableInNormalCodeUsedInExterns4
+  - com.google.javascript.jscomp.VarCheckTest::testValidFunctionExpr
+  - com.google.javascript.jscomp.VarCheckTest::testStarStrictModuleDependencyCheck
+  - com.google.javascript.jscomp.VarCheckTest::testViolatedModuleDependencyDefault
+  - com.google.javascript.jscomp.VarCheckTest::testSimpleSanityCheck
+  - com.google.javascript.jscomp.VarCheckTest::testDependentStrictModuleDependencyCheck
+  - com.google.javascript.jscomp.VarCheckTest::testMissingModuleDependencyDefault
+  - com.google.javascript.jscomp.VarCheckTest::testPropReferenceInExterns1
+  - com.google.javascript.jscomp.VarCheckTest::testPropReferenceInExterns2
+  - com.google.javascript.jscomp.VarCheckTest::testPropReferenceInExterns3
+  - com.google.javascript.jscomp.VarCheckTest::testMissingModuleDependencySkipNonStrictPromoted
+  - com.google.javascript.jscomp.VarCheckTest::testMissingModuleDependencySkipNonStrict
+  - com.google.javascript.jscomp.VarCheckTest::testContinue
+  - com.google.javascript.jscomp.VarCheckTest::testTwoLocalVars
+  - com.google.javascript.jscomp.VarCheckTest::testInvalidFunctionDecl1
+  - com.google.javascript.jscomp.VarCheckTest::testReferencedVarNotDefined
+  - com.google.javascript.jscomp.VarCheckTest::testNoCreateVarsForLabels
+  - com.google.javascript.jscomp.VarCheckTest::testVarReferenceInExterns
+  - com.google.javascript.jscomp.VarCheckTest::testInnerFunctionLocalVar
+  - com.google.javascript.jscomp.VarCheckTest::testReferencedVarDefined1
+  - com.google.javascript.jscomp.VarCheckTest::testReferencedVarDefined2
+  - com.google.javascript.jscomp.VarCheckTest::testReferencedVarsExternallyDefined
+  - com.google.javascript.jscomp.VarCheckTest::testIndependentStrictModuleDependencyCheck
+  - com.google.javascript.jscomp.VarCheckTest::testLegalVarReferenceBetweenModules
+  - com.google.javascript.jscomp.VarCheckTest::testSimple
+  - com.google.javascript.jscomp.VarCheckTest::testViolatedModuleDependencySkipNonStrict
+  - com.google.javascript.jscomp.VarCheckTest::testCallInExterns
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testRedeclare
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testUnreferencedBleedingFunction
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testDoubleDeclaration2
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectRecursion
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectCatch
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectRedeclare
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testDoubleDeclaration
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectShadowing
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNoWarnInExterns1
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNoWarnInExterns2
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction2
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction3
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction4
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction5
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction6
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction7
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testEarlyReference
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedRecursiveFunction1
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedRecursiveFunction2
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedRecursiveFunction3
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectCode
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testHoistedFunction1
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testHoistedFunction2
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectEarlyReference
+  - com.google.javascript.jscomp.VariableReferenceCheckTest::testReferencedBleedingFunction
+  - com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testUseShadowGlobals1
+  - com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testNoShadowAnnotation
+  - com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testWarnShadowLocal1
+  - com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testWarnShadowLocal2
+  - com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testNoWarnShadowGlobal
+  - com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testNoShadowAnnotationInExterns1
+  - com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testNoShadowAnnotationInExterns2
+  - com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testCapturedVariables
+  - com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testGlobals
+  - com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testParameters
+  - com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testFunctions
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.VarCheckTest::testIndependentStrictModuleDependencyCheck', 'com.google.javascript.jscomp.VarCheckTest::testRecursiveFunction', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectRedeclare', 'com.google.javascript.jscomp.VarCheckTest::testViolatedModuleDependencyNonStrictPromoted', 'com.google.javascript.jscomp.VarCheckTest::testMultiplyDeclaredVars3', 'com.google.javascript.jscomp.VarCheckTest::testContinue', 'com.google.javascript.jscomp.VarCheckTest::testMissingModuleDependencySkipNonStrictPromoted', 'com.google.javascript.jscomp.VarCheckTest::testReferencedVarDefined2', 'com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testFunctions', 'com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testCapturedVariables', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectCatch', 'com.google.javascript.jscomp.VarCheckTest::testPropReferenceInExterns2', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction5', 'com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testNoWarnShadowGlobal', 'com.google.javascript.jscomp.VarCheckTest::testReferencedVarDefined1', 'com.google.javascript.jscomp.VarCheckTest::testVarReferenceInExterns', 'com.google.javascript.jscomp.VarCheckTest::testMissingModuleDependencySkipNonStrict', 'com.google.javascript.jscomp.VarCheckTest::testCallInExterns', 'com.google.javascript.jscomp.VarCheckTest::testVarInWithBlock', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNoWarnInExterns2', 'com.google.javascript.jscomp.VarCheckTest::testViolatedModuleDependencySkipNonStrict', 'com.google.javascript.jscomp.VarCheckTest::testInnerFunctionLocalVar', 'com.google.javascript.jscomp.VarCheckTest::testVariableInNormalCodeUsedInExterns1', 'com.google.javascript.jscomp.VarCheckTest::testVariableInNormalCodeUsedInExterns2', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectEarlyReference', 'com.google.javascript.jscomp.VarCheckTest::testVariableInNormalCodeUsedInExterns3', 'com.google.javascript.jscomp.VarCheckTest::testForwardVarReferenceInLocalScope2', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction', 'com.google.javascript.jscomp.VarCheckTest::testMultiplyDeclaredVars1', 'com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff', 'com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testWarnShadowLocal1', 'com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testNoShadowAnnotationInExterns1', 'com.google.javascript.jscomp.VarCheckTest::testNoCreateVarsForLabels', 'com.google.javascript.jscomp.VarCheckTest::testValidFunctionExpr', 'com.google.javascript.jscomp.VarCheckTest::testSimple', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction6', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedRecursiveFunction2', 'com.google.javascript.jscomp.VarCheckTest::testMultiplyDeclaredVars2', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testHoistedFunction1', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testUnreferencedBleedingFunction', 'com.google.javascript.jscomp.VarCheckTest::testStarStrictModuleDependencyCheck', 'com.google.javascript.jscomp.VarCheckTest::testBreak', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectCode', 'com.google.javascript.jscomp.VarCheckTest::testVariableInNormalCodeUsedInExterns4', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction3', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectShadowing', 'com.google.javascript.jscomp.VarCheckTest::testLocalVar', 'com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testNoShadowAnnotationInExterns2', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testEarlyReference', 'com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testParameters', 'com.google.javascript.jscomp.VarCheckTest::testViolatedModuleDependencyDefault', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testDoubleDeclaration2', 'com.google.javascript.jscomp.VarCheckTest::testLegalVarReferenceBetweenModules', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedRecursiveFunction3', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testCorrectRecursion', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testHoistedFunction2', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testReferencedBleedingFunction', 'com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testNoShadowAnnotation', 'com.google.javascript.jscomp.VarCheckTest::testParameter', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedRecursiveFunction1', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNoWarnInExterns1', 'com.google.javascript.jscomp.VarCheckTest::testTwoLocalVars', 'com.google.javascript.jscomp.VarCheckTest::testPropReferenceInExterns1', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testRedeclare', 'com.google.javascript.jscomp.VarCheckTest::testMultiplyDeclaredVars4', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction7', 'com.google.javascript.jscomp.VarCheckTest::testReferencedVarNotDefined', 'com.google.javascript.jscomp.VarCheckTest::testDependentStrictModuleDependencyCheck', 'com.google.javascript.jscomp.VarCheckTest::testRecursiveFunction2', 'com.google.javascript.jscomp.VarCheckTest::testForwardVarReferenceInLocalScope1', 'com.google.javascript.jscomp.VarCheckTest::testInvalidFunctionDecl1', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction4', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testNonHoistedFunction2', 'com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testWarnShadowLocal2', 'com.google.javascript.jscomp.VarCheckTest::testMissingModuleDependencyDefault', 'com.google.javascript.jscomp.VarCheckTest::testPropReferenceInExterns3', 'com.google.javascript.jscomp.VariableVisibilityAnalysisTest::testGlobals', 'com.google.javascript.jscomp.VariableReferenceCheckTest::testDoubleDeclaration', 'com.google.javascript.jscomp.VariableShadowDeclarationCheckTest::testUseShadowGlobals1', 'com.google.javascript.jscomp.VarCheckTest::testSimpleSanityCheck', 'com.google.javascript.jscomp.VarCheckTest::testReferencedVarsExternallyDefined']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 290.56 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void initOptions(CompilerOptions options) {
+  this.options = options;
+  if (errorManager == null) {
+    if (outStream == null) {
+      setErrorManager(
+          new LoggerErrorManager(createMessageFormatter(), logger));
+    } else {
+      PrintStreamErrorManager printer =
+          new PrintStreamErrorManager(createMessageFormatter(), outStream);
+      printer.setSummaryDetailLevel(options.summaryDetailLevel);
+      setErrorManager(printer);
+    }
+  }
+  if (options.enables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = true;
+  } else if (options.disables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = false;
+  } else if (!options.checkTypes) {
+    options.setWarningLevel(
+        DiagnosticGroup.forType(
+            RhinoErrorReporter.TYPE_PARSE_ERROR),
+        CheckLevel.OFF);
+  }
+  if (options.checkGlobalThisLevel != null && options.checkGlobalThisLevel.isOn()) {
+      options.setWarningLevel(
+        DiagnosticGroups.GLOBAL_THIS,
+        options.checkGlobalThisLevel);
+  }
+  if (options.getLanguageIn() == LanguageMode.ECMASCRIPT5_STRICT) {
+    options.setWarningLevel(
+        DiagnosticGroups.ES5_STRICT,
+        CheckLevel.ERROR);
+  }
+  List<WarningsGuard> guards = Lists.newArrayList();
+  guards.add(
+      new SuppressDocWarningsGuard(
+          getDiagnosticGroups().getRegisteredGroups()));
+  guards.add(options.getWarningsGuard());
+  ComposeWarningsGuard composedGuards = new ComposeWarningsGuard(guards);
+  if (!options.checkSymbols &&
+      !composedGuards.enables(DiagnosticGroups.CHECK_VARIABLES)) {
+    composedGuards.addGuard(new DiagnosticGroupWarningsGuard(
+        DiagnosticGroups.CHECK_VARIABLES, CheckLevel.OFF));
+  }
+  this.warningsGuard = composedGuards;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 281.76 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void initOptions(CompilerOptions options) {
+  this.options = options;
+  if (errorManager == null) {
+    if (outStream == null) {
+      setErrorManager(
+          new LoggerErrorManager(createMessageFormatter(), logger));
+    } else {
+      PrintStreamErrorManager printer =
+          new PrintStreamErrorManager(createMessageFormatter(), outStream);
+      printer.setSummaryDetailLevel(options.summaryDetailLevel);
+      setErrorManager(printer);
+    }
+  }
+  if (options.enables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = true;
+  } else if (options.disables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = false;
+  } else if (!options.checkTypes) {
+    options.setWarningLevel(
+        DiagnosticGroup.forType(
+            RhinoErrorReporter.TYPE_PARSE_ERROR),
+        CheckLevel.OFF);
+  }
+  if (options.checkGlobalThisLevel != null && options.checkGlobalThisLevel.isOn()) {
+      options.setWarningLevel(
+        DiagnosticGroups.GLOBAL_THIS,
+        options.checkGlobalThisLevel);
+  }
+  if (options.getLanguageIn() == LanguageMode.ECMASCRIPT5_STRICT) {
+    options.setWarningLevel(
+        DiagnosticGroups.ES5_STRICT,
+        CheckLevel.ERROR);
+  }
+  List<WarningsGuard> guards = Lists.newArrayList();
+  guards.add(
+      new SuppressDocWarningsGuard(
+          getDiagnosticGroups().getRegisteredGroups()));
+  guards.add(options.getWarningsGuard());
+  ComposeWarningsGuard composedGuards = new ComposeWarningsGuard(guards);
+  if (!options.checkSymbols &&
+      !composedGuards.enables(DiagnosticGroups.CHECK_VARIABLES)) {
+    composedGuards.addGuard(new DiagnosticGroupWarningsGuard(
+        DiagnosticGroups.CHECK_VARIABLES, CheckLevel.OFF));
+  }
+  this.warningsGuard = composedGuards;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 269.69 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void initOptions(CompilerOptions options) {
+  this.options = options;
+  if (errorManager == null) {
+    if (outStream == null) {
+      setErrorManager(
+          new LoggerErrorManager(createMessageFormatter(), logger));
+    } else {
+      PrintStreamErrorManager printer =
+          new PrintStreamErrorManager(createMessageFormatter(), outStream);
+      printer.setSummaryDetailLevel(options.summaryDetailLevel);
+      setErrorManager(printer);
+    }
+  }
+  if (options.enables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = true;
+  } else if (options.disables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = false;
+  } else if (!options.checkTypes) {
+    options.setWarningLevel(
+        DiagnosticGroup.forType(
+            RhinoErrorReporter.TYPE_PARSE_ERROR),
+        CheckLevel.OFF);
+  }
+  if (options.checkGlobalThisLevel != null && options.checkGlobalThisLevel.isOn()) {
+      options.setWarningLevel(
+        DiagnosticGroups.GLOBAL_THIS,
+        options.checkGlobalThisLevel);
+  }
+  if (options.getLanguageIn() == LanguageMode.ECMASCRIPT5_STRICT) {
+    options.setWarningLevel(
+        DiagnosticGroups.ES5_STRICT,
+        CheckLevel.ERROR);
+  }
+  List<WarningsGuard> guards = Lists.newArrayList();
+  guards.add(
+      new SuppressDocWarningsGuard(
+          getDiagnosticGroups().getRegisteredGroups()));
+  guards.add(options.getWarningsGuard());
+  ComposeWarningsGuard composedGuards = new ComposeWarningsGuard(guards);
+  if (!options.checkSymbols &&
+      !composedGuards.enables(DiagnosticGroups.CHECK_VARIABLES)) {
+    composedGuards.addGuard(new DiagnosticGroupWarningsGuard(
+        DiagnosticGroups.CHECK_VARIABLES, CheckLevel.OFF));
+  }
+  this.warningsGuard = composedGuards;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 267.04 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void initOptions(CompilerOptions options) {
+  this.options = options;
+  if (errorManager == null) {
+    if (outStream == null) {
+      setErrorManager(
+          new LoggerErrorManager(createMessageFormatter(), logger));
+    } else {
+      PrintStreamErrorManager printer =
+          new PrintStreamErrorManager(createMessageFormatter(), outStream);
+      printer.setSummaryDetailLevel(options.summaryDetailLevel);
+      setErrorManager(printer);
+    }
+  }
+  if (options.enables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = true;
+  } else if (options.disables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = false;
+  } else if (!options.checkTypes) {
+    options.setWarningLevel(
+        DiagnosticGroup.forType(
+            RhinoErrorReporter.TYPE_PARSE_ERROR),
+        CheckLevel.OFF);
+  }
+  if (options.checkGlobalThisLevel != null && options.checkGlobalThisLevel.isOn()) {
+      options.setWarningLevel(
+        DiagnosticGroups.GLOBAL_THIS,
+        options.checkGlobalThisLevel);
+  }
+  if (options.getLanguageIn() == LanguageMode.ECMASCRIPT5_STRICT) {
+    options.setWarningLevel(
+        DiagnosticGroups.ES5_STRICT,
+        CheckLevel.ERROR);
+  }
+  List<WarningsGuard> guards = Lists.newArrayList();
+  guards.add(
+      new SuppressDocWarningsGuard(
+          getDiagnosticGroups().getRegisteredGroups()));
+  guards.add(options.getWarningsGuard());
+  ComposeWarningsGuard composedGuards = new ComposeWarningsGuard(guards);
+  if (!options.checkSymbols &&
+      !composedGuards.enables(DiagnosticGroups.CHECK_VARIABLES)) {
+    composedGuards.addGuard(new DiagnosticGroupWarningsGuard(
+        DiagnosticGroups.CHECK_VARIABLES, CheckLevel.OFF));
+  }
+  this.warningsGuard = composedGuards;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 292.62 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void initOptions(CompilerOptions options) {
+  this.options = options;
+  if (errorManager == null) {
+    if (outStream == null) {
+      setErrorManager(
+          new LoggerErrorManager(createMessageFormatter(), logger));
+    } else {
+      PrintStreamErrorManager printer =
+          new PrintStreamErrorManager(createMessageFormatter(), outStream);
+      printer.setSummaryDetailLevel(options.summaryDetailLevel);
+      setErrorManager(printer);
+    }
+  }
+  if (options.enables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = true;
+  } else if (options.disables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = false;
+  } else if (!options.checkTypes) {
+    options.setWarningLevel(
+        DiagnosticGroup.forType(
+            RhinoErrorReporter.TYPE_PARSE_ERROR),
+        CheckLevel.OFF);
+  }
+  if (options.checkGlobalThisLevel != null && options.checkGlobalThisLevel.isOn()) {
+      options.setWarningLevel(
+        DiagnosticGroups.GLOBAL_THIS,
+        options.checkGlobalThisLevel);
+  }
+  if (options.getLanguageIn() == LanguageMode.ECMASCRIPT5_STRICT) {
+    options.setWarningLevel(
+        DiagnosticGroups.ES5_STRICT,
+        CheckLevel.ERROR);
+  }
+  List<WarningsGuard> guards = Lists.newArrayList();
+  guards.add(
+      new SuppressDocWarningsGuard(
+          getDiagnosticGroups().getRegisteredGroups()));
+  guards.add(options.getWarningsGuard());
+  ComposeWarningsGuard composedGuards = new ComposeWarningsGuard(guards);
+  if (!options.checkSymbols &&
+      !composedGuards.enables(DiagnosticGroups.CHECK_VARIABLES)) {
+    composedGuards.addGuard(new DiagnosticGroupWarningsGuard(
+        DiagnosticGroups.CHECK_VARIABLES, CheckLevel.OFF));
+  }
+  this.warningsGuard = composedGuards;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 295.16 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void initOptions(CompilerOptions options) {
+  this.options = options;
+  if (errorManager == null) {
+    if (outStream == null) {
+      setErrorManager(
+          new LoggerErrorManager(createMessageFormatter(), logger));
+    } else {
+      PrintStreamErrorManager printer =
+          new PrintStreamErrorManager(createMessageFormatter(), outStream);
+      printer.setSummaryDetailLevel(options.summaryDetailLevel);
+      setErrorManager(printer);
+    }
+  }
+  if (options.enables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = true;
+  } else if (options.disables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = false;
+  } else if (!options.checkTypes) {
+    options.setWarningLevel(
+        DiagnosticGroup.forType(
+            RhinoErrorReporter.TYPE_PARSE_ERROR),
+        CheckLevel.OFF);
+  }
+  if (options.checkGlobalThisLevel != null && options.checkGlobalThisLevel.isOn()) {
+      options.setWarningLevel(
+        DiagnosticGroups.GLOBAL_THIS,
+        options.checkGlobalThisLevel);
+  }
+  if (options.getLanguageIn() == LanguageMode.ECMASCRIPT5_STRICT) {
+    options.setWarningLevel(
+        DiagnosticGroups.ES5_STRICT,
+        CheckLevel.ERROR);
+  }
+  List<WarningsGuard> guards = Lists.newArrayList();
+  guards.add(
+      new SuppressDocWarningsGuard(
+          getDiagnosticGroups().getRegisteredGroups()));
+  guards.add(options.getWarningsGuard());
+  ComposeWarningsGuard composedGuards = new ComposeWarningsGuard(guards);
+  if (!options.checkSymbols &&
+      !composedGuards.enables(DiagnosticGroups.CHECK_VARIABLES)) {
+    composedGuards.addGuard(new DiagnosticGroupWarningsGuard(
+        DiagnosticGroups.CHECK_VARIABLES, CheckLevel.OFF));
+  }
+  this.warningsGuard = composedGuards;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 269.67 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void initOptions(CompilerOptions options) {
+  this.options = options;
+  if (errorManager == null) {
+    if (outStream == null) {
+      setErrorManager(
+          new LoggerErrorManager(createMessageFormatter(), logger));
+    } else {
+      PrintStreamErrorManager printer =
+          new PrintStreamErrorManager(createMessageFormatter(), outStream);
+      printer.setSummaryDetailLevel(options.summaryDetailLevel);
+      setErrorManager(printer);
+    }
+  }
+  if (options.enables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = true;
+  } else if (options.disables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = false;
+  } else if (!options.checkTypes) {
+    options.setWarningLevel(
+        DiagnosticGroup.forType(
+            RhinoErrorReporter.TYPE_PARSE_ERROR),
+        CheckLevel.OFF);
+  }
+  if (options.checkGlobalThisLevel != null && options.checkGlobalThisLevel.isOn()) {
+      options.setWarningLevel(
+        DiagnosticGroups.GLOBAL_THIS,
+        options.checkGlobalThisLevel);
+  }
+  if (options.getLanguageIn() == LanguageMode.ECMASCRIPT5_STRICT) {
+    options.setWarningLevel(
+        DiagnosticGroups.ES5_STRICT,
+        CheckLevel.ERROR);
+  }
+  List<WarningsGuard> guards = Lists.newArrayList();
+  guards.add(
+      new SuppressDocWarningsGuard(
+          getDiagnosticGroups().getRegisteredGroups()));
+  guards.add(options.getWarningsGuard());
+  ComposeWarningsGuard composedGuards = new ComposeWarningsGuard(guards);
+  if (!options.checkSymbols &&
+      !composedGuards.enables(DiagnosticGroups.CHECK_VARIABLES)) {
+    composedGuards.addGuard(new DiagnosticGroupWarningsGuard(
+        DiagnosticGroups.CHECK_VARIABLES, CheckLevel.OFF));
+  }
+  this.warningsGuard = composedGuards;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: timeout
+                Validation Time: 300.11 seconds
+                Failure reason: Test timeout
+
+                PATCH:
+                public void initOptions(CompilerOptions options) {
+  this.options = options;
+  if (errorManager == null) {
+    if (outStream == null) {
+      setErrorManager(
+          new LoggerErrorManager(createMessageFormatter(), logger));
+    } else {
+      PrintStreamErrorManager printer =
+          new PrintStreamErrorManager(createMessageFormatter(), outStream);
+      printer.setSummaryDetailLevel(options.summaryDetailLevel);
+      setErrorManager(printer);
+    }
+  }
+  if (options.enables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = true;
+  } else if (options.disables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = false;
+  } else if (!options.checkTypes) {
+    options.setWarningLevel(
+        DiagnosticGroup.forType(
+            RhinoErrorReporter.TYPE_PARSE_ERROR),
+        CheckLevel.OFF);
+  }
+  if (options.checkGlobalThisLevel != null && options.checkGlobalThisLevel.isOn()) {
+      options.setWarningLevel(
+        DiagnosticGroups.GLOBAL_THIS,
+        options.checkGlobalThisLevel);
+  }
+  if (options.getLanguageIn() == LanguageMode.ECMASCRIPT5_STRICT) {
+    options.setWarningLevel(
+        DiagnosticGroups.ES5_STRICT,
+        CheckLevel.ERROR);
+  }
+  List<WarningsGuard> guards = Lists.newArrayList();
+  guards.add(
+      new SuppressDocWarningsGuard(
+          getDiagnosticGroups().getRegisteredGroups()));
+  guards.add(options.getWarningsGuard());
+  ComposeWarningsGuard composedGuards = new ComposeWarningsGuard(guards);
+  if (!options.checkSymbols &&
+      !composedGuards.enables(DiagnosticGroups.CHECK_VARIABLES)) {
+    composedGuards.addGuard(new DiagnosticGroupWarningsGuard(
+        DiagnosticGroups.CHECK_VARIABLES, CheckLevel.OFF));
+  }
+  this.warningsGuard = composedGuards;
+}
+
+                TEST STDOUT:
+                TIMEOUT
+
+                TEST STDERR:
+                TIMEOUT
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 284.50 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public void initOptions(CompilerOptions options) {
+  this.options = options;
+  if (errorManager == null) {
+    if (outStream == null) {
+      setErrorManager(
+          new LoggerErrorManager(createMessageFormatter(), logger));
+    } else {
+      PrintStreamErrorManager printer =
+          new PrintStreamErrorManager(createMessageFormatter(), outStream);
+      printer.setSummaryDetailLevel(options.summaryDetailLevel);
+      setErrorManager(printer);
+    }
+  }
+  if (options.enables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = true;
+  } else if (options.disables(DiagnosticGroups.CHECK_TYPES)) {
+    options.checkTypes = false;
+  } else if (!options.checkTypes) {
+    options.setWarningLevel(
+        DiagnosticGroup.forType(
+            RhinoErrorReporter.TYPE_PARSE_ERROR),
+        CheckLevel.OFF);
+  }
+  if (options.checkGlobalThisLevel != null && options.checkGlobalThisLevel.isOn()) {
+      options.setWarningLevel(
+        DiagnosticGroups.GLOBAL_THIS,
+        options.checkGlobalThisLevel);
+  }
+  if (options.getLanguageIn() == LanguageMode.ECMASCRIPT5_STRICT) {
+    options.setWarningLevel(
+        DiagnosticGroups.ES5_STRICT,
+        CheckLevel.ERROR);
+  }
+  List<WarningsGuard> guards = Lists.newArrayList();
+  guards.add(
+      new SuppressDocWarningsGuard(
+          getDiagnosticGroups().getRegisteredGroups()));
+  guards.add(options.getWarningsGuard());
+  ComposeWarningsGuard composedGuards = new ComposeWarningsGuard(guards);
+  if (!options.checkSymbols &&
+      !composedGuards.enables(DiagnosticGroups.CHECK_VARIABLES)) {
+    composedGuards.addGuard(new DiagnosticGroupWarningsGuard(
+        DiagnosticGroups.CHECK_VARIABLES, CheckLevel.OFF));
+  }
+  this.warningsGuard = composedGuards;
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CommandLineRunnerTest::testCheckGlobalThisOff']
+
+                EXCEPTIONS
+                None
+
+

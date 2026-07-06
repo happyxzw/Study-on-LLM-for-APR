@@ -1,0 +1,570 @@
+==================================================
+                Project: Time
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 19.25 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int parseInto(ReadWritableInstant instant, String text, int position) {
+    DateTimeParser parser = requireParser();
+    if (instant == null) {
+        throw new IllegalArgumentException("Instant must not be null");
+    }
+    long instantMillis = instant.getMillis();
+    Chronology chrono = instant.getChronology();
+    long instantLocal = instantMillis + chrono.getZone().getOffset(instantMillis);
+    chrono = selectChronology(chrono);
+    DateTimeParserBucket bucket = new DateTimeParserBucket(
+        instantLocal, chrono, iLocale, iPivotYear, iDefaultYear);
+    int newPos = parser.parseInto(bucket, text, position);
+    instant.setMillis(bucket.computeMillis(false, text));
+    if (iOffsetParsed && bucket.getOffsetInteger() != null) {
+        int parsedOffset = bucket.getOffsetInteger();
+        DateTimeZone parsedZone = DateTimeZone.forOffsetMillis(parsedOffset);
+        chrono = chrono.withZone(parsedZone);
+    }
+    instant.setChronology(chrono);
+    if (iZone != null) {
+        instant.setZone(iZone);
+    }
+    return newPos;
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseEndYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_withDefaultYear_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseEndYear
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 19.88 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int parseInto(ReadWritableInstant instant, String text, int position) {
+    DateTimeParser parser = requireParser();
+    if (instant == null) {
+        throw new IllegalArgumentException("Instant must not be null");
+    }
+    long instantMillis = instant.getMillis();
+    Chronology chrono = instant.getChronology();
+    long instantLocal = instantMillis + chrono.getZone().getOffset(instantMillis);
+    chrono = selectChronology(chrono);
+    DateTimeParserBucket bucket = new DateTimeParserBucket(
+        instantLocal, chrono, iLocale, iPivotYear, iDefaultYear);
+    int newPos = parser.parseInto(bucket, text, position);
+    if (iOffsetParsed && bucket.getOffsetInteger() != null) {
+        int parsedOffset = bucket.getOffsetInteger();
+        DateTimeZone parsedZone = DateTimeZone.forOffsetMillis(parsedOffset);
+        chrono = chrono.withZone(parsedZone);
+    } else if (bucket.getZone() != null) {
+        chrono = chrono.withZone(bucket.getZone());
+    }
+    instant.setChronology(chrono);
+    if (iZone != null) {
+        instant.setZone(iZone);
+    }
+    instant.setMillis(bucket.computeMillis(false, text));
+    return newPos;
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseEndYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_withDefaultYear_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseEndYear
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 18.58 seconds
+                Failure reason: Regression
+
+                PATCH:
+                public int parseInto(ReadWritableInstant instant, String text, int position) {
+    if (instant == null) {
+        throw new IllegalArgumentException("Instant must not be null");
+    }
+    DateTimeParser parser = requireParser();
+    long instantMillis = instant.getMillis();
+    Chronology chrono = instant.getChronology();
+    long instantLocal = instantMillis + chrono.getZone().getOffset(instantMillis);
+    chrono = selectChronology(chrono);
+    DateTimeParserBucket bucket = new DateTimeParserBucket(
+        instantLocal, chrono, iLocale, iPivotYear, iDefaultYear);
+    int newPos = parser.parseInto(bucket, text, position);
+    instant.setMillis(bucket.computeMillis(false, text));
+    if (bucket.getZone() != null) {
+        chrono = chrono.withZone(bucket.getZone());
+    }
+    instant.setChronology(chrono);
+    if (iZone != null) {
+        instant.setZone(iZone);
+    }
+    return newPos;
+}
+
+                TEST STDOUT:
+                Failing tests: 8
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseEndYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_offsetParsed
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_withDefaultYear_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseEndYear
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['org.joda.time.format.TestDateTimeFormatter::testParseInto_offsetParsed']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 20.41 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int parseInto(ReadWritableInstant instant, String text, int position) {
+    DateTimeParser parser = requireParser();
+    if (instant == null) {
+        throw new IllegalArgumentException("Instant must not be null");
+    }
+    long instantMillis = instant.getMillis();
+    Chronology chrono = instant.getChronology();
+    long instantLocal = instantMillis + chrono.getZone().getOffset(instantMillis);
+    chrono = selectChronology(chrono);
+    DateTimeParserBucket bucket = new DateTimeParserBucket(
+        instantLocal, chrono, iLocale, iPivotYear, iDefaultYear);
+            int newPos = parser.parseInto(bucket, text, position);
+    instant.setMillis(bucket.computeMillis(false, text));
+    if (iOffsetParsed && bucket.getOffsetInteger() != null) {
+        int parsedOffset = bucket.getOffsetInteger();
+        DateTimeZone parsedZone = DateTimeZone.forOffsetMillis(parsedOffset);
+        chrono = chrono.withZone(parsedZone);
+    } else if (bucket.getZone() != null) {
+        chrono = chrono.withZone(bucket.getZone());
+    }
+    instant.setChronology(chrono);
+    return newPos;
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseEndYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_withDefaultYear_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseEndYear
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 19.54 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int parseInto(ReadWritableInstant instant, String text, int position) {
+    DateTimeParser parser = requireParser();
+    if (instant == null) {
+        throw new IllegalArgumentException("Instant must not be null");
+    }
+    long instantMillis = instant.getMillis();
+    Chronology chrono = instant.getChronology();
+    long instantLocal = instantMillis + chrono.getZone().getOffset(instantMillis);
+    chrono = selectChronology(chrono);
+    DateTimeParserBucket bucket = new DateTimeParserBucket(
+        instantLocal, chrono, iLocale, iPivotYear, iDefaultYear);
+    int newPos = parser.parseInto(bucket, text, position);
+    instant.setMillis(bucket.computeMillis(false, text));
+    if (iOffsetParsed && bucket.getOffsetInteger() != null) {
+        int parsedOffset = bucket.getOffsetInteger();
+        DateTimeZone parsedZone = DateTimeZone.forOffsetMillis(parsedOffset);
+        chrono = chrono.withZone(parsedZone);
+    } else if (bucket.getZone() != null) {
+        chrono = chrono.withZone(bucket.getZone());
+    }
+    instant.setChronology(chrono);
+    if (iZone != null) {
+        instant.setZone(iZone);
+    }
+    return newPos;
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseEndYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_withDefaultYear_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseEndYear
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 20.10 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int parseInto(ReadWritableInstant instant, String text, int position) {
+    DateTimeParser parser = requireParser();
+    if (instant == null) {
+        throw new IllegalArgumentException("Instant must not be null");
+    }
+    long instantMillis = instant.getMillis();
+    Chronology chrono = instant.getChronology();
+    long instantLocal = instantMillis + chrono.getZone().getOffset(instantMillis);
+    chrono = selectChronology(chrono);
+    DateTimeParserBucket bucket = new DateTimeParserBucket(
+        instantLocal, chrono, iLocale, iPivotYear, iDefaultYear);
+            int newPos = parser.parseInto(bucket, text, position);
+    instant.setMillis(bucket.computeMillis(false, text));
+    if (iOffsetParsed && bucket.getOffsetInteger() != null) {
+        int parsedOffset = bucket.getOffsetInteger();
+        DateTimeZone parsedZone = DateTimeZone.forOffsetMillis(parsedOffset);
+        chrono = chrono.withZone(parsedZone);
+    } else if (bucket.getZone() != null) {
+        chrono = chrono.withZone(bucket.getZone());
+    }
+    instant.setChronology(chrono);
+    if (iZone != null) {
+        instant.setZone(iZone);
+    }
+    return newPos;
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseEndYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_withDefaultYear_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseEndYear
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 19.87 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int parseInto(ReadWritableInstant instant, String text, int position) {
+    if (instant == null) {
+        throw new IllegalArgumentException("Instant must not be null");
+    }
+    DateTimeParser parser = requireParser();
+    long instantMillis = instant.getMillis();
+    Chronology chrono = instant.getChronology();
+    long instantLocal = instantMillis + chrono.getZone().getOffset(instantMillis);
+    chrono = selectChronology(chrono);
+    DateTimeParserBucket bucket = new DateTimeParserBucket(
+        instantLocal, chrono, iLocale, iPivotYear, iDefaultYear);
+    int newPos = parser.parseInto(bucket, text, position);
+    instant.setMillis(bucket.computeMillis(false, text));
+    if (iOffsetParsed && bucket.getOffsetInteger() != null) {
+        int parsedOffset = bucket.getOffsetInteger();
+        DateTimeZone parsedZone = DateTimeZone.forOffsetMillis(parsedOffset);
+        chrono = chrono.withZone(parsedZone);
+    } else if (bucket.getZone() != null) {
+        chrono = chrono.withZone(bucket.getZone());
+    }
+    instant.setChronology(chrono);
+    if (iZone != null) {
+        instant.setZone(iZone);
+    }
+    return newPos;
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseEndYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_withDefaultYear_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseEndYear
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 19.96 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int parseInto(ReadWritableInstant instant, String text, int position) {
+    DateTimeParser parser = requireParser();
+    if (instant == null) {
+        throw new IllegalArgumentException("Instant must not be null");
+    }
+    long instantMillis = instant.getMillis();
+    Chronology chrono = instant.getChronology();
+    long instantLocal = instantMillis + chrono.getZone().getOffset(instantMillis);
+    chrono = selectChronology(chrono);
+    DateTimeParserBucket bucket = new DateTimeParserBucket(
+        instantLocal, chrono, iLocale, iPivotYear, iDefaultYear);
+    int newPos = parser.parseInto(bucket, text, position);
+    instant.setMillis(bucket.computeMillis(false, text));
+    if (iOffsetParsed && bucket.getOffsetInteger() != null) {
+        int parsedOffset = bucket.getOffsetInteger();
+        DateTimeZone parsedZone = DateTimeZone.forOffsetMillis(parsedOffset);
+        chrono = chrono.withZone(parsedZone);
+    }
+    instant.setChronology(chrono);
+    if (iZone != null) {
+        instant.setZone(iZone);
+    }
+    return newPos;
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseEndYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_withDefaultYear_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseEndYear
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 21.09 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int parseInto(ReadWritableInstant instant, String text, int position) {
+    DateTimeParser parser = requireParser();
+    if (instant == null) {
+        throw new IllegalArgumentException("Instant must not be null");
+    }
+    long instantMillis = instant.getMillis();
+    Chronology chrono = instant.getChronology();
+    long instantLocal = instantMillis + chrono.getZone().getOffset(instantMillis);
+    chrono = selectChronology(chrono);
+    DateTimeParserBucket bucket = new DateTimeParserBucket(
+        instantLocal, chrono, iLocale, iPivotYear, iDefaultYear);
+            int newPos = parser.parseInto(bucket, text, position);
+    if (iOffsetParsed && bucket.getOffsetInteger() != null) {
+        int parsedOffset = bucket.getOffsetInteger();
+        DateTimeZone parsedZone = DateTimeZone.forOffsetMillis(parsedOffset);
+        chrono = chrono.withZone(parsedZone);
+    } else if (bucket.getZone() != null) {
+        chrono = chrono.withZone(bucket.getZone());
+    }
+    instant.setChronology(chrono);
+    instant.setMillis(bucket.computeMillis(false, text));
+    if (iZone != null) {
+        instant.setZone(iZone);
+    }
+    return newPos;
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseEndYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_withDefaultYear_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseEndYear
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Time
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 19.24 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                public int parseInto(ReadWritableInstant instant, String text, int position) {
+    DateTimeParser parser = requireParser();
+    if (instant == null) {
+        throw new IllegalArgumentException("Instant must not be null");
+    }
+    long instantMillis = instant.getMillis();
+    Chronology chrono = instant.getChronology();
+    long instantLocal = instantMillis + chrono.getZone().getOffset(instantMillis);
+    chrono = selectChronology(chrono);
+    DateTimeParserBucket bucket = new DateTimeParserBucket(
+        instantLocal, chrono, iLocale, iPivotYear, iDefaultYear);
+    int newPos = parser.parseInto(bucket, text, position);
+    instant.setMillis(bucket.computeMillis(false, text));
+    if (iOffsetParsed && bucket.getOffsetInteger() != null) {
+        int parsedOffset = bucket.getOffsetInteger();
+        DateTimeZone parsedZone = DateTimeZone.forOffsetMillis(parsedOffset);
+        chrono = chrono.withZone(parsedZone);
+    } else if (bucket.getZone() != null) {
+        chrono = chrono.withZone(bucket.getZone());
+    }
+    instant.setChronology(chrono);
+    if (iZone != null) {
+        instant.setZone(iZone);
+    }
+    return newPos;
+}
+
+                TEST STDOUT:
+                Failing tests: 7
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseStartYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseEndYear
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_withDefaultYear_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29
+  - org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseEndYear
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

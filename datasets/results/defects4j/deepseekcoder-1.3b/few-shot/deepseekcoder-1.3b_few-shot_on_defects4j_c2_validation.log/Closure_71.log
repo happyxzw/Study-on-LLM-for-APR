@@ -1,0 +1,1533 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 100.98 seconds
+                Failure reason: Regression
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+      }
+    }
+    if (objectType == null) {
+      return;
+    }
+    boolean sameInput =
+        t.getInput().getName().equals(docInfo.getSourceName());
+    Visibility visibility = docInfo.getVisibility();
+    JSType ownerType = normalizeClassType(objectType);
+    if (visibility == Visibility.PRIVATE && !sameInput) {
+      compiler.report(
+          t.makeError(getprop, PRIVATE_OVERRIDE,
+              objectType.toString()));
+    } else if (visibility == Visibility.PROTECTED) {
+      if (currentClass == null || !currentClass.isSubtype(ownerType)) {
+        compiler.report(
+            t.makeError(getprop,  BAD_PROTECTED_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      }
+    }
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 30
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testProtectedAccessForProperties1
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testProtectedAccessForProperties2
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testProtectedAccessForProperties3
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testProtectedAccessForProperties4
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testProtectedAccessForProperties5
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testProtectedAccessForProperties6
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testBadOverrideOfProtectedProperty
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testPrivateAccessForProperties3
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties1
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties2
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties3
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties4
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties5
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties6
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties7
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties8
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testAccessOfStaticMethodOnPrivateQualifiedConstructor
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testGoodOverrideOfProtectedProperty
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoProtectedAccessForProperties1
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoProtectedAccessForProperties2
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoProtectedAccessForProperties3
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoProtectedAccessForProperties4
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoProtectedAccessForProperties5
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNullablePrivateProperty
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testInstanceofOfPrivateConstructor
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testAutoboxedPrivateProperty
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testWarningForSuperclassMethod2
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testBadOverrideOfPrivateProperty
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoExceptionsWithBadConstructors1
+  - com.google.javascript.jscomp.CheckAccessControlsTest::testNoExceptionsWithBadConstructors2
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CheckAccessControlsTest::testProtectedAccessForProperties5', 'com.google.javascript.jscomp.CheckAccessControlsTest::testProtectedAccessForProperties4', 'com.google.javascript.jscomp.CheckAccessControlsTest::testProtectedAccessForProperties6', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoProtectedAccessForProperties4', 'com.google.javascript.jscomp.CheckAccessControlsTest::testPrivateAccessForProperties3', 'com.google.javascript.jscomp.CheckAccessControlsTest::testAccessOfStaticMethodOnPrivateQualifiedConstructor', 'com.google.javascript.jscomp.CheckAccessControlsTest::testProtectedAccessForProperties2', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties2', 'com.google.javascript.jscomp.CheckAccessControlsTest::testAutoboxedPrivateProperty', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoProtectedAccessForProperties2', 'com.google.javascript.jscomp.CheckAccessControlsTest::testBadOverrideOfPrivateProperty', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties4', 'com.google.javascript.jscomp.CheckAccessControlsTest::testWarningForSuperclassMethod2', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoExceptionsWithBadConstructors1', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties3', 'com.google.javascript.jscomp.CheckAccessControlsTest::testProtectedAccessForProperties3', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoProtectedAccessForProperties5', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties7', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoProtectedAccessForProperties1', 'com.google.javascript.jscomp.CheckAccessControlsTest::testGoodOverrideOfProtectedProperty', 'com.google.javascript.jscomp.CheckAccessControlsTest::testBadOverrideOfProtectedProperty', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoProtectedAccessForProperties3', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties1', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoPrivateAccessForProperties5', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNoExceptionsWithBadConstructors2', 'com.google.javascript.jscomp.CheckAccessControlsTest::testInstanceofOfPrivateConstructor', 'com.google.javascript.jscomp.CheckAccessControlsTest::testNullablePrivateProperty', 'com.google.javascript.jscomp.CheckAccessControlsTest::testProtectedAccessForProperties1']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 2.05 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = t.inGlobalScope() &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+      }
+    }
+    if (objectType == null) {
+      return;
+    }
+    boolean sameInput =
+        t.getInput().getName().equals(docInfo.getSourceName());
+    Visibility visibility = docInfo.getVisibility();
+    JSType ownerType = normalizeClassType(objectType);
+    if (isOverride) {
+      JSDocInfo overridingInfo = parent.getJSDocInfo();
+      Visibility overridingVisibility = overridingInfo == null ?
+          Visibility.INHERITED : overridingInfo.getVisibility();
+      if (visibility == Visibility.PRIVATE && !sameInput) {
+        compiler.report(
+            t.makeError(getprop, PRIVATE_OVERRIDE,
+                objectType.toString()));
+      }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: ')' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:469: error: illegal start of expression
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:469: error: ';' expected
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:470: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:470: error: not a statement
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:470: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:470: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: illegal start of expression
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: ')' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: not a statement
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: ')' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: illegal start of expression
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: illegal start of expression
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: ';' expected
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: ')' expected
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: illegal start of expression
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:563: error: ';' expected
+    [javac]                                                    String prop) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:563: error: not a statement
+    [javac]                                                    String prop) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:563: error: ';' expected
+    [javac]                                                    String prop) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: illegal start of expression
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: illegal start of expression
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: ';' expected
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: ')' expected
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: illegal start of expression
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: ';' expected
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                                                 ^
+    [javac] 43 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 2.08 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = t.inGlobalScope() &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+      }
+    }
+    if (objectType == null) {
+      return;
+    }
+    boolean sameInput =
+        t.getInput().getName().equals(docInfo.getSourceName());
+    Visibility visibility = docInfo.getVisibility();
+    JSType ownerType = normalizeClassType(objectType);
+    if (isOverride) {
+      JSDocInfo overridingInfo = parent.getJSDocInfo();
+      Visibility overridingVisibility = overridingInfo == null ?
+          Visibility.INHERITED : overridingInfo.getVisibility();
+      if (visibility == Visibility.PRIVATE && !sameInput) {
+        compiler.report(
+            t.makeError(getprop, PRIVATE_OVERRIDE,
+                objectType.toString()));
+      }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: ')' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:469: error: illegal start of expression
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:469: error: ';' expected
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:470: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:470: error: not a statement
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:470: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:470: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: illegal start of expression
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: ')' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: not a statement
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: ')' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: illegal start of expression
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: illegal start of expression
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: ';' expected
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: ')' expected
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: illegal start of expression
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:563: error: ';' expected
+    [javac]                                                    String prop) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:563: error: not a statement
+    [javac]                                                    String prop) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:563: error: ';' expected
+    [javac]                                                    String prop) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: illegal start of expression
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: illegal start of expression
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: ';' expected
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: ')' expected
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: illegal start of expression
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: ';' expected
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                                                 ^
+    [javac] 43 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 1.88 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = t.inGlobalScope() &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+      }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:442: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:442: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:442: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:442: error: ')' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:442: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:442: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:452: error: illegal start of expression
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:452: error: ';' expected
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:453: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:453: error: not a statement
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:453: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:453: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:485: error: illegal start of expression
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:485: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:485: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: ')' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: not a statement
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: ')' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:545: error: illegal start of expression
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:545: error: illegal start of expression
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:545: error: ';' expected
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:545: error: ')' expected
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:545: error: illegal start of expression
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:546: error: ';' expected
+    [javac]                                                    String prop) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:546: error: not a statement
+    [javac]                                                    String prop) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:546: error: ';' expected
+    [javac]                                                    String prop) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:565: error: illegal start of expression
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:565: error: illegal start of expression
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:565: error: ';' expected
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:565: error: ')' expected
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:565: error: illegal start of expression
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:565: error: ';' expected
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                                                 ^
+    [javac] 43 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 1.86 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = t.inGlobalScope() &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+      }
+    }
+    if (objectType == null) {
+      return;
+    }
+    boolean sameInput =
+        t.getInput().getName().equals(docInfo.getSourceName());
+    Visibility visibility = docInfo.getVisibility();
+    JSType ownerType = normalizeClassType(objectType);
+    if (isOverride) {
+      JSDocInfo overridingInfo = parent.getJSDocInfo();
+      Visibility overridingVisibility = overridingInfo == null ?
+          Visibility.INHERITED : overridingInfo.getVisibility();
+      if (visibility == Visibility.PRIVATE && !sameInput) {
+        compiler.report(
+            t.makeError(getprop, PRIVATE_OVERRIDE,
+                objectType.toString()));
+      }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: ')' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:459: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:469: error: illegal start of expression
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:469: error: ';' expected
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:470: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:470: error: not a statement
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:470: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:470: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: illegal start of expression
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:502: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: ')' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: not a statement
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:519: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: ')' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:535: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: illegal start of expression
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: illegal start of expression
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: ';' expected
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: ')' expected
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:562: error: illegal start of expression
+    [javac]   private static String getPropertyDeprecationInfo(ObjectType type,
+    [javac]                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:563: error: ';' expected
+    [javac]                                                    String prop) {
+    [javac]                                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:563: error: not a statement
+    [javac]                                                    String prop) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:563: error: ';' expected
+    [javac]                                                    String prop) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: illegal start of expression
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: illegal start of expression
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: ';' expected
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: ')' expected
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: illegal start of expression
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:582: error: ';' expected
+    [javac]   private static JSType dereference(JSType type) {
+    [javac]                                                 ^
+    [javac] 43 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: uncompilable
+                Validation Time: 2.13 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = t.inGlobalScope() &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+      }
+    }
+    if (objectType == null) {
+      return;
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:446: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:446: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:446: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:446: error: ')' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:446: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:446: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:456: error: illegal start of expression
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:456: error: ';' expected
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:457: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:457: error: not a statement
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:457: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:457: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:489: error: illegal start of expression
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:489: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:489: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: ')' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: not a statement
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:522: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:522: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:522: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:522: error: ')' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:522: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:522: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                            ^
+    [javac] 29 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 1.99 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    if (objectType.isProtected() || objectType.isPrivate() ||
+        objectType.isStatic() || objectType.isAbstract()) {
+      if (objectType.isProtected() &&
+          (currentClass == null || !currentClass.isSubtype(objectType))) {
+        compiler.report(
+            t.makeError(getprop, BAD_PROTECTED_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      } else if (objectType.isPrivate()) {
+        compiler.report(
+            t.makeError(getprop, BAD_PRIVATE_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      } else if (objectType.isStatic()) {
+        compiler.report(
+            t.makeError(getprop, BAD_STATIC_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      } else if (objectType.isAbstract()) {
+        compiler.report(
+            t.makeError(getprop, BAD_ABSTRACT_PROPERTY_ACCESS,
+                propertyName,
+                validator.getReadableJSTypeName(
+                    getprop.getFirstChild(), true)));
+      }
+      return;
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:458: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:458: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:458: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:458: error: ')' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:458: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:458: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:468: error: illegal start of expression
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:468: error: ';' expected
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:469: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:469: error: not a statement
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:469: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:469: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:501: error: illegal start of expression
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:501: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:501: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: ')' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: not a statement
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:518: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:534: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:534: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:534: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:534: error: ')' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:534: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:534: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                            ^
+    [javac] 29 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: uncompilable
+                Validation Time: 1.74 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+      }
+    }
+    if (objectType == null) {
+      return;
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:440: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:440: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:440: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:440: error: ')' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:440: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:440: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:450: error: illegal start of expression
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:450: error: ';' expected
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:451: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:451: error: not a statement
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:451: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:451: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:483: error: illegal start of expression
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:483: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:483: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:500: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:500: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:500: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:500: error: ')' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:500: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:500: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:500: error: not a statement
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:500: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:516: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:516: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:516: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:516: error: ')' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:516: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:516: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                            ^
+    [javac] 29 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 2.03 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                private void checkPropertyVisibility(NodeTraversal t,
+    Node getprop, Node parent) {
+  ObjectType objectType =
+      ObjectType.cast(dereference(getprop.getFirstChild().getJSType()));
+  String propertyName = getprop.getLastChild().getString();
+  if (objectType != null) {
+    boolean isOverride = t.inGlobalScope() &&
+        parent.getType() == Token.ASSIGN &&
+        parent.getFirstChild() == getprop;
+    if (isOverride) {
+      objectType = objectType.getImplicitPrototype();
+    }
+    JSDocInfo docInfo = null;
+    for (; objectType != null;
+         objectType = objectType.getImplicitPrototype()) {
+      docInfo = objectType.getOwnPropertyJSDocInfo(propertyName);
+      if (docInfo != null &&
+          docInfo.getVisibility() != Visibility.INHERITED) {
+        break;
+      }
+    }
+    if (objectType == null) {
+      return;
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:185: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:446: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:446: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:446: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:446: error: ')' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:446: error: illegal start of expression
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:446: error: ';' expected
+    [javac]   private static boolean isValidPrivateConstructorAccess(Node parent) {
+    [javac]                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:456: error: illegal start of expression
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:456: error: ';' expected
+    [javac]   private boolean shouldEmitDeprecationWarning(
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:457: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:457: error: not a statement
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:457: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:457: error: ';' expected
+    [javac]       NodeTraversal t, Node n, Node parent) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:489: error: illegal start of expression
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:489: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:489: error: ';' expected
+    [javac]   private boolean canAccessDeprecatedTypes(NodeTraversal t) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: ')' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: illegal start of expression
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: not a statement
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:506: error: ';' expected
+    [javac]   private static boolean isDeprecatedFunction(Node n, Node parent) {
+    [javac]                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:522: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:522: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:522: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:522: error: ')' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:522: error: illegal start of expression
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/src/com/google/javascript/jscomp/CheckAccessControls.java:522: error: ';' expected
+    [javac]   private static String getTypeDeprecationInfo(JSType type) {
+    [javac]                                                            ^
+    [javac] 29 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c2_20260528_201035/Closure_71_e427321a29c14178857eabd04093c27b/build.xml:191: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

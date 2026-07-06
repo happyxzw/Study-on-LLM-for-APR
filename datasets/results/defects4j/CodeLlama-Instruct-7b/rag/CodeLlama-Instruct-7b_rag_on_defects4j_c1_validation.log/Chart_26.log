@@ -1,0 +1,1301 @@
+==================================================
+                Project: Chart
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 21.71 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected AxisState drawLabel(String label, Graphics2D g2, Rectangle2D plotArea, Rectangle2D dataArea, RectangleEdge edge, AxisState state, PlotRenderingInfo plotState) {
+    if (state == null) {
+        throw new IllegalArgumentException("Null 'state' argument.");
+    }
+    if ((label == null) || (label.equals(""))) {
+        return state;
+    }
+    Font font = getLabelFont();
+    RectangleInsets insets = getLabelInsets();
+    g2.setFont(font);
+    g2.setPaint(getLabelPaint());
+    FontMetrics fm = g2.getFontMetrics();
+    Rectangle2D labelBounds = TextUtilities.getTextBounds(label, g2, fm);
+    Shape hotspot = null;
+    if (edge == RectangleEdge.TOP) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle(), labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() - insets.getBottom() - h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h);
+        state.cursorUp(insets.getTop() + labelBounds.getHeight() + insets.getBottom());
+    } else if (edge == RectangleEdge.BOTTOM) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle(), labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() + insets.getTop() + h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h);
+        state.cursorDown(insets.getTop() + labelBounds.getHeight() + insets.getBottom());
+    } else if (edge == RectangleEdge.LEFT) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle() - Math.PI / 2.0, labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() - insets.getRight() - w / 2.0);
+        float labely = (float) dataArea.getCenterY();
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle() - Math.PI / 2.0, TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h);
+        state.cursorLeft(insets.getLeft() + labelBounds.getWidth() + insets.getRight());
+    } else if (edge == RectangleEdge.RIGHT) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle() + Math.PI / 2.0, labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() + insets.getLeft() + w / 2.0);
+        float labely = (float) (dataArea.getY() + dataArea.getHeight() / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle() + Math.PI / 2.0, TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h);
+        state.cursorRight(insets.getLeft() + labelBounds.getWidth() + insets.getRight());
+    }
+    if (plotState != null && hotspot != null) {
+        ChartRenderingInfo owner = plotState.getOwner();
+        EntityCollection entities = owner.getEntityCollection();
+        if (entities != null) {
+            entities.add(new AxisLabelEntity(this, hotspot, this.labelToolTip, this.labelURL));
+        }
+    }
+    return state;
+}
+
+                TEST STDOUT:
+                Failing tests: 22
+  - org.jfree.chart.junit.AreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo2
+  - org.jfree.chart.junit.LineChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.LineChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedAreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.WaterfallChartTests::testDrawWithNullInfo
+  - org.jfree.chart.plot.junit.CategoryPlotTests::test1654215
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization3
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization4
+  - org.jfree.chart.renderer.category.junit.BoxAndWhiskerRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.GroupedStackedBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.IntervalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LayeredBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LevelRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.MinMaxCategoryRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalLineAndShapeRendererTests::testDrawWithNullInfo
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 21.86 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected AxisState drawLabel(String label, Graphics2D g2, 
+        Rectangle2D plotArea, Rectangle2D dataArea, RectangleEdge edge, 
+        AxisState state, PlotRenderingInfo plotState) {
+    if (state == null) {
+        throw new IllegalArgumentException("Null 'state' argument.");
+    }
+    if ((label == null) || (label.equals(""))) {
+        return state;
+    }
+    Font font = getLabelFont();
+    RectangleInsets insets = getLabelInsets();
+    g2.setFont(font);
+    g2.setPaint(getLabelPaint());
+    FontMetrics fm = g2.getFontMetrics();
+    Rectangle2D labelBounds = TextUtilities.getTextBounds(label, g2, fm);
+    Shape hotspot = null;
+    if (edge == RectangleEdge.TOP) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle(), labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() - insets.getBottom() 
+                - h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorUp(insets.getTop() + labelBounds.getHeight() 
+                + insets.getBottom());
+    }
+    else if (edge == RectangleEdge.BOTTOM) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle(), labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() + insets.getTop() 
+                + h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorDown(insets.getTop() + labelBounds.getHeight() 
+                + insets.getBottom());
+    }
+    else if (edge == RectangleEdge.LEFT) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle() - Math.PI / 2.0, labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() - insets.getRight() 
+                - w / 2.0);
+        float labely = (float) dataArea.getCenterY();
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle() - Math.PI / 2.0, 
+                TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorLeft(insets.getLeft() + labelBounds.getWidth() 
+                + insets.getRight());
+    }
+    else if (edge == RectangleEdge.RIGHT) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle() + Math.PI / 2.0, 
+                labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() 
+                        + insets.getLeft() + w / 2.0);
+        float labely = (float) (dataArea.getY() + dataArea.getHeight() 
+                / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle() + Math.PI / 2.0, 
+                TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorRight(insets.getLeft() + labelBounds.getWidth() 
+                + insets.getRight());
+    }
+    if (plotState != null && hotspot != null) {
+        ChartRenderingInfo owner = plotState.getOwner();
+            EntityCollection entities = owner.getEntityCollection();
+                        if (entities != null) {
+                entities.add(new AxisLabelEntity(this, hotspot, 
+                        this.labelToolTip, this.labelURL));
+            }
+    }
+    return state;
+}
+
+                TEST STDOUT:
+                Failing tests: 22
+  - org.jfree.chart.junit.AreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo2
+  - org.jfree.chart.junit.LineChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.LineChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedAreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.WaterfallChartTests::testDrawWithNullInfo
+  - org.jfree.chart.plot.junit.CategoryPlotTests::test1654215
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization3
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization4
+  - org.jfree.chart.renderer.category.junit.BoxAndWhiskerRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.GroupedStackedBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.IntervalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LayeredBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LevelRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.MinMaxCategoryRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalLineAndShapeRendererTests::testDrawWithNullInfo
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 3.13 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected AxisState drawLabel(String label, Graphics2D g2, 
+        Rectangle2D plotArea, Rectangle2D dataArea, RectangleEdge edge, 
+        AxisState state, PlotRenderingInfo plotState) {
+    if (state == null) {
+        throw new IllegalArgumentException("Null 'state' argument.");
+    }
+    if (label == null || label.equals("")) {
+        return state;
+    }
+    Font font = getLabelFont();
+    RectangleInsets insets = getLabelInsets();
+    g2.setFont(font);
+    g2.setPaint(getLabelPaint());
+    FontMetrics fm = g2.getFontMetrics();
+    Rectangle2D labelBounds = TextUtilities.getTextBounds(label, g2, fm);
+    Shape hotspot = null;
+    if (edge == RectangleEdge.TOP) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle(), labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() - insets.getBottom() 
+                - h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorUp(insets.getTop() + labelBounds.getHeight() 
+                + insets.getBottom());
+    }
+    else if (edge == RectangleEdge.BOTTOM) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle(), labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() + insets.getTop() 
+                + h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorDown(insets.getTop() + labelBounds.getHeight() 
+                + insets.getBottom());
+    }
+    else if (edge == RectangleEdge.LEFT) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle() - Math.PI / 2.0, labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() - insets.getRight() 
+                - w / 2.0);
+        float labely = (float) dataArea.getCenterY();
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle() - Math.PI / 2.0, 
+                TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorLeft(insets.getLeft() + labelBounds.getWidth() 
+                + insets.getRight());
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+initialise:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/Chart/Chart.build.xml:57: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/build
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1172: error: illegal start of expression
+    [javac]     protected void drawAxisLine(Graphics2D g2, double cursor,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1172: error: illegal start of expression
+    [javac]     protected void drawAxisLine(Graphics2D g2, double cursor,
+    [javac]               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1172: error: ';' expected
+    [javac]     protected void drawAxisLine(Graphics2D g2, double cursor,
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1172: error: <identifier> expected
+    [javac]     protected void drawAxisLine(Graphics2D g2, double cursor,
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1172: error: not a statement
+    [javac]     protected void drawAxisLine(Graphics2D g2, double cursor,
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1172: error: ';' expected
+    [javac]     protected void drawAxisLine(Graphics2D g2, double cursor,
+    [javac]                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1173: error: ';' expected
+    [javac]             Rectangle2D dataArea, RectangleEdge edge) {
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1173: error: not a statement
+    [javac]             Rectangle2D dataArea, RectangleEdge edge) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1173: error: ';' expected
+    [javac]             Rectangle2D dataArea, RectangleEdge edge) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1206: error: illegal start of expression
+    [javac]     public Object clone() throws CloneNotSupportedException {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1206: error: ';' expected
+    [javac]     public Object clone() throws CloneNotSupportedException {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1206: error: not a statement
+    [javac]     public Object clone() throws CloneNotSupportedException {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1206: error: ';' expected
+    [javac]     public Object clone() throws CloneNotSupportedException {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1221: error: illegal start of expression
+    [javac]     public boolean equals(Object obj) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1221: error: ';' expected
+    [javac]     public boolean equals(Object obj) {
+    [javac]                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1221: error: ';' expected
+    [javac]     public boolean equals(Object obj) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1304: error: illegal start of expression
+    [javac]     private void writeObject(ObjectOutputStream stream) throws IOException {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1304: error: illegal start of expression
+    [javac]     private void writeObject(ObjectOutputStream stream) throws IOException {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1304: error: ';' expected
+    [javac]     private void writeObject(ObjectOutputStream stream) throws IOException {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1304: error: ';' expected
+    [javac]     private void writeObject(ObjectOutputStream stream) throws IOException {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1304: error: not a statement
+    [javac]     private void writeObject(ObjectOutputStream stream) throws IOException {
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1304: error: ';' expected
+    [javac]     private void writeObject(ObjectOutputStream stream) throws IOException {
+    [javac]                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1322: error: illegal start of expression
+    [javac]     private void readObject(ObjectInputStream stream) 
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1322: error: illegal start of expression
+    [javac]     private void readObject(ObjectInputStream stream) 
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1322: error: ';' expected
+    [javac]     private void readObject(ObjectInputStream stream) 
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1322: error: ';' expected
+    [javac]     private void readObject(ObjectInputStream stream) 
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1323: error: not a statement
+    [javac]         throws IOException, ClassNotFoundException {
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1323: error: ';' expected
+    [javac]         throws IOException, ClassNotFoundException {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1323: error: not a statement
+    [javac]         throws IOException, ClassNotFoundException {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1323: error: ';' expected
+    [javac]         throws IOException, ClassNotFoundException {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1334: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 31 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/defects4j/framework/projects/Chart/Chart.build.xml:57: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 3
+                Correctness: uncompilable
+                Validation Time: 3.02 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                protected AxisState drawLabel(String label, Graphics2D g2, 
+        Rectangle2D plotArea, Rectangle2D dataArea, RectangleEdge edge, 
+        AxisState state, PlotRenderingInfo plotState) {
+    if (state == null) {
+        throw new IllegalArgumentException("Null 'state' argument.");
+    }
+    if (label == null || label.equals("")) {
+        return state;
+    }
+    if (plotState == null || plotState.getOwner() == null) {
+        return state;
+    }
+    if (edge == null) {
+        return state;
+    }
+    Font font = getLabelFont();
+    if (font == null) {
+        return state;
+    }
+    RectangleInsets insets = getLabelInsets();
+    if (insets == null) {
+        return state;
+    }
+    g2.setFont(font);
+    g2.setPaint(getLabelPaint());
+    FontMetrics fm = g2.getFontMetrics();
+    Rectangle2D labelBounds = TextUtilities.getTextBounds(label, g2, fm);
+    if (labelBounds == null) {
+        return state;
+    }
+    Shape hotspot = null;
+    if (edge == RectangleEdge.TOP) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle(), labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() - insets.getBottom() 
+                - h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorUp(insets.getTop() + labelBounds.getHeight() 
+                + insets.getBottom());
+    }
+    else if (edge == RectangleEdge.BOTTOM) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle(), labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() + insets.getTop() 
+                + h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorDown(insets.getTop() + labelBounds.getHeight() 
+                + insets.getBottom());
+    }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+initialise:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/Chart/Chart.build.xml:57: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/build
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1168: error: illegal start of expression
+    [javac]     protected void drawAxisLine(Graphics2D g2, double cursor,
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1168: error: illegal start of expression
+    [javac]     protected void drawAxisLine(Graphics2D g2, double cursor,
+    [javac]               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1168: error: ';' expected
+    [javac]     protected void drawAxisLine(Graphics2D g2, double cursor,
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1168: error: <identifier> expected
+    [javac]     protected void drawAxisLine(Graphics2D g2, double cursor,
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1168: error: not a statement
+    [javac]     protected void drawAxisLine(Graphics2D g2, double cursor,
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1168: error: ';' expected
+    [javac]     protected void drawAxisLine(Graphics2D g2, double cursor,
+    [javac]                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1169: error: ';' expected
+    [javac]             Rectangle2D dataArea, RectangleEdge edge) {
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1169: error: not a statement
+    [javac]             Rectangle2D dataArea, RectangleEdge edge) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1169: error: ';' expected
+    [javac]             Rectangle2D dataArea, RectangleEdge edge) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1202: error: illegal start of expression
+    [javac]     public Object clone() throws CloneNotSupportedException {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1202: error: ';' expected
+    [javac]     public Object clone() throws CloneNotSupportedException {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1202: error: not a statement
+    [javac]     public Object clone() throws CloneNotSupportedException {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1202: error: ';' expected
+    [javac]     public Object clone() throws CloneNotSupportedException {
+    [javac]                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1217: error: illegal start of expression
+    [javac]     public boolean equals(Object obj) {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1217: error: ';' expected
+    [javac]     public boolean equals(Object obj) {
+    [javac]                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1217: error: ';' expected
+    [javac]     public boolean equals(Object obj) {
+    [javac]                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1300: error: illegal start of expression
+    [javac]     private void writeObject(ObjectOutputStream stream) throws IOException {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1300: error: illegal start of expression
+    [javac]     private void writeObject(ObjectOutputStream stream) throws IOException {
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1300: error: ';' expected
+    [javac]     private void writeObject(ObjectOutputStream stream) throws IOException {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1300: error: ';' expected
+    [javac]     private void writeObject(ObjectOutputStream stream) throws IOException {
+    [javac]                                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1300: error: not a statement
+    [javac]     private void writeObject(ObjectOutputStream stream) throws IOException {
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1300: error: ';' expected
+    [javac]     private void writeObject(ObjectOutputStream stream) throws IOException {
+    [javac]                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1318: error: illegal start of expression
+    [javac]     private void readObject(ObjectInputStream stream) 
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1318: error: illegal start of expression
+    [javac]     private void readObject(ObjectInputStream stream) 
+    [javac]             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1318: error: ';' expected
+    [javac]     private void readObject(ObjectInputStream stream) 
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1318: error: ';' expected
+    [javac]     private void readObject(ObjectInputStream stream) 
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1319: error: not a statement
+    [javac]         throws IOException, ClassNotFoundException {
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1319: error: ';' expected
+    [javac]         throws IOException, ClassNotFoundException {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1319: error: not a statement
+    [javac]         throws IOException, ClassNotFoundException {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1319: error: ';' expected
+    [javac]         throws IOException, ClassNotFoundException {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_002758/Chart_26_75f804a86fc1463a9624de9c0066e94f/source/org/jfree/chart/axis/Axis.java:1330: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 31 errors
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/defects4j/framework/projects/Chart/Chart.build.xml:57: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 22.38 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected AxisState drawLabel(String label, Graphics2D g2, Rectangle2D plotArea, Rectangle2D dataArea, RectangleEdge edge, AxisState state, PlotRenderingInfo plotState) {
+    if (state == null) {
+        throw new IllegalArgumentException("Null 'state' argument.");
+    }
+    if ((label == null) || (label.equals(""))) {
+        return state;
+    }
+    Font font = getLabelFont();
+    RectangleInsets insets = getLabelInsets();
+    g2.setFont(font);
+    g2.setPaint(getLabelPaint());
+    FontMetrics fm = g2.getFontMetrics();
+    Rectangle2D labelBounds = TextUtilities.getTextBounds(label, g2, fm);
+    Shape hotspot = null;
+    if (edge == RectangleEdge.TOP) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle(), labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() - insets.getBottom() - h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h);
+        state.cursorUp(insets.getTop() + labelBounds.getHeight() + insets.getBottom());
+    } else if (edge == RectangleEdge.BOTTOM) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle(), labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() + insets.getTop() + h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h);
+        state.cursorDown(insets.getTop() + labelBounds.getHeight() + insets.getBottom());
+    } else if (edge == RectangleEdge.LEFT) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle() - Math.PI / 2.0, labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() - insets.getRight() - w / 2.0);
+        float labely = (float) dataArea.getCenterY();
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle() - Math.PI / 2.0, TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h);
+        state.cursorLeft(insets.getLeft() + labelBounds.getWidth() + insets.getRight());
+    } else if (edge == RectangleEdge.RIGHT) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle() + Math.PI / 2.0, labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() + insets.getLeft() + w / 2.0);
+        float labely = (float) (dataArea.getY() + dataArea.getHeight() / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle() + Math.PI / 2.0, TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h);
+        state.cursorRight(insets.getLeft() + labelBounds.getWidth() + insets.getRight());
+    }
+    if (plotState != null && hotspot != null) {
+        ChartRenderingInfo owner = plotState.getOwner();
+        EntityCollection entities = owner.getEntityCollection();
+        if (entities != null) {
+            entities.add(new AxisLabelEntity(this, hotspot, this.labelToolTip, this.labelURL));
+        }
+    }
+    return state;
+}
+
+                TEST STDOUT:
+                Failing tests: 22
+  - org.jfree.chart.junit.AreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo2
+  - org.jfree.chart.junit.LineChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.LineChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedAreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.WaterfallChartTests::testDrawWithNullInfo
+  - org.jfree.chart.plot.junit.CategoryPlotTests::test1654215
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization3
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization4
+  - org.jfree.chart.renderer.category.junit.BoxAndWhiskerRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.GroupedStackedBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.IntervalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LayeredBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LevelRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.MinMaxCategoryRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalLineAndShapeRendererTests::testDrawWithNullInfo
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 24.09 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected AxisState drawLabel(String label, Graphics2D g2, Rectangle2D plotArea, Rectangle2D dataArea, RectangleEdge edge, AxisState state, PlotRenderingInfo plotState) {
+    if (state == null) {
+        throw new IllegalArgumentException("Null 'state' argument.");
+    }
+    if ((label == null) || (label.equals(""))) {
+        return state;
+    }
+    Font font = getLabelFont();
+    RectangleInsets insets = getLabelInsets();
+    g2.setFont(font);
+    g2.setPaint(getLabelPaint());
+    FontMetrics fm = g2.getFontMetrics();
+    Rectangle2D labelBounds = TextUtilities.getTextBounds(label, g2, fm);
+    Shape hotspot = null;
+    if (edge == RectangleEdge.TOP) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle(), labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() - insets.getBottom() - h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h);
+        state.cursorUp(insets.getTop() + labelBounds.getHeight() + insets.getBottom());
+    } else if (edge == RectangleEdge.BOTTOM) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle(), labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() + insets.getTop() + h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h);
+        state.cursorDown(insets.getTop() + labelBounds.getHeight() + insets.getBottom());
+    } else if (edge == RectangleEdge.LEFT) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle() - Math.PI / 2.0, labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() - insets.getRight() - w / 2.0);
+        float labely = (float) dataArea.getCenterY();
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle() - Math.PI / 2.0, TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h);
+        state.cursorLeft(insets.getLeft() + labelBounds.getWidth() + insets.getRight());
+    } else if (edge == RectangleEdge.RIGHT) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle() + Math.PI / 2.0, labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() + insets.getLeft() + w / 2.0);
+        float labely = (float) (dataArea.getY() + dataArea.getHeight() / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle() + Math.PI / 2.0, TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h);
+        state.cursorRight(insets.getLeft() + labelBounds.getWidth() + insets.getRight());
+    }
+    if (plotState != null && hotspot != null) {
+        ChartRenderingInfo owner = plotState.getOwner();
+        EntityCollection entities = owner.getEntityCollection();
+        if (entities != null) {
+            entities.add(new AxisLabelEntity(this, hotspot, this.labelToolTip, this.labelURL));
+        }
+    }
+    return state;
+}
+
+                TEST STDOUT:
+                Failing tests: 22
+  - org.jfree.chart.junit.AreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo2
+  - org.jfree.chart.junit.LineChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.LineChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedAreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.WaterfallChartTests::testDrawWithNullInfo
+  - org.jfree.chart.plot.junit.CategoryPlotTests::test1654215
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization3
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization4
+  - org.jfree.chart.renderer.category.junit.BoxAndWhiskerRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.GroupedStackedBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.IntervalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LayeredBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LevelRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.MinMaxCategoryRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalLineAndShapeRendererTests::testDrawWithNullInfo
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 25.48 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected AxisState drawLabel(String label, Graphics2D g2, 
+        Rectangle2D plotArea, Rectangle2D dataArea, RectangleEdge edge, 
+        AxisState state, PlotRenderingInfo plotState) {
+    if (state == null) {
+        throw new IllegalArgumentException("Null 'state' argument.");
+    }
+    if ((label == null) || (label.equals(""))) {
+        return state;
+    }
+    Font font = getLabelFont();
+    RectangleInsets insets = getLabelInsets();
+    g2.setFont(font);
+    g2.setPaint(getLabelPaint());
+    FontMetrics fm = g2.getFontMetrics();
+    Rectangle2D labelBounds = TextUtilities.getTextBounds(label, g2, fm);
+    Shape hotspot = null;
+    if (edge == RectangleEdge.TOP) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle(), labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() - insets.getBottom() 
+                - h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorUp(insets.getTop() + labelBounds.getHeight() 
+                + insets.getBottom());
+    }
+    else if (edge == RectangleEdge.BOTTOM) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle(), labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() + insets.getTop() 
+                + h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorDown(insets.getTop() + labelBounds.getHeight() 
+                + insets.getBottom());
+    }
+    else if (edge == RectangleEdge.LEFT) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle() - Math.PI / 2.0, labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() - insets.getRight() 
+                - w / 2.0);
+        float labely = (float) dataArea.getCenterY();
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle() - Math.PI / 2.0, 
+                TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorLeft(insets.getLeft() + labelBounds.getWidth() 
+                + insets.getRight());
+    }
+    else if (edge == RectangleEdge.RIGHT) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle() + Math.PI / 2.0, 
+                labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() 
+                        + insets.getLeft() + w / 2.0);
+        float labely = (float) (dataArea.getY() + dataArea.getHeight() 
+                / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle() + Math.PI / 2.0, 
+                TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorRight(insets.getLeft() + labelBounds.getWidth() 
+                + insets.getRight());
+    }
+    if (plotState != null && hotspot != null) {
+        ChartRenderingInfo owner = plotState.getOwner();
+        EntityCollection entities = owner.getEntityCollection();
+        if (entities != null) {
+            entities.add(new AxisLabelEntity(this, hotspot, 
+                    this.labelToolTip, this.labelURL));
+        }
+    }
+    return state;
+}
+
+                TEST STDOUT:
+                Failing tests: 22
+  - org.jfree.chart.junit.AreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo2
+  - org.jfree.chart.junit.LineChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.LineChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedAreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.WaterfallChartTests::testDrawWithNullInfo
+  - org.jfree.chart.plot.junit.CategoryPlotTests::test1654215
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization3
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization4
+  - org.jfree.chart.renderer.category.junit.BoxAndWhiskerRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.GroupedStackedBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.IntervalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LayeredBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LevelRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.MinMaxCategoryRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalLineAndShapeRendererTests::testDrawWithNullInfo
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 21.54 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected AxisState drawLabel(String label, Graphics2D g2, Rectangle2D plotArea, Rectangle2D dataArea, RectangleEdge edge, AxisState state, PlotRenderingInfo plotState) {
+    if (state == null) {
+        throw new IllegalArgumentException("Null 'state' argument.");
+    }
+    if ((label == null) || (label.equals(""))) {
+        return state;
+    }
+    Font font = getLabelFont();
+    RectangleInsets insets = getLabelInsets();
+    g2.setFont(font);
+    g2.setPaint(getLabelPaint());
+    FontMetrics fm = g2.getFontMetrics();
+    Rectangle2D labelBounds = TextUtilities.getTextBounds(label, g2, fm);
+    float w = (float) labelBounds.getWidth();
+    float h = (float) labelBounds.getHeight();
+    float labelx = 0.0f;
+    float labely = 0.0f;
+    if (edge == RectangleEdge.TOP) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle(), labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        labelx = (float) dataArea.getCenterX();
+        labely = (float) (state.getCursor() - insets.getBottom() - h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        state.cursorUp(insets.getTop() + labelBounds.getHeight() + insets.getBottom());
+    }
+    else if (edge == RectangleEdge.BOTTOM) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle(), labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        labelx = (float) dataArea.getCenterX();
+        labely = (float) (state.getCursor() + insets.getTop() + h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        state.cursorDown(insets.getTop() + labelBounds.getHeight() + insets.getBottom());
+    }
+    else if (edge == RectangleEdge.LEFT) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle() - Math.PI / 2.0, labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        labelx = (float) (state.getCursor() - insets.getRight() - w / 2.0);
+        labely = (float) dataArea.getCenterY();
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle() - Math.PI / 2.0, TextAnchor.CENTER);
+        state.cursorLeft(insets.getLeft() + labelBounds.getWidth() + insets.getRight());
+    }
+    else if (edge == RectangleEdge.RIGHT) {
+        AffineTransform t = AffineTransform.getRotateInstance(getLabelAngle() + Math.PI / 2.0, labelBounds.getCenterX(), labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        labelx = (float) (state.getCursor() + insets.getLeft() + w / 2.0);
+        labely = (float) (dataArea.getY() + dataArea.getHeight() / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, TextAnchor.CENTER, getLabelAngle() + Math.PI / 2.0, TextAnchor.CENTER);
+        state.cursorRight(insets.getLeft() + labelBounds.getWidth() + insets.getRight());
+    }
+    if (plotState != null && label != null) {
+        ChartRenderingInfo owner = plotState.getOwner();
+        EntityCollection entities = owner.getEntityCollection();
+        if (entities != null) {
+            entities.add(new AxisLabelEntity(this, new Rectangle2D.Float(labelx - w / 2.0f, labely - h / 2.0f, w, h), this.labelToolTip, this.labelURL));
+        }
+    }
+    return state;
+}
+
+                TEST STDOUT:
+                Failing tests: 22
+  - org.jfree.chart.junit.AreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo2
+  - org.jfree.chart.junit.LineChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.LineChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedAreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.WaterfallChartTests::testDrawWithNullInfo
+  - org.jfree.chart.plot.junit.CategoryPlotTests::test1654215
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization3
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization4
+  - org.jfree.chart.renderer.category.junit.BoxAndWhiskerRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.GroupedStackedBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.IntervalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LayeredBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LevelRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.MinMaxCategoryRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalLineAndShapeRendererTests::testDrawWithNullInfo
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Chart
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 23.41 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected AxisState drawLabel(String label, Graphics2D g2, 
+        Rectangle2D plotArea, Rectangle2D dataArea, RectangleEdge edge, 
+        AxisState state, PlotRenderingInfo plotState) {
+    if (state == null) {
+        throw new IllegalArgumentException("Null 'state' argument.");
+    }
+    if ((label == null) || (label.equals(""))) {
+        return state;
+    }
+    Font font = getLabelFont();
+    RectangleInsets insets = getLabelInsets();
+    g2.setFont(font);
+    g2.setPaint(getLabelPaint());
+    FontMetrics fm = g2.getFontMetrics();
+    Rectangle2D labelBounds = TextUtilities.getTextBounds(label, g2, fm);
+    Shape hotspot = null;
+    if (edge == RectangleEdge.TOP) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle(), labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() - insets.getBottom() 
+                - h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorUp(insets.getTop() + labelBounds.getHeight() 
+                + insets.getBottom());
+    }
+    else if (edge == RectangleEdge.BOTTOM) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle(), labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) dataArea.getCenterX();
+        float labely = (float) (state.getCursor() + insets.getTop() 
+                + h / 2.0);
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle(), TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorDown(insets.getTop() + labelBounds.getHeight() 
+                + insets.getBottom());
+    }
+    else if (edge == RectangleEdge.LEFT) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle() - Math.PI / 2.0, labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() - insets.getRight() 
+                - w / 2.0);
+        float labely = (float) dataArea.getCenterY();
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle() - Math.PI / 2.0, 
+                TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorLeft(insets.getLeft() + labelBounds.getWidth() 
+                + insets.getRight());
+    }
+    else if (edge == RectangleEdge.RIGHT) {
+        AffineTransform t = AffineTransform.getRotateInstance(
+                getLabelAngle() + Math.PI / 2.0, labelBounds.getCenterX(), 
+                labelBounds.getCenterY());
+        Shape rotatedLabelBounds = t.createTransformedShape(labelBounds);
+        labelBounds = rotatedLabelBounds.getBounds2D();
+        float w = (float) labelBounds.getWidth();
+        float h = (float) labelBounds.getHeight();
+        float labelx = (float) (state.getCursor() + insets.getLeft() 
+                + w / 2.0);
+        float labely = (float) dataArea.getCenterY();
+        TextUtilities.drawRotatedString(label, g2, labelx, labely, 
+                TextAnchor.CENTER, getLabelAngle() + Math.PI / 2.0, 
+                TextAnchor.CENTER);
+        hotspot = new Rectangle2D.Float(labelx - w / 2.0f, 
+                labely - h / 2.0f, w, h);
+        state.cursorRight(insets.getLeft() + labelBounds.getWidth() 
+                + insets.getRight());
+    }
+    if (plotState != null && hotspot != null) {
+        ChartRenderingInfo owner = plotState.getOwner();
+        EntityCollection entities = owner.getEntityCollection();
+        if (entities != null) {
+            entities.add(new AxisLabelEntity(this, hotspot, 
+                    this.labelToolTip, this.labelURL));
+        }
+    }
+    return state;
+}
+
+                TEST STDOUT:
+                Failing tests: 22
+  - org.jfree.chart.junit.AreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.BarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.GanttChartTests::testDrawWithNullInfo2
+  - org.jfree.chart.junit.LineChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.LineChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedAreaChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChart3DTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.StackedBarChartTests::testDrawWithNullInfo
+  - org.jfree.chart.junit.WaterfallChartTests::testDrawWithNullInfo
+  - org.jfree.chart.plot.junit.CategoryPlotTests::test1654215
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization3
+  - org.jfree.chart.plot.junit.CategoryPlotTests::testSerialization4
+  - org.jfree.chart.renderer.category.junit.BoxAndWhiskerRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.GroupedStackedBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.IntervalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LayeredBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.LevelRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.MinMaxCategoryRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalBarRendererTests::testDrawWithNullInfo
+  - org.jfree.chart.renderer.category.junit.StatisticalLineAndShapeRendererTests::testDrawWithNullInfo
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

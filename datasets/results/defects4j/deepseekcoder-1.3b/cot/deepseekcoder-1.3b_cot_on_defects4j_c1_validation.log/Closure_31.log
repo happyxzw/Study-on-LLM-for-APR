@@ -1,0 +1,1827 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 134.92 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 5.00 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build.xml:252: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build.xml:258: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1255: error: 'try' without 'catch' or 'finally'
+    [javac]   try {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1348: error: illegal start of expression
+    [javac]   void processAMDAndCommonJSModules() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1348: error: ';' expected
+    [javac]   void processAMDAndCommonJSModules() {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1407: error: illegal start of expression
+    [javac]   public Node parse(SourceFile file) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1407: error: ';' expected
+    [javac]   public Node parse(SourceFile file) {
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1407: error: ';' expected
+    [javac]   public Node parse(SourceFile file) {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1413: error: illegal start of expression
+    [javac]   private int syntheticCodeId = 0;
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1416: error: ';' expected
+    [javac]   Node parseSyntheticCode(String js) {
+    [javac]                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1416: error: ';' expected
+    [javac]   Node parseSyntheticCode(String js) {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1426: error: illegal start of expression
+    [javac]   protected CompilerOptions newCompilerOptions() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1426: error: ';' expected
+    [javac]   protected CompilerOptions newCompilerOptions() {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1430: error: illegal start of expression
+    [javac]   void initCompilerOptionsIfTesting() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1430: error: ';' expected
+    [javac]   void initCompilerOptionsIfTesting() {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1439: error: ';' expected
+    [javac]   Node parseSyntheticCode(String fileName, String js) {
+    [javac]                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1439: error: ';' expected
+    [javac]   Node parseSyntheticCode(String fileName, String js) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1439: error: not a statement
+    [javac]   Node parseSyntheticCode(String fileName, String js) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1439: error: ';' expected
+    [javac]   Node parseSyntheticCode(String fileName, String js) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1445: error: ';' expected
+    [javac]   Node parseTestCode(String js) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1445: error: ';' expected
+    [javac]   Node parseTestCode(String js) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1457: error: ';' expected
+    [javac]   ErrorReporter getDefaultErrorReporter() {
+    [javac]                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1468: error: illegal start of expression
+    [javac]   public String toSource() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1468: error: ';' expected
+    [javac]   public String toSource() {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1494: error: illegal start of expression
+    [javac]   public String[] toSourceArray() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1494: error: ';' expected
+    [javac]   public String[] toSourceArray() {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1520: error: illegal start of expression
+    [javac]   public String toSource(final JSModule module) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1520: error: ';' expected
+    [javac]   public String toSource(final JSModule module) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1520: error: ';' expected
+    [javac]   public String toSource(final JSModule module) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1547: error: illegal start of expression
+    [javac]   public String[] toSourceArray(final JSModule module) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1547: error: ';' expected
+    [javac]   public String[] toSourceArray(final JSModule module) {
+    [javac]                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1547: error: ';' expected
+    [javac]   public String[] toSourceArray(final JSModule module) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1582: error: illegal start of expression
+    [javac]   public void toSource(final CodeBuilder cb,
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1582: error: illegal start of expression
+    [javac]   public void toSource(final CodeBuilder cb,
+    [javac]          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1582: error: ';' expected
+    [javac]   public void toSource(final CodeBuilder cb,
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1582: error: <identifier> expected
+    [javac]   public void toSource(final CodeBuilder cb,
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1583: error: <identifier> expected
+    [javac]                        final int inputSeqNum,
+    [javac]                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1584: error: ';' expected
+    [javac]                        final Node root) {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1651: error: ';' expected
+    [javac]   String toSource(Node n) {
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1651: error: ';' expected
+    [javac]   String toSource(Node n) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1659: error: illegal start of expression
+    [javac]   private String toSource(Node n, SourceMap sourceMap, boolean firstOutput) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1659: error: ';' expected
+    [javac]   private String toSource(Node n, SourceMap sourceMap, boolean firstOutput) {
+    [javac]                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1659: error: ';' expected
+    [javac]   private String toSource(Node n, SourceMap sourceMap, boolean firstOutput) {
+    [javac]                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1659: error: not a statement
+    [javac]   private String toSource(Node n, SourceMap sourceMap, boolean firstOutput) {
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1659: error: ';' expected
+    [javac]   private String toSource(Node n, SourceMap sourceMap, boolean firstOutput) {
+    [javac]                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1659: error: ';' expected
+    [javac]   private String toSource(Node n, SourceMap sourceMap, boolean firstOutput) {
+    [javac]                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1681: error: illegal start of expression
+    [javac]   public static class CodeBuilder {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1681: error: illegal start of expression
+    [javac]   public static class CodeBuilder {
+    [javac]          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1681: error: ';' expected
+    [javac]   public static class CodeBuilder {
+    [javac]                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1681: error: not a statement
+    [javac]   public static class CodeBuilder {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1681: error: ';' expected
+    [javac]   public static class CodeBuilder {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1682: error: illegal start of expression
+    [javac]     private final StringBuilder sb = new StringBuilder();
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1683: error: illegal start of expression
+    [javac]     private int lineCount = 0;
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1684: error: illegal start of expression
+    [javac]     private int colCount = 0;
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1687: error: illegal start of expression
+    [javac]     void reset() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1687: error: ';' expected
+    [javac]     void reset() {
+    [javac]               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1692: error: ';' expected
+    [javac]     CodeBuilder append(String str) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1692: error: ';' expected
+    [javac]     CodeBuilder append(String str) {
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1715: error: ';' expected
+    [javac]     public String toString() {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1720: error: illegal start of expression
+    [javac]     public int getLength() {
+    [javac]     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1720: error: ';' expected
+    [javac]     public int getLength() {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1725: error: ';' expected
+    [javac]     int getLineIndex() {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1730: error: ';' expected
+    [javac]     int getColumnIndex() {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1735: error: ';' expected
+    [javac]     boolean endsWith(String suffix) {
+    [javac]                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1735: error: ';' expected
+    [javac]     boolean endsWith(String suffix) {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1745: error: illegal start of expression
+    [javac]   public void optimize() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1745: error: illegal start of expression
+    [javac]   public void optimize() {
+    [javac]          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1745: error: ';' expected
+    [javac]   public void optimize() {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1765: error: ';' expected
+    [javac]   void setCssRenamingMap(CssRenamingMap map) {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1765: error: ';' expected
+    [javac]   void setCssRenamingMap(CssRenamingMap map) {
+    [javac]                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1770: error: ';' expected
+    [javac]   CssRenamingMap getCssRenamingMap() {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1781: error: illegal start of expression
+    [javac]   public void processDefines() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1781: error: illegal start of expression
+    [javac]   public void processDefines() {
+    [javac]          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1781: error: ';' expected
+    [javac]   public void processDefines() {
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1786: error: ';' expected
+    [javac]   boolean isInliningForbidden() {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1793: error: ';' expected
+    [javac]   ControlFlowGraph<Node> computeCFG() {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1802: error: illegal start of expression
+    [javac]   public void normalize() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1802: error: illegal start of expression
+    [javac]   public void normalize() {
+    [javac]          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1802: error: ';' expected
+    [javac]   public void normalize() {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1810: error: ';' expected
+    [javac]   void prepareAst(Node root) {
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1810: error: ';' expected
+    [javac]   void prepareAst(Node root) {
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1815: error: illegal start of expression
+    [javac]   void recordFunctionInformation() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1815: error: ';' expected
+    [javac]   void recordFunctionInformation() {
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1826: error: illegal start of expression
+    [javac]   protected final CodeChangeHandler.RecentChange recentChange =
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1828: error: illegal start of expression
+    [javac]   private final List<CodeChangeHandler> codeChangeHandlers =
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1832: error: illegal start of expression
+    [javac]   static final String SYNTHETIC_EXTERNS = "{SyntheticVarsDeclar}";
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1834: error: illegal start of expression
+    [javac]   private CompilerInput synthesizedExternsInput = null;
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1837: error: ';' expected
+    [javac]   void addChangeHandler(CodeChangeHandler handler) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1837: error: ';' expected
+    [javac]   void addChangeHandler(CodeChangeHandler handler) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1842: error: ';' expected
+    [javac]   void removeChangeHandler(CodeChangeHandler handler) {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1842: error: ';' expected
+    [javac]   void removeChangeHandler(CodeChangeHandler handler) {
+    [javac]                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1852: error: ';' expected
+    [javac]   public void reportCodeChange() {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1859: error: ';' expected
+    [javac]   public CodingConvention getCodingConvention() {
+    [javac]                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1866: error: ';' expected
+    [javac]   public boolean isIdeMode() {
+    [javac]                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1871: error: ';' expected
+    [javac]   public boolean acceptEcmaScript5() {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1880: error: illegal start of expression
+    [javac]   public LanguageMode languageMode() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1880: error: ';' expected
+    [javac]   public LanguageMode languageMode() {
+    [javac]                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1885: error: ';' expected
+    [javac]   public boolean acceptConstKeyword() {
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1890: error: ';' expected
+    [javac]   Config getParserConfig() {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1917: error: ';' expected
+    [javac]   public boolean isTypeCheckingEnabled() {
+    [javac]                                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1930: error: illegal start of expression
+    [javac]   protected DiagnosticGroups getDiagnosticGroups() {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1930: error: ';' expected
+    [javac]   protected DiagnosticGroups getDiagnosticGroups() {
+    [javac]                                                 ^
+    [javac] 100 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build.xml:258: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: uncompilable
+                Validation Time: 5.03 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        getTypeRegistry().forwardDeclareType(input.getProvides());
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build.xml:252: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build.xml:258: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/InputStreamReader.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/PrintStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collections.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/concurrent/Callable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Level.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Logger.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/regex/Matcher.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/InputStreamReader.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/PrintStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collections.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/concurrent/Callable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Level.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Logger.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/regex/Matcher.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/SuppressWarnings.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/SuppressWarnings.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/FilterOutputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/FilterOutputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/OutputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/OutputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Closeable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Closeable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Flushable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Flushable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Runnable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Runnable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Thread.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Thread.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/sun/misc/Contended.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/sun/misc/Contended.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/ThreadGroup.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/ThreadGroup.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/InterruptedException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1271: error: method forwardDeclareType in class JSTypeRegistry cannot be applied to given types;
+    [javac]         getTypeRegistry().forwardDeclareType(input.getProvides());
+    [javac]                          ^
+    [javac]   required: String
+    [javac]   found: Collection<String>
+    [javac]   reason: actual argument Collection<String> cannot be converted to String by method invocation conversion
+    [javac] 1 error
+    [javac] 100 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build.xml:258: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 143.80 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: uncompilable
+                Validation Time: 5.34 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        getTypeRegistry().forwardDeclareType(input.getProvides()[0]);
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+rhino:
+
+properties:
+
+init:
+
+compile:
+
+compile-most:
+
+compile-jdk15:
+
+compile:
+
+properties:
+
+compile:
+
+xmlimplsrc-compile:
+     [echo] Calling /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/lib/rhino/xmlimplsrc/build.xml
+
+compile:
+
+compile-all:
+
+compile:
+
+jar:
+
+rhino-jarjar:
+   [jarjar] Updating jar: /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build/lib/rhino.jar
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build.xml:252: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build.xml:258: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/InputStreamReader.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/PrintStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collections.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/concurrent/Callable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Level.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Logger.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/regex/Matcher.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/InputStreamReader.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/PrintStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collections.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/HashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/List.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Map.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Set.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/concurrent/Callable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Level.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/logging/Logger.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/regex/Matcher.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/SuppressWarnings.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/SuppressWarnings.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Annotation.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Override.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Retention.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/RetentionPolicy.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/Target.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/annotation/ElementType.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/LinkedHashMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractMap.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/FilterOutputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/FilterOutputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/OutputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/OutputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Closeable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Closeable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Flushable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Flushable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Iterator.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/ArrayList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Iterable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractList.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/AbstractCollection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/util/Collection.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalArgumentException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Runnable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Runnable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Thread.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Thread.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/sun/misc/Contended.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/sun/misc/Contended.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/ThreadGroup.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/ThreadGroup.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/InterruptedException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/src/com/google/javascript/jscomp/Compiler.java:1271: error: array required, but Collection<String> found
+    [javac]         getTypeRegistry().forwardDeclareType(input.getProvides()[0]);
+    [javac]                                                                 ^
+    [javac] 1 error
+    [javac] 100 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260626_160209/Closure_31_b5864e691fe8460cac08ec0543fb1235/build.xml:258: Compile failed; see the compiler error output for details.
+
+Total time: 4 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 133.42 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 130.49 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 136.41 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                Node parseInputs() {
+  boolean devMode = options.devMode != DevMode.OFF;
+  if (externsRoot != null) {
+    externsRoot.detachChildren();
+  }
+  if (jsRoot != null) {
+    jsRoot.detachChildren();
+  }
+  jsRoot = IR.block();
+  jsRoot.setIsSyntheticBlock(true);
+  externsRoot = IR.block();
+  externsRoot.setIsSyntheticBlock(true);
+  externAndJsRoot = IR.block(externsRoot, jsRoot);
+  externAndJsRoot.setIsSyntheticBlock(true);
+  if (options.tracer.isOn()) {
+    tracker = new PerformanceTracker(jsRoot, options.tracer);
+    addChangeHandler(tracker.getCodeChangeHandler());
+  }
+  Tracer tracer = newTracer("parseInputs");
+  try {
+    for (CompilerInput input : externs) {
+      Node n = input.getAstRoot(this);
+      if (hasErrors()) {
+        return null;
+      }
+      externsRoot.addChildToBack(n);
+    }
+    if (options.transformAMDToCJSModules || options.processCommonJSModules) {
+      processAMDAndCommonJSModules();
+    }
+    boolean staleInputs = false;
+    if (options.dependencyOptions.needsManagement() &&
+        !options.skipAllPasses &&
+                options.closurePass) {
+      for (CompilerInput input : inputs) {
+        for (String provide : input.getProvides()) {
+          getTypeRegistry().forwardDeclareType(provide);
+        }
+      }
+      try {
+        inputs =
+            (moduleGraph == null ? new JSModuleGraph(modules) : moduleGraph)
+            .manageDependencies(options.dependencyOptions, inputs);
+        staleInputs = true;
+      } catch (CircularDependencyException e) {
+        report(JSError.make(
+            JSModule.CIRCULAR_DEPENDENCY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      } catch (MissingProvideException e) {
+        report(JSError.make(
+            MISSING_ENTRY_ERROR, e.getMessage()));
+        if (hasErrors()) {
+          return null;
+        }
+      }
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (n.getJSDocInfo() != null) {
+        JSDocInfo info = n.getJSDocInfo();
+        if (info.isExterns()) {
+          externsRoot.addChildToBack(n);
+          input.setIsExtern(true);
+          input.getModule().remove(input);
+          externs.add(input);
+          staleInputs = true;
+        } else if (info.isNoCompile()) {
+          input.getModule().remove(input);
+          staleInputs = true;
+        }
+      }
+    }
+    if (staleInputs) {
+      fillEmptyModules(modules);
+      rebuildInputsFromModules();
+    }
+    for (CompilerInput input : inputs) {
+      Node n = input.getAstRoot(this);
+      if (n == null) {
+        continue;
+      }
+      if (devMode) {
+        runSanityCheck();
+        if (hasErrors()) {
+          return null;
+        }
+      }
+      if (options.sourceMapOutputPath != null ||
+          options.nameReferenceReportPath != null) {
+        SourceInformationAnnotator sia =
+            new SourceInformationAnnotator(
+                input.getName(), options.devMode != DevMode.OFF);
+        NodeTraversal.traverse(this, n, sia);
+      }
+      jsRoot.addChildToBack(n);
+    }
+    if (hasErrors()) {
+      return null;
+    }
+    return externAndJsRoot;
+  } finally {
+    stopTracer(tracer, "parseInputs");
+  }
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CommandLineRunnerTest::testDependencySortingWhitespaceMode
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

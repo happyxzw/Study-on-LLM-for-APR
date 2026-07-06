@@ -1,0 +1,2068 @@
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 2.35 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+
+Here is the fixed version of the function:
+```
+static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/build.xml:184: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/build.xml:190: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: <identifier> expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: <identifier> expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal start of type
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                     ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                            ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: <identifier> expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                                                           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                                                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: '(' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                                                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                                                                                                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: illegal character: \96
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                                                                                                                                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                                                                                                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:956: error: ';' expected
+    [javac] The buggy function contains a bug in the `strEscape` function, specifically in the `switch` statement. The case for the character `<` should be `case '<':` instead of `case '>':`. This is because the function is escaping HTML entities, and the character `<` is an HTML entity for "less than". The character `>` is an HTML entity for "greater than".
+    [javac]                                                                                                                                                                                                                                                                                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:958: error: ';' expected
+    [javac] Here is the fixed version of the function:
+    [javac]        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:958: error: ';' expected
+    [javac] Here is the fixed version of the function:
+    [javac]                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:958: error: ';' expected
+    [javac] Here is the fixed version of the function:
+    [javac]                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:958: error: ';' expected
+    [javac] Here is the fixed version of the function:
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:959: error: illegal character: \96
+    [javac] ```
+    [javac] ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:959: error: illegal character: \96
+    [javac] ```
+    [javac]  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:959: error: illegal character: \96
+    [javac] ```
+    [javac]   ^
+    [javac] 39 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/build.xml:190: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: uncompilable
+                Validation Time: 1.97 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36 && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36 -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/build.xml:184: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/build.xml:190: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:995: error: illegal start of expression
+    [javac]   static String identifierEscape(String s) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:995: error: ';' expected
+    [javac]   static String identifierEscape(String s) {
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:995: error: ';' expected
+    [javac]   static String identifierEscape(String s) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: illegal start of expression
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: illegal start of expression
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: ';' expected
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: ')' expected
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: illegal start of expression
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: ';' expected
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: not a statement
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: ';' expected
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1035: error: illegal start of expression
+    [javac]   private static Node getFirstNonEmptyChild(Node n) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1035: error: illegal start of expression
+    [javac]   private static Node getFirstNonEmptyChild(Node n) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1035: error: ';' expected
+    [javac]   private static Node getFirstNonEmptyChild(Node n) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1035: error: ')' expected
+    [javac]   private static Node getFirstNonEmptyChild(Node n) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1035: error: illegal start of expression
+    [javac]   private static Node getFirstNonEmptyChild(Node n) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1035: error: ';' expected
+    [javac]   private static Node getFirstNonEmptyChild(Node n) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1052: error: enum types must not be local
+    [javac]   enum Context {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1064: error: illegal start of expression
+    [javac]   private Context getContextForNonEmptyExpression(Context currentContext) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1064: error: ';' expected
+    [javac]   private Context getContextForNonEmptyExpression(Context currentContext) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1064: error: ';' expected
+    [javac]   private Context getContextForNonEmptyExpression(Context currentContext) {
+    [javac]                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1073: error: illegal start of expression
+    [javac]   private  Context getContextForNoInOperator(Context context) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1073: error: ';' expected
+    [javac]   private  Context getContextForNoInOperator(Context context) {
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1073: error: ';' expected
+    [javac]   private  Context getContextForNoInOperator(Context context) {
+    [javac]                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1084: error: illegal start of expression
+    [javac]   private  Context clearContextForNoInOperator(Context context) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1084: error: ';' expected
+    [javac]   private  Context clearContextForNoInOperator(Context context) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1084: error: ';' expected
+    [javac]   private  Context clearContextForNoInOperator(Context context) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1092: error: illegal start of expression
+    [javac]   private static void appendHexJavaScriptRepresentation(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1092: error: illegal start of expression
+    [javac]   private static void appendHexJavaScriptRepresentation(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1092: error: ';' expected
+    [javac]   private static void appendHexJavaScriptRepresentation(
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1093: error: ')' expected
+    [javac]       StringBuilder sb, char c) {
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1093: error: illegal start of expression
+    [javac]       StringBuilder sb, char c) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1093: error: ';' expected
+    [javac]       StringBuilder sb, char c) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1093: error: not a statement
+    [javac]       StringBuilder sb, char c) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1093: error: ';' expected
+    [javac]       StringBuilder sb, char c) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1109: error: illegal start of expression
+    [javac]   private static void appendHexJavaScriptRepresentation(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1109: error: illegal start of expression
+    [javac]   private static void appendHexJavaScriptRepresentation(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1109: error: ';' expected
+    [javac]   private static void appendHexJavaScriptRepresentation(
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1110: error: '.class' expected
+    [javac]       int codePoint, Appendable out)
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1110: error: ';' expected
+    [javac]       int codePoint, Appendable out)
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1110: error: ';' expected
+    [javac]       int codePoint, Appendable out)
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1111: error: not a statement
+    [javac]       throws IOException {
+    [javac]              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1111: error: ';' expected
+    [javac]       throws IOException {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/src/com/google/javascript/jscomp/CodeGenerator.java:1128: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 44 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260601_101245/Closure_77_27a714defbae47588f0960f41ae63c36/build.xml:190: Compile failed; see the compiler error output for details.
+
+Total time: 1 second
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 71.04 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+            case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       // Break --> into --\> or ]]> into ]]\>
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: plausible
+                Validation Time: 67.71 seconds
+                Failure reason: None
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       // Break --> into --\> or ]]> into ]]\>
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: plausible
+                Validation Time: 71.01 seconds
+                Failure reason: None
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       // Break --> into --\> or ]]> into ]]\>
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: plausible
+                Validation Time: 70.58 seconds
+                Failure reason: None
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       // Break --> into --\> or ]]> into ]]\>
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: uncompilable
+                Validation Time: 3.09 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/build.xml:184: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/build.xml:190: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:995: error: illegal start of expression
+    [javac]   static String identifierEscape(String s) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:995: error: ';' expected
+    [javac]   static String identifierEscape(String s) {
+    [javac]                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:995: error: ';' expected
+    [javac]   static String identifierEscape(String s) {
+    [javac]                                          ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: illegal start of expression
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: illegal start of expression
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: ';' expected
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: ')' expected
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: illegal start of expression
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: ';' expected
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: not a statement
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]                                                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1021: error: ';' expected
+    [javac]   private static int getNonEmptyChildCount(Node n, int maxCount) {
+    [javac]                                                                ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1035: error: illegal start of expression
+    [javac]   private static Node getFirstNonEmptyChild(Node n) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1035: error: illegal start of expression
+    [javac]   private static Node getFirstNonEmptyChild(Node n) {
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1035: error: ';' expected
+    [javac]   private static Node getFirstNonEmptyChild(Node n) {
+    [javac]                      ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1035: error: ')' expected
+    [javac]   private static Node getFirstNonEmptyChild(Node n) {
+    [javac]                                                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1035: error: illegal start of expression
+    [javac]   private static Node getFirstNonEmptyChild(Node n) {
+    [javac]                                                   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1035: error: ';' expected
+    [javac]   private static Node getFirstNonEmptyChild(Node n) {
+    [javac]                                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1052: error: enum types must not be local
+    [javac]   enum Context {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1064: error: illegal start of expression
+    [javac]   private Context getContextForNonEmptyExpression(Context currentContext) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1064: error: ';' expected
+    [javac]   private Context getContextForNonEmptyExpression(Context currentContext) {
+    [javac]                                                  ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1064: error: ';' expected
+    [javac]   private Context getContextForNonEmptyExpression(Context currentContext) {
+    [javac]                                                                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1073: error: illegal start of expression
+    [javac]   private  Context getContextForNoInOperator(Context context) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1073: error: ';' expected
+    [javac]   private  Context getContextForNoInOperator(Context context) {
+    [javac]                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1073: error: ';' expected
+    [javac]   private  Context getContextForNoInOperator(Context context) {
+    [javac]                                                             ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1084: error: illegal start of expression
+    [javac]   private  Context clearContextForNoInOperator(Context context) {
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1084: error: ';' expected
+    [javac]   private  Context clearContextForNoInOperator(Context context) {
+    [javac]                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1084: error: ';' expected
+    [javac]   private  Context clearContextForNoInOperator(Context context) {
+    [javac]                                                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1092: error: illegal start of expression
+    [javac]   private static void appendHexJavaScriptRepresentation(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1092: error: illegal start of expression
+    [javac]   private static void appendHexJavaScriptRepresentation(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1092: error: ';' expected
+    [javac]   private static void appendHexJavaScriptRepresentation(
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1093: error: ')' expected
+    [javac]       StringBuilder sb, char c) {
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1093: error: illegal start of expression
+    [javac]       StringBuilder sb, char c) {
+    [javac]                       ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1093: error: ';' expected
+    [javac]       StringBuilder sb, char c) {
+    [javac]                        ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1093: error: not a statement
+    [javac]       StringBuilder sb, char c) {
+    [javac]                              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1093: error: ';' expected
+    [javac]       StringBuilder sb, char c) {
+    [javac]                               ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1109: error: illegal start of expression
+    [javac]   private static void appendHexJavaScriptRepresentation(
+    [javac]   ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1109: error: illegal start of expression
+    [javac]   private static void appendHexJavaScriptRepresentation(
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1109: error: ';' expected
+    [javac]   private static void appendHexJavaScriptRepresentation(
+    [javac]                 ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1110: error: '.class' expected
+    [javac]       int codePoint, Appendable out)
+    [javac]           ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1110: error: ';' expected
+    [javac]       int codePoint, Appendable out)
+    [javac]                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1110: error: ';' expected
+    [javac]       int codePoint, Appendable out)
+    [javac]                                    ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1111: error: not a statement
+    [javac]       throws IOException {
+    [javac]              ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1111: error: ';' expected
+    [javac]       throws IOException {
+    [javac]                         ^
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/src/com/google/javascript/jscomp/CodeGenerator.java:1128: error: reached end of file while parsing
+    [javac] }
+    [javac]  ^
+    [javac] 44 errors
+    [javac] 1 warning
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260604_210344/Closure_77_9dd5337abcb24a92bc33d71c7894781b/build.xml:190: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 123.17 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+            case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       // Break --> into --\> or ]]> into ]]\>
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: plausible
+                Validation Time: 122.45 seconds
+                Failure reason: None
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       // Break --> into --\> or ]]> into ]]\>
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: plausible
+                Validation Time: 122.45 seconds
+                Failure reason: None
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\0': sb.append("\\0"); break;
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       // Break --> into --\> or ]]> into ]]\>
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 0
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 171.30 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 173.21 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 160.71 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '<':                       
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '>':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.CodePrinterTest::testPrint
+  - com.google.javascript.jscomp.CodePrinterTest::testZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CodePrinterTest::testPrint']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 146.48 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+            case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':                       
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 156.44 seconds
+                Failure reason: Regression
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+    StringBuilder sb = new StringBuilder(s.length() + 2);
+    sb.append(quote);
+    for (int i = 0; i < s.length(); i++) {
+        char c = s.charAt(i);
+        switch (c) {
+            case '\n': sb.append("\\n"); break;
+            case '\r': sb.append("\\r"); break;
+            case '\t': sb.append("\\t"); break;
+            case '\\': sb.append(backslashEscape); break;
+            case '\"': sb.append(doublequoteEscape); break;
+            case '\'': sb.append(singlequoteEscape); break;
+            default:
+                if (outputCharsetEncoder != null) {
+                    if (outputCharsetEncoder.canEncode(c)) {
+                        sb.append(c);
+                    } else {
+                        appendHexJavaScriptRepresentation(sb, c);
+                    }
+                } else {
+                    if (c > 0x1f && c <= 0x7f) {
+                        sb.append(c);
+                    } else {
+                        appendHexJavaScriptRepresentation(sb, c);
+                    }
+                }
+        }
+    }
+    sb.append(quote);
+    return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 2
+  - com.google.javascript.jscomp.CodePrinterTest::testPrint
+  - com.google.javascript.jscomp.CodePrinterTest::testZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                ['com.google.javascript.jscomp.CodePrinterTest::testPrint']
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 168.85 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                        String doublequoteEscape,
+                        String singlequoteEscape,
+                        String backslashEscape,
+                        CharsetEncoder outputCharsetEncoder) {
+  StringBuilder sb = new StringBuilder(s.length() + 2);
+  sb.append(quote);
+  for (int i = 0; i < s.length(); i++) {
+    char c = s.charAt(i);
+    switch (c) {
+      case '\n': sb.append("\\n"); break;
+      case '\r': sb.append("\\r"); break;
+      case '\t': sb.append("\\t"); break;
+      case '\\': sb.append(backslashEscape); break;
+      case '\"': sb.append(doublequoteEscape); break;
+      case '\'': sb.append(singlequoteEscape); break;
+      case '>':
+        if (i >= 2 &&
+            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+             (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+          sb.append("\\>");
+        } else {
+          sb.append(c);
+        }
+        break;
+      case '<':
+        final String END_SCRIPT = "/script";
+        final String START_COMMENT = "!--";
+        if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                            END_SCRIPT.length())) {
+          sb.append("<\\");
+        } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                   START_COMMENT.length())) {
+          sb.append("<\\");
+        } else {
+          sb.append(c);
+        }
+        break;
+      default:
+        if (outputCharsetEncoder != null) {
+          if (outputCharsetEncoder.canEncode(c)) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        } else {
+          if (c > 0x1f && c <= 0x7f) {
+            sb.append(c);
+          } else {
+            appendHexJavaScriptRepresentation(sb, c);
+          }
+        }
+    }
+  }
+  sb.append(quote);
+  return sb.toString();
+}
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 6
+                Correctness: uncompilable
+                Validation Time: 4.04 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public static String string_sequence(int n) {
+    String result = "";
+    for (int i = 0; i <= n; i += 1){
+        result += i + " ";
+    }
+    return result.trim();
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/build.xml:184: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/build.xml:190: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/CharsetEncoder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/CharsetEncoder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Integer.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Integer.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Number.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Number.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Class.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Class.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalStateException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalStateException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/src/com/google/javascript/jscomp/CodeGenerator.java:932: error: cannot find symbol
+    [javac]     return strEscape(s, quote, doublequote, singlequote, "\\\\",
+    [javac]            ^
+    [javac]   symbol:   method strEscape(String,char,String,String,String,CharsetEncoder)
+    [javac]   location: class CodeGenerator
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/src/com/google/javascript/jscomp/CodeGenerator.java:938: error: cannot find symbol
+    [javac]     return strEscape(s, '/', "\"", "'", "\\", outputCharsetEncoder);
+    [javac]            ^
+    [javac]   symbol:   method strEscape(String,char,String,String,String,CharsetEncoder)
+    [javac]   location: class CodeGenerator
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/src/com/google/javascript/jscomp/CodeGenerator.java:945: error: cannot find symbol
+    [javac]     return strEscape(s, '"',  "\\\"", "\'", "\\\\", null);
+    [javac]            ^
+    [javac]   symbol:   method strEscape(String,char,String,String,String,<null>)
+    [javac]   location: class CodeGenerator
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AbstractStringBuilder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AbstractStringBuilder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CharSequence.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CharSequence.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuffer.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuffer.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CloneNotSupportedException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CloneNotSupportedException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Character.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Character.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] 3 errors
+    [javac] 49 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/build.xml:190: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 151.37 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                static String strEscape(String s, char quote,
+                            String doublequoteEscape,
+                            String singlequoteEscape,
+                            String backslashEscape,
+                            CharsetEncoder outputCharsetEncoder) {
+        StringBuilder sb = new StringBuilder(s.length() + 2);
+        sb.append(quote);
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '\n': sb.append("\\n"); break;
+                case '\r': sb.append("\\r"); break;
+                case '\t': sb.append("\\t"); break;
+                case '\\': sb.append(backslashEscape); break;
+                case '\"': sb.append(doublequoteEscape); break;
+                case '\'': sb.append(singlequoteEscape); break;
+                case '>':
+                    if (i >= 2 &&
+                            ((s.charAt(i - 1) == '-' && s.charAt(i - 2) == '-') ||
+                                    (s.charAt(i - 1) == ']' && s.charAt(i - 2) == ']'))) {
+                        sb.append("\\>");
+                    } else {
+                        sb.append(c);
+                    }
+                    break;
+                case '<':
+                    final String END_SCRIPT = "/script";
+                    final String START_COMMENT = "!--";
+                    if (s.regionMatches(true, i + 1, END_SCRIPT, 0,
+                                    END_SCRIPT.length())) {
+                        sb.append("<\\");
+                    } else if (s.regionMatches(false, i + 1, START_COMMENT, 0,
+                                    START_COMMENT.length())) {
+                        sb.append("<\\");
+                    } else {
+                        sb.append(c);
+                    }
+                    break;
+                default:
+                    if (outputCharsetEncoder != null) {
+                        if (outputCharsetEncoder.canEncode(c)) {
+                            sb.append(c);
+                        } else {
+                            appendHexJavaScriptRepresentation(sb, c);
+                        }
+                    } else {
+                        if (c > 0x1f && c <= 0x7f) {
+                            sb.append(c);
+                        } else {
+                            appendHexJavaScriptRepresentation(sb, c);
+                        }
+                    }
+            }
+        }
+        sb.append(quote);
+        return sb.toString();
+    }
+
+                TEST STDOUT:
+                Failing tests: 1
+  - com.google.javascript.jscomp.CodePrinterTest::testZero
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: Closure
+                Rank: 8
+                Correctness: uncompilable
+                Validation Time: 3.99 seconds
+                Failure reason: Compilation Error
+
+                PATCH:
+                public static void main(String[] args) {
+    int n = 5;
+    System.out.println(string_sequence(n));
+}
+
+                TEST STDOUT:
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ FAIL
+Executed command:  cd /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd && /home/chenshiping/peft4apr/datasets/defects4j/major/bin/ant -f /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml -Dd4j.home=/home/chenshiping/peft4apr/datasets/defects4j -Dd4j.dir.projects=/home/chenshiping/peft4apr/datasets/defects4j/framework/projects -Dbasedir=/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd -Dbuild.compiler=javac1.7  compile.tests 2>&1
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=1G; support was removed in 8.0
+Buildfile: /home/chenshiping/peft4apr/datasets/defects4j/framework/projects/defects4j.build.xml
+
+svnversion:
+
+compile:
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/build.xml:184: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/build.xml:190: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 1 source file to /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.6
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/CharsetEncoder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/IOException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation': class file for jdk.Profile+Annotation not found
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/Charset.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/nio/charset/CharsetEncoder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Object.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/String.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Enum.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Comparable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/Serializable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuilder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Appendable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AutoCloseable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Integer.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Integer.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Number.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Number.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Error.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Throwable.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Class.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Class.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalStateException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/IllegalStateException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/RuntimeException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Exception.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/src/com/google/javascript/jscomp/CodeGenerator.java:932: error: cannot find symbol
+    [javac]     return strEscape(s, quote, doublequote, singlequote, "\\\\",
+    [javac]            ^
+    [javac]   symbol:   method strEscape(String,char,String,String,String,CharsetEncoder)
+    [javac]   location: class CodeGenerator
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/src/com/google/javascript/jscomp/CodeGenerator.java:938: error: cannot find symbol
+    [javac]     return strEscape(s, '/', "\"", "'", "\\", outputCharsetEncoder);
+    [javac]            ^
+    [javac]   symbol:   method strEscape(String,char,String,String,String,CharsetEncoder)
+    [javac]   location: class CodeGenerator
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/src/com/google/javascript/jscomp/CodeGenerator.java:945: error: cannot find symbol
+    [javac]     return strEscape(s, '"',  "\\\"", "\'", "\\\\", null);
+    [javac]            ^
+    [javac]   symbol:   method strEscape(String,char,String,String,String,<null>)
+    [javac]   location: class CodeGenerator
+    [javac] /home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/src/com/google/javascript/jscomp/CodeGenerator.java:958: error: cannot find symbol
+    [javac]     System.out.println(string_sequence(n));
+    [javac]                        ^
+    [javac]   symbol:   method string_sequence(int)
+    [javac]   location: class CodeGenerator
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/System.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/PrintStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/PrintStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/FilterOutputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/FilterOutputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/OutputStream.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/io/OutputStream.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AbstractStringBuilder.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/AbstractStringBuilder.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CharSequence.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CharSequence.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuffer.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/StringBuffer.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CloneNotSupportedException.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/CloneNotSupportedException.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] warning: /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Character.class): major version 52 is newer than 51, the highest major version supported by this compiler.
+    [javac]   It is recommended that the compiler be upgraded.
+    [javac] /home/chenshiping/miniconda3/envs/coderepair/lib/ct.sym(META-INF/sym/rt.jar/java/lang/Character.class): warning: Cannot find annotation method 'value()' in type 'Profile+Annotation'
+    [javac] 4 errors
+    [javac] 57 warnings
+
+BUILD FAILED
+/home/chenshiping/peft4apr/datasets/tmp_benchmark/defects4j_c1_20260607_151631/Closure_77_b2b7d4dab7ac4a5995b5ece9f07357cd/build.xml:190: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+Cannot compile test suite! at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/d4j/d4j-test line 130.
+Compilation failed in require at /home/chenshiping/peft4apr/datasets/defects4j/framework/bin/defects4j line 195.
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+

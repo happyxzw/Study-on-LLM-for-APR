@@ -1,0 +1,905 @@
+==================================================
+                Project: JacksonDatabind
+                Rank: 0
+                Correctness: wrong
+                Validation Time: 101.12 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while ((t = p.nextToken()) == JsonToken.FIELD_NAME) { // Fixed line
+                    tokens.copyCurrentStructure(p);
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Can not create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+    return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterInMiddle
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersInMiddle
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 1
+                Correctness: wrong
+                Validation Time: 95.19 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    return null;
+                }
+                while ((t = p.nextToken()) == JsonToken.FIELD_NAME) { // Corrected condition
+                    String fieldName = p.getCurrentName();
+                    p.nextToken();
+                    tokens.copyCurrentStructure(p);
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Can not create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+    return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterInMiddle
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersInMiddle
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 2
+                Correctness: wrong
+                Validation Time: 93.20 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    return null; // Fix: Removed `continue` after exception handling
+                }
+                while (p.getCurrentToken() == JsonToken.FIELD_NAME) { // Fix: Use `p.getCurrentToken()` instead of `t`
+                    tokens.copyCurrentStructure(p);
+                    p.nextToken(); // Fix: Move to the next token inside the loop
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Can not create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+    return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterInMiddle
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersInMiddle
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 3
+                Correctness: wrong
+                Validation Time: 102.01 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+        DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                // Corrected logic: Ensure we process remaining tokens after creating the bean
+                while ((t = p.nextToken()) == JsonToken.FIELD_NAME) {
+                    String fieldName = p.getCurrentName();
+                    if (_ignorableProps != null && _ignorableProps.contains(fieldName)) {
+                        handleIgnoredProperty(p, ctxt, handledType(), fieldName);
+                    } else {
+                        tokens.copyCurrentStructure(p);
+                    }
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Cannot create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+    return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterInMiddle
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersInMiddle
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 4
+                Correctness: wrong
+                Validation Time: 95.36 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while ((t = p.nextToken()) == JsonToken.FIELD_NAME) { // Fixed: Ensure `t` is updated in the loop condition
+                    tokens.copyCurrentStructure(p);
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Can not create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+    return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterInMiddle
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersInMiddle
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 5
+                Correctness: wrong
+                Validation Time: 95.49 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+        DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    return null; // Fixed: Changed `continue` to `return null` to stop further processing after an error
+                }
+                while ((t = p.nextToken()) == JsonToken.FIELD_NAME) { // Fixed: Moved `t = p.nextToken()` inside the loop condition to prevent skipping tokens
+                    tokens.copyCurrentStructure(p);
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Can not create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+    return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterInMiddle
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersInMiddle
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 6
+                Correctness: wrong
+                Validation Time: 92.55 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                // Consume remaining tokens for unprocessed properties
+                while ((t = p.nextToken()) == JsonToken.FIELD_NAME) {
+                    String remainingPropName = p.getCurrentName();
+                    p.nextToken();
+                    tokens.copyCurrentStructure(p);
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Can not create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+    return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterInMiddle
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersInMiddle
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 7
+                Correctness: wrong
+                Validation Time: 90.00 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+		DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                // Skip over any remaining fields and copy them into the token buffer
+                while ((t = p.nextToken()) == JsonToken.FIELD_NAME) {
+                    tokens.copyCurrentStructure(p);
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Cannot create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+    return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterInMiddle
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersInMiddle
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 8
+                Correctness: wrong
+                Validation Time: 95.61 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+        DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                while ((t = p.nextToken()) == JsonToken.FIELD_NAME) { // Fixed loop control
+                    tokens.copyCurrentStructure(p);
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Cannot create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+    return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterInMiddle
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersInMiddle
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
+==================================================
+                Project: JacksonDatabind
+                Rank: 9
+                Correctness: wrong
+                Validation Time: 103.05 seconds
+                Failure reason: Unchanged failed tests
+
+                PATCH:
+                protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p,
+        DeserializationContext ctxt)
+    throws IOException, JsonProcessingException
+{
+    final PropertyBasedCreator creator = _propertyBasedCreator;
+    PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, _objectIdReader);
+    TokenBuffer tokens = new TokenBuffer(p, ctxt);
+    tokens.writeStartObject();
+    JsonToken t = p.getCurrentToken();
+    for (; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+        String propName = p.getCurrentName();
+        p.nextToken(); 
+        SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+        if (creatorProp != null) {
+            if (buffer.assignParameter(creatorProp, creatorProp.deserialize(p, ctxt))) {
+                Object bean;
+                try {
+                    bean = creator.build(ctxt, buffer);
+                } catch (Exception e) {
+                    wrapAndThrow(e, _beanType.getRawClass(), propName, ctxt);
+                    continue;
+                }
+                t = p.nextToken(); // Moved this line out of the inner if block
+                while (t == JsonToken.FIELD_NAME) {
+                    tokens.copyCurrentStructure(p);
+                    t = p.nextToken();
+                }
+                tokens.writeEndObject();
+                if (bean.getClass() != _beanType.getRawClass()) {
+                    ctxt.reportMappingException("Can not create polymorphic instances with unwrapped values");
+                    return null;
+                }
+                return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+            }
+            continue;
+        }
+        if (buffer.readIdProperty(propName)) {
+            continue;
+        }
+        SettableBeanProperty prop = _beanProperties.find(propName);
+        if (prop != null) {
+            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+            continue;
+        }
+        if (_ignorableProps != null && _ignorableProps.contains(propName)) {
+            handleIgnoredProperty(p, ctxt, handledType(), propName);
+            continue;
+        }
+        tokens.writeFieldName(propName);
+        tokens.copyCurrentStructure(p);
+        if (_anySetter != null) {
+            buffer.bufferAnyProperty(_anySetter, propName, _anySetter.deserialize(p, ctxt));
+        }
+    }
+    Object bean;
+    try {
+        bean = creator.build(ctxt, buffer);
+    } catch (Exception e) {
+        return wrapInstantiationProblem(e, ctxt);
+    }
+    return _unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+}
+
+                TEST STDOUT:
+                Failing tests: 4
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersAtBeginning
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorSingleParameterInMiddle
+  - com.fasterxml.jackson.databind.deser.builder.BuilderWithUnwrappedTest::testWithUnwrappedAndCreatorMultipleParametersInMiddle
+
+
+                TEST STDERR:
+                Running ant (compile.tests)................................................ OK
+Running ant (run.dev.tests)................................................ OK
+
+
+                NEW FAILED TESTS
+                None
+
+                EXCEPTIONS
+                None
+
+
