@@ -44,21 +44,20 @@ def defects4j_trigger(project_dir, timeout=300):
     return out, err
 
 def validate_defects4j(
-    input_file: str = "/home/survolt/warehouse/llmpeft4apr/codellama_result/CodeLlama_7b_hf_output_humaneval_infill.json", 
-    output_dir: str = "/home/survolt/warehouse/llmpeft4apr/codellama_result/", #validation results
-    benchmark_dir: str = "/home/survolt/warehouse/llmpeft4apr/dataset/benchmarks/humaneval-java/", #test suits
+    input_file: str = "",
+    output_dir: str = "",
+    benchmark_dir: str = "",
     benchmark_name: str = "defects4j",
     model_type: str = "CodeLlama-7b-hf",
-    peft_type: str = "lora",
-    tmp_dir: str = 'llmpeft4apr/validation_benchmark_dataset/benchmarks/tmp_dir/',
-    train_dataset: str = "apr",
+    enhancement_type: str = "zero-shot",
+    tmp_dir: str = "",
     validation_file: str = "",
     log_file: str = "validation_logs"
     ):
     
     os.makedirs(tmp_dir, exist_ok=True)
     validation_file, model_output,validated_result, plausible, total = prepare_validation_environment(
-        input_file=input_file,output_dir=output_dir,benchmark_name=benchmark_name,model_type=model_type,peft_type=peft_type,train_dataset=train_dataset,validation_file=validation_file,log_file=log_file)
+        input_file=input_file,output_dir=output_dir,benchmark_name=benchmark_name,model_type=model_type,enhancement_type=enhancement_type,validation_file=validation_file,log_file=log_file)
     
     for k in model_output['data']:
         print('start validating', k)  

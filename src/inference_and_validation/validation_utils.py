@@ -1,23 +1,19 @@
 import json
 import re
 import os
-import shutil
 import time
 import textwrap
 import subprocess
 import fire
 from datetime import datetime
-from pathlib import Path
 
-LIBS_DIR = "/home/chenshiping/peft4apr/jasper/lib"
-
-def prepare_validation_environment(input_file,output_dir,benchmark_name,model_type,peft_type,train_dataset,validation_file,log_file ):
+def prepare_validation_environment(input_file,output_dir,benchmark_name,model_type,enhancement_type,train_dataset,validation_file,log_file ):
     
     os.makedirs(log_file, exist_ok=True)
     plausible, total = 0, 0
 
     if not validation_file:
-        validation_file = os.path.join(output_dir,f"{'_'.join(model_type.split('-'))}_{peft_type}_{train_dataset}_on_{benchmark_name}_valid_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+        validation_file = os.path.join(output_dir,f"{'_'.join(model_type.split('-'))}_{enhancement_type}_{train_dataset}_on_{benchmark_name}_valid_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
 
     if os.path.exists(validation_file):
         print('validation file existed!')
@@ -86,7 +82,6 @@ def parse_test_output(out, err):
     pass_rate = 0.0
 
     # ==========================================
-    # 1. 编译错误解析 (优先处理)
     # ==========================================
     compile_patterns = [
         r'error:.*',
@@ -104,7 +99,6 @@ def parse_test_output(out, err):
     compile_errors.extend(re.findall(ant_compile_pattern, combined))
     compile_errors = list(set([e.strip() for e in compile_errors if e.strip()]))
 
-    # 如果有编译错误，后续的测试解析就不用做了，直接返回
     if compile_errors:
         return {
             'failed_testcases': [],
@@ -117,15 +111,12 @@ def parse_test_output(out, err):
         }
 
     # ==========================================
-    # 2. 测试失败用例具体名称解析
     # ==========================================
     lines = combined.splitlines()
     for line in lines:
-        # Defects4J 格式: "- org.jfree.chart..."
         if line.strip().startswith('- '):
             failed_tests.append(line.strip()[2:])
 
-        # 标准 JUnit 格式: "1) testMethod(ClassName)"
         m = re.match(r'\d+\)\s+([^\(]+)\(', line.strip())
         if m:
             failed_tests.append(m.group(1).strip())
@@ -140,20 +131,11 @@ def parse_test_output(out, err):
         
     failed_tests = list(set(failed_tests))
 
-    # ==========================================
-    # 3. 测试统计数据解析 (多数据集适配关键)
-    # ==========================================
-    
-    # 策略 A: 匹配 Maven / 失败的 JUnitCore (Tests run: 4,  Failures: 1)
-    m_maven = re.search(
-        r'Tests run:\s*(\d+),\s*Failures:\s*(\d+)(?:,\s*Errors:\s*(\d+))?',
-        combined
-    )
 
-    # 策略 B: 匹配成功的 JUnitCore (OK (4 tests)) -> 专治 QuixBugs 成功漏报
+    m_maven = re.search(r'Tests run:\s*(\d+),\s*Failures:\s*(\d+)(?:,\s*Errors:\s*(\d+))?',combined)
+
     m_junit_ok = re.search(r'OK\s*\(\s*(\d+)\s*tests?\s*\)', combined)
 
-    # 策略 C: 匹配 Defects4J 总结格式 (Failing tests: X)
     m_d4j = re.search(r'Failing tests:\s*(\d+)', combined)
 
     if m_maven:
@@ -164,25 +146,21 @@ def parse_test_output(out, err):
         pass_rate = round(passed / tests_run, 3) if tests_run > 0 else 0.0
 
     elif m_junit_ok:
-        # QuixBugs 全过的情况
         tests_run = int(m_junit_ok.group(1))
         failures = 0
         passed = tests_run
         pass_rate = 1.0
 
     elif m_d4j:
-        # Defects4J 的情况
         failures = int(m_d4j.group(1))
         if failures == 0:
             pass_rate = 1.0
-            # Defects4J 成功时不知道总数，给个标记值或留 0，但 pass_rate=1.0 确保能被判定为 Plausible
             tests_run = passed = 0 
         else:
             pass_rate = 0.0
             tests_run = passed = 0
 
     # ==========================================
-    # 4. 异常解析
     # ==========================================
     exception_patterns = [
         r'(java\.[\w\.]+Exception)',
@@ -209,10 +187,7 @@ def parse_test_output(out, err):
 def is_validated(proj_data: dict, expected_patch_count: int) -> bool:
 
     output = proj_data.get('output', [])
-    if not output:
-        return False
-
-    if len(output) != expected_patch_count:
+    if not output or len(output) != expected_patch_count:
         return False
 
     has_unknown = any(

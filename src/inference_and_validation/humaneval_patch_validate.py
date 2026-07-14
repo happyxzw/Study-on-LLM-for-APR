@@ -30,8 +30,7 @@ def validate_humaneval(
     benchmark_dir: str = "llmpeft4apr/validation_benchmark_dataset/benchmarks/humaneval-java/",
     benchmark_name: str = "humaneval",
     model_type: str = "deepseek-coder-6.7b-base",
-    peft_type: str = "lora",
-    train_dataset: str = "apr",
+    enhancement_type: str = "zero-shot",
     validation_file: str = "",
     log_file: str = "validation_logs"
 ):
@@ -41,7 +40,7 @@ def validate_humaneval(
     log_file = Path(log_file)
     clean_and_create_benchmark_dir(benchmark_dir, benchmark_name)  
     validation_file, model_output,validated_result, plausible, total = prepare_validation_environment(
-        input_file=input_file,output_dir=output_dir,benchmark_name=benchmark_name,model_type=model_type,peft_type=peft_type,train_dataset=train_dataset,validation_file=validation_file,log_file=log_file)
+        input_file=input_file,output_dir=output_dir,benchmark_name=benchmark_name,model_type=model_type,enhancement_type=enhancement_type,validation_file=validation_file,log_file=log_file)
     
     for proj in model_output['data']:
         print('start validating', proj)
@@ -61,7 +60,6 @@ def validate_humaneval(
         os.makedirs(src_buggy_dir, exist_ok=True)
         os.makedirs(src_test_dir, exist_ok=True)
 
-        # 把原始缺陷代码和测试代码从备份区搬过来
         shutil.copyfile(benchmark_dir / "src_bak" / "main" / "java" / benchmark_name / "buggy" / f"{proj}.java", src_buggy_dir / f"{proj}.java")
         shutil.copyfile(benchmark_dir / "src_bak" / "test" / "java" / benchmark_name / f"TEST_{proj}.java", src_test_dir / f"TEST_{proj}.java")
         baseline_result = humaneval_test_suite(proj,benchmark_dir)

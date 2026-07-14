@@ -229,10 +229,6 @@ def main():
             strategy = "cot"
         elif "rag" in name:
             strategy = "rag"
-        elif "lora" in name:
-            strategy = "lora"
-        elif "finetune" in name or "ft" in name:
-            strategy= "finetune"
         elif "few" in name:
             strategy = "few-shot"
         else:

@@ -9,7 +9,8 @@ from datetime import datetime
 from pathlib import Path
 from validation_utils import write_log, exec_command_with_timeout,is_validated, parse_test_output, save_json, prepare_validation_environment
 
-LIBS_DIR = "/home/chenshiping/peft4apr/jasper/lib"
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+LIBS_DIR = os.environ.get("JASPER_LIB_DIR", os.path.join(PROJECT_ROOT, "jasper", "lib"))
     
 def find_last_closed_brace_index(s):
     stack = []
@@ -72,9 +73,8 @@ def validate_quixbugs(
     output_dir: str = " llmpeft4apr/codellama_7b_hf/result/", #validation results
     benchmark_name: str = "quixbugs-java",
     model_type: str = "CodeLlama-7b-hf",
-    peft_type: str = "lora",
+    enhancement_type: str = "zero-shot",
     tmp_dir: str = ' llmpeft4apr/validation_benchmark_dataset/benchmarks/quixbugs_tmp',
-    train_dataset: str = "apr",
     validation_file: str = "",
     log_file: str = "validation_logs"
     ):
@@ -90,7 +90,7 @@ def validate_quixbugs(
     #     exec_command_with_timeout(['mkdir', tmp_dir])
 
     validation_file, model_output,validated_result, plausible, total = prepare_validation_environment(
-        input_file=input_file,output_dir=output_dir,benchmark_name=benchmark_name,model_type=model_type,peft_type=peft_type,train_dataset=train_dataset,validation_file=validation_file,log_file=log_file)
+        input_file=input_file,output_dir=output_dir,benchmark_name=benchmark_name,model_type=model_type,enhancement_type=enhancement_type,validation_file=validation_file,log_file=log_file)
 
     for proj in model_output['data']:
         print('start validating', proj)

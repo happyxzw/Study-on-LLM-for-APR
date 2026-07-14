@@ -1,44 +1,34 @@
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-import json
-import fire
-import time
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
-from peft import PeftModel,PeftConfig
-from prompter import Prompter
-from datetime import datetime
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from openai import OpenAI
 
-client = OpenAI(base_url="https://api.linyinet.asia/v1",
-                             api_key="sk-B6lk0as2o9WjlwnQTcakug5yLNuhn9qFCvOagRCwXIkVb0Dy",
-                             timeout=300,
-                             max_retries=3)
-import re
+client = OpenAI(base_url=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+                api_key=os.environ.get("OPENAI_API_KEY", "your-api-key"),
+                timeout=300,
+                max_retries=3)
 
 def create_model_and_tokenizer(model_name_or_path, model_type, load_in_8bit=False):
     quantization_config = None
     if load_in_8bit:
-        from transformers import BitsAndBytesConfig
         quantization_config = BitsAndBytesConfig(load_in_8bit=True)
+        
     model = AutoModelForCausalLM.from_pretrained(
         pretrained_model_name_or_path=model_name_or_path,
         torch_dtype=torch.float16,
         quantization_config=quantization_config,
         device_map="auto",
     )
-    if torch.cuda.is_available():
-        print(f"Model device_map=auto, {torch.cuda.device_count()} GPUs")
-    # model = prepare_model_for_kbit_training(model)
-    tokenizer = AutoTokenizer.from_pretrained(
-        pretrained_model_name_or_path=model_name_or_path
-    )
-    if 'deepseekcoder' in model_type:
+    tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=model_name_or_path)
+    
+    if 'deepseekcoder' in model_type.lower():
         tokenizer.pad_token_id = 32018 #"<pad>"
     else:
         tokenizer.pad_token_id = 0 # unk. we want this to be different from the eos token
     tokenizer.padding_side = "right"  
-    print(model_type + f' pad token id is {tokenizer.pad_token_id}')
+    print(f"{model_type} pad token id: {tokenizer.pad_token_id}")
+    
     return model, tokenizer
 
 def prompt_text(origin_prompt, model_type, enhance_methods):

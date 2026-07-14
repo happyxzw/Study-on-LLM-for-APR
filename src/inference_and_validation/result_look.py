@@ -4,8 +4,7 @@ import os
 OUTPUT_TEMP = """
 '======{validated_file} results:===='
 Model: {model_type}
-PEFT Method: {peft_type}  
-train_dataset: {train_dataset}  
+enhancement Method: {enhancement_type} 
 validation benchmark : {benchmark_name} 
 validation result: 
 {validation_result}
@@ -13,21 +12,20 @@ validation result:
 def cal_result(
     validated_file: str = "llmpeft4apr/results_new/CodeLlama_7b_hf_apr_new_lora_on_humaneval_validation_24_04_04_11_46_17.json",
     model_type: str = 'CodeLlama-7b-hf',
-    peft_type: str = 'lora',
-    train_dataset: str = 'apr_new',
+    enhancement_type: str = 'zero-shot',
     benchmark_name: str = 'humaneval',
 ):
 
-    validated_result = json.load(open(validated_file, 'r'))
+    with open(validated_file, encoding="utf-8") as f:
+        validated_result = json.load(f)
     validated_result = validated_result['data']
 
-    validated_result_fp = validated_file.split('.json')[0] + '_result_look.txt'
+    base, _ = os.path.splitext(validated_file)
+    validated_result_fp = base + "_result_look.txt"
 
     res = []
 
-    pass_k_list = [i for i in range(1, 11)]
-
-    for pass_k in pass_k_list:
+    for pass_k in range(1, 11):
 
         total = 0
         plausible_patches = 0
@@ -59,11 +57,8 @@ def cal_result(
             OUTPUT_TEMP.format(
                 validated_file=validated_file,
                 model_type=model_type,
-                peft_type=peft_type,
-                train_dataset=train_dataset,
+                enhancement_type=enhancement_type,
                 benchmark_name=benchmark_name,
                 validation_result='\n'.join(res)
             )
         )
-
-        

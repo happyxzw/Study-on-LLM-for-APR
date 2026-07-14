@@ -1,238 +1,216 @@
-# Replication Package for _"Dissecting LLM-Based Program Repair: An Empirical Study of Model Capability, RepairStrategy, and Fault Type"_
+# Dissecting LLM-Based Program Repair
+
+An empirical study of how model capability, repair strategy, and fault type affect LLM-based automated program repair.
+
 ## Prerequisites
 
-### Setting up the environment and installing dependencies
-
-The Python requirements and the environment can be set up as follows:
+### Environment Setup
 
 ```bash
-# Add the Conda-forge to the channels
 conda config --add channels conda-forge
 conda config --set channel_priority strict
-	
-# Set up the environment
-conda create --name coderepair python=3.11.5
+conda create -n coderepair python=3.10 -y
 conda activate coderepair
-	
-# Install main ML requirements
+
+# PyTorch (GPU)
 conda install pytorch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 pytorch-cuda=12.1 -c pytorch -c nvidia
+
+# Transformers
 conda install transformers==4.36.2
 conda install accelerate==0.23.0
-pip install peft==0.6.0
 pip install evaluate==0.4.3
-pip install numpy==1.26.0
-pip install wandb==0.15.12
 
-# CodeBleu
+# Data & ML
+pip install numpy==1.26.0 scikit-learn==1.3.0 pandas==2.1.0
+pip install imbalanced-learn==0.11.0
+pip install gensim==4.3.0
+
+# OpenAI SDK (for GPT-based generation)
+pip install openai==1.6.0
+
+# CodeBLEU
 pip install codebleu==0.7.0
 pip install tree-sitter-java==0.21
 
-# other requirements
-pip install zenodo-get tqdm click
+# Other
+pip install fire tqdm
 ```
 
-Next, we need to install [Jasper](https://github.com/lin-tan/clm/tree/main/jasper): an AST-based Java Parser for Program Repair. A copy of the code is provided, along with the authors' instructions, in `jasper/README.md`.  Note that Java 8 is needed for compiling Jasper
+### Java 8 + Jasper
 
 ```bash
 conda install openjdk=8
 cd jasper
-mkdir target
-javac -cp ".:lib/*" -d target src/main/java/clm/jasper/*.java src/main/java/clm/codet5/*.java src/main/java/clm/codegen/*.java src/main/java/clm/plbart/*.java src/main/java/clm/incoder/*.java src/main/java/clm/finetuning/*.java
+mkdir -p target
+javac -cp ".:lib/*" -d target src/main/java/clm/jasper/*.java
+cd ..
 ```
 
-### Setting up APR benchmarks and fine-tuning datasets
-
-The following APR benchmarks and fine-tuning datasets need to be installed:
-[Quixbugs](https://github.com/jkoppel/QuixBugs),
-[Defects4j](https://github.com/rjust/defects4j), and 
-[HumanEval-Java](https://github.com/lin-tan/clm/tree/main/humaneval-java), and
-[CLM](https://zenodo.org/records/7559208).
-   
-You can download them from within the project root, using:
+### Benchmark Data
 
 ```bash
 mkdir -p datasets
 
-# Download QuixBugs, Defects4J, and CLM
-git clone https://github.com/jkoppel/QuixBugs.git datasets/QuixBugs
+# QuixBugs
+git clone https://github.com/jkoppel/QuixBugs.git datasets/quixbugs
+cp -r datasets/quixbugs/java_programs datasets/quixbugs/java_programs_bak
+
+# Defects4J
 git clone https://github.com/rjust/defects4j.git datasets/defects4j
-zenodo_get 7559208 -o ./datasets/clm
-mv QuixBugs quixbugs
-
-# Humaneval-Java
-cd datasets
-wget https://raw.githubusercontent.com/lin-tan/clm/refs/heads/main/humaneval-java/humaneval-java.tar.gz
-tar -xzvf humaneval-java.tar.gz
-cd humaneval-java
-cp src src_bak
-cd ..
-
-# Quixbugs
-cd quixbugs
-cp -r java_programs java_programs_bak
-cd ..
-
-# Set the correct version for Defects4J
-cd defects4j
+cd datasets/defects4j
 git checkout tags/v2.0.1 -b d4j-2.0.1 --force
-cd ..
-
-# Add bug location info
-mv quixbugs_loc.txt quixbugs
-mv humaneval_loc.txt humaneval-java
-mv defects4j_loc.txt defects4j
-
-# Create project folders for the benchmarks
-mkdir datasets/humaneval-java/proj
-mkdir datasets/quixbugs/proj
-mkdir datasets/defects4j/proj
-
-# Make a temporary folder to store copies of the benchmarks (so they can easily be reinitialized)
-cd ..
-mkdir tmp
-cp -r humaneval-java tmp
-cp -r quixbugs tmp
-cp -r defects4j tmp
-
-# Install Defects4j
-cd defects4j
-conda install perl
-conda install compilers
-conda install conda-forge gcc_linux-64 sysroot_linux-64=2.17
+cd ../..
+# Install Defects4J
+cd datasets/defects4j
 cpan App::cpanminus
 ./init.sh
 export PATH=$PATH:$(pwd)/framework/bin
+cd ../..
+
+# HumanEval-Java
+cd datasets
+wget https://raw.githubusercontent.com/lin-tan/clm/refs/heads/main/humaneval-java/humaneval-java.tar.gz
+tar -xzvf humaneval-java.tar.gz
+cp -r humaneval-java/src humaneval-java/src_bak
+cd ..
+
+# Create project backup dirs (used by validation)
+mkdir -p datasets/quixbugs/proj
+mkdir -p datasets/humaneval-java/proj
+mkdir -p datasets/defects4j/proj
 ```
 
-### Environment.yml
+### Models
 
-For reference, we provide a file `environment.yml` in the root of the replication package that includes our complete conda environment after following these installation steps. 
-# Exploring Parameter-Efficient Fine-Tuning of Large Language Model on Automated Program Repair
+For local inference, place the required model checkpoints under `models/`.
+GPT-based models are accessed through the OpenAI API.
 
-## Dependency
+| Model | Path | Used For |
+|-------|------|----------|
+| GPT-4o (API) | `$OPENAI_API_KEY` | All strategies |
+| CodeLlama-Instruct-7b | `models/CodeLlama-Instruct-7b` | Local inference |
+| DeepSeek-Coder-6.7b | `models/deepseekcoder-6.7b` | Local inference |
+| DeepSeek-Coder-1.3b | `models/deepseekcoder-1.3b` | Local inference |
+| UnixCoder-base | `models/unixcoder-base` | RAG / COT retrieval |
 
-### Python
+### Environment Variables
 
-* Python 3.9.17
-* PyTorch 2.0.1
-* Huggingface transformers 4.35.2
-* wandb
-* pef 0.6.2
+```bash
+export OPENAI_API_KEY="your-api-key"
+export OPENAI_BASE_URL="https://api.openai.com/v1"      # default
+export JASPER_LIB_DIR="./jasper/lib"                     # optional, defaults to ./jasper/lib
+```
 
-- accelerate 0.24.1
+## Run the Pipeline
 
-- datasets 2.13.0
+Edit `src/run_all_scripts.sh` and set the following variables at the top:
 
-- trl
+```bash
+model_type="gpt-4o"                   # gpt-4o, CodeLlama-Instruct-7b, deepseekcoder-6.7b
+enhance_methods="zero-shot"           # zero-shot, few-shot, rag, cot
+use_bug_type="false"                  # set to "true" to include bug type in the prompt
+benchmark_names=("quixbugs_c1" "humaneval-java_c1" "defects4j_c1")   # c1 by default
+```
 
-- fire
-
-* nvitop
-
-### Others
-
-- Java 8
-
-## About PEFT weights  
-
-- We have released 4 PEFT weights of each base model on HuggingFace, trained on APR-INSTRUCTION dataset.
-- [PEFT Weights here](https://huggingface.co/survoltli/llmpeft4apr)
-
-
-## Content
-The file structure of the artifact is as follow:
-
-cd /home/chenshiping/llmpeft4apr-main/train_scripts
-sh lora_16_train_apr.sh
-bash lora_16_apr_validation.sh
-### APR-INSTRUCTION_construct;
-
-- contains source code of constructing `APR-INSTRUCTION` ,base existing APR dataset[1]
-
-### **codellama_7b_hf:**  
-
-- **output:** peft weights by different peft method(lora, p-tuning，prefix tuning , $(IA)^3$ and Full-model Fine-tuning
-
-- **results:** results of generated pacthes on benchmarks(Humaneval-Java, Defect4j and Quixbugs) inferencing by `codellama-7b-hf` and `codellama-7b-hf` with peft weights, validation results of generated pacthes
-
-### **codellama_13b_hf:**  
-
-- **output:** peft weights by different peft method(lora, p-tuning，prefix tuning , $(IA)^3$ 
-- **results:** results of generated pacthes on benchmarks(Humaneval-Java, Defect4j and Quixbugs) inferencing by `codellama-13b-hf` and `codellama-13b-hf` with peft weights, validation results of generated pacthes
-
-### **deepseek_coder_6.7b:**  
-
-- **output:** peft weights by different peft method(lora, p-tuning，prefix tuning , $(IA)^3$ 
-- **results:** results of generated pacthes on benchmarks(Humaneval-Java, Defect4j and Quixbugs) inferencing by `Deepseek-Coder Base 6.7B` and `Deepseek-Coder Base 6.7B` with peft weights, validation results of generated pacthes
-
-### **llama2_7b_hf:**  
-
-- **output:** peft weights by different peft method(lora, p-tuning，prefix tuning , $(IA)^3$ 
-- **results:** results of generated pacthes on benchmarks(Humaneval-Java, Defect4j and Quixbugs) inferencing by `Llama-2-7b-hf` and `Llama-2-7b-hf` with peft weights, validation results of generated pacthes
-
-### instruction_tuning_dataset
-
-- Instruction Dataset used this paper
-  - apr_instruction_30k.json: the APR instruction dataset constructed this paper
-  - oss_instrcution_30k.json: 30k random selection of OSS-Instruction Dataset
-  - code_alpaca_20k.json: Code Alpaca Instruction Dataset
-  - The rest of data is used for RQ3 to explore the impact of training data size for performance, which is parted as 10k, 15k, 20k and 25k
-
-### **inference_and_validation_src:**
-
-- This directory consists of source code used for patches generation and validation of LLMs
-    |  file name  |       description     |
-    |  :----:             |       :----:          |
-    | defects4j_patch_validate.py | patches generation and validation on Defects4j benchmark |
-    | humaneval_patch_validate.py | patches generation and validation on Humaneval-Java benchmark |
-    | quixbugs_patch_validate.py | patches generation and validation on Quixbugs benchmark |
-    | peft_patch_validation.py | Entry of model validation with PEFT methods, and then select different scripts for verification |
-    | fmft_generate_patch.py | Entry of model validation with Full-model fine-tuning, and then select different scripts for verification |
-    | generate_patch_infill.py | Entry of CodeLlama 7b validation with no fine-tuning and infill templates, and then select different scripts for verification |
-    | prompter.py | convert instances of benchmark to instruction |
-    | result_look.py | record $pass@k$ of each validation |
-
-### **inference_scripts:**
-
-- This directory consists of bash scripts used for patches generation and validation of LLMs
+- **c1 vs c2**: Use `c1` by default. Switch to `c2` only when studying the effect of buggy-line context.
+- **Bug type**: Set `use_bug_type="true"` to enable the bug-type-aware prompt (`repair_prompt_open_source_type.txt`).
+This option is only required when reproducing the bug-type-aware experiments.
 
 
-- each script is formed as `model name`\_`Fine-tuning method`\_`instruction dataset of Fine-tuning`\_validation.sh
+```bash
+bash src/run_all_scripts.sh
+```
 
-### **train_scripts:**
-
-- This directory consists of bash scripts used for LLMs training 
-- each script is formed as `model name`\_instrcution\_`Fine-tuning method`\_`hyper-parameters(Optional)`\_train\_`instruction dataset of Fine-tuning`\_validation.sh
-
-### train_src:
-
-
-- This directory consists of source code used for LLM trainnin
-
-    |  file name    |       description     |
-    |  :----:             |       :----:          |
-    | sfttrain_peft.py | Training code for PEFT methods |
-    | sfttrain_ft.py | Training code for Full-model Fine-tuning |
-    |   prompter.py    |  Add additional prompt for instruction   |
-    
-
-### results_hyper_parameters:
-
-- This directory consists of results of patches generation and validation in experiments of RQ3
-
-
-
-
-## NOTICE  
-
-- Due to the size of `Fine-tuning weights`  is too large, so we do not upload them on Github now
-- Considering the anonymous review,  we will  release weights after review
-
-
-## Cites  
+## Pipeline Overview
 
 ```
-[1] Zhu, Qihao, et al. "A syntax-guided edit decoder for neural program repair." Proceedings of the 29th ACM joint meeting on European software engineering conference and symposium on the foundations of software engineering. 2021.
+benchmark data ──→ patch generation ──→ patch validation ──→ analysis
+   (JSON)         (generate_patch.py      (patch_validation.py    (analyse_benchmark.py)
+                   or rag_cot/rag.py)       + per-benchmark
+                                            validators)
+```
+
+### Step 1: Patch Generation
+
+- **Zero-shot / Few-shot**: `src/inference_and_validation/generate_patch.py`
+- **RAG / COT**: `src/inference_and_validation/rag.py`
+
+Supports: `zero-shot`, `few-shot`, `rag`, `cot`
+
+### Step 2: Patch Validation
+
+`src/inference_and_validation/patch_validation.py` dispatches to:
+- `defects4j_patch_validate.py`
+- `humaneval_patch_validate.py`
+- `quixbugs_patch_validate.py`
+
+### Step 3: Analysis
+
+`src/analysers/analyse_benchmark.py` computes repair rates per bug category.
+
+## Project Structure
+
+```
+Dissecting-LLM-APR/
+├── datasets/
+│   ├── benchmarks/           # Benchmark input data (JSON)
+│   │   ├── quixbugs_c1.json
+│   │   ├── quixbugs_c2.json
+│   │   ├── humaneval-java_c1.json
+│   │   ├── humaneval-java_c2.json
+│   │   ├── defects4j_c1.json
+│   │   └── defects4j_c2.json
+│   ├── prompt/                   # Prompt templates
+│   │   ├── repair_prompt_open_source.txt
+│   │   ├── repair_prompt_open_source_type.txt
+│   │   ├── repair_prompt_open_source_rag.txt
+│   │   └── repair_prompt_cot.txt
+│   ├── rag/                      # RAG cache & knowledge base
+│   │   ├── Datasets/             # Retrieval knowledge base
+│   │   │   ├── defects4j.json
+│   │   │   ├── humaneval.json
+│   │   │   └── quixbugs.json
+│   │   └── {model}/              # TF-IDF cache per model
+│   ├── quixbugs/                 # QuixBugs Java test suites
+│   ├── humaneval-java/           # HumanEval-Java test suites
+│   ├── defects4j/                # Defects4J checkouts
+│   └── results/                  # Generated outputs + validation results
+├── src/
+│   ├── run_all_scripts.sh        # One-click pipeline
+│   ├── analysers/
+│   │   └── analyse_benchmark.py
+│   └── inference_and_validation/
+│       ├── generate_patch.py     # Zero-shot / Few-shot generation
+│       ├── rag.py                # RAG / COT generation
+│       ├── patch_validation.py   # Validation dispatcher
+│       ├── apr_utils.py          # Shared utilities
+│       ├── validation_utils.py   # Test output parsing
+│       ├── result_look.py        # pass@k computation
+│       ├── defects4j_patch_validate.py
+│       ├── humaneval_patch_validate.py
+│       └── quixbugs_patch_validate.py
+├── models/                       # Model checkpoints (not tracked)
+└── jasper/                       # Jasper Java parser library
 ```
 
 
+## Supported Benchmarks
+
+| Benchmark | c1 (original) | c2 (expanded context) |
+|-----------|:---:|:---:|
+| QuixBugs (Java) | `quixbugs_c1` | `quixbugs_c2` |
+| HumanEval-Java | `humaneval-java_c1` | `humaneval-java_c2` |
+| Defects4J | `defects4j_c1` | `defects4j_c2` |
+
+
+## Acknowledgements
+
+This repository incorporates and extends implementations from several prior open-source projects. We sincerely thank the original authors for releasing their code.
+
+Specifically:
+
+- The implementation of the retrieval-based repair pipeline is adapted from **ThinkRepair: Self-Directed Automated Program Repair**.
+- The implementation of the patch generation pipeline is partially adapted from **Exploring Parameter-Efficient Fine-Tuning of Large Language Models on Automated Program Repair**.
+- The project organization and patch validation framework are adapted from **The Impact of Fine-tuning Large Language Models on Automated Program Repair**.
+
+These implementations have been modified and extended to support the experimental settings used in this study.
