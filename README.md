@@ -85,13 +85,13 @@ mkdir -p datasets/defects4j/proj
 For local inference, place the required model checkpoints under `models/`.
 GPT-based models are accessed through the OpenAI API.
 
-| Model | Path | Used For |
-|-------|------|----------|
-| GPT-4o (API) | `$OPENAI_API_KEY` | All strategies |
-| CodeLlama-Instruct-7b | `models/CodeLlama-Instruct-7b` | Local inference |
-| DeepSeek-Coder-6.7b | `models/deepseekcoder-6.7b` | Local inference |
-| DeepSeek-Coder-1.3b | `models/deepseekcoder-1.3b` | Local inference |
-| UnixCoder-base | `models/unixcoder-base` | RAG / COT retrieval |
+| Model | Local Path | Download |
+|-------|------------|----------|
+| GPT-4o (API) | `$OPENAI_API_KEY` | OpenAI API |
+| CodeLlama-Instruct-7b | `models/CodeLlama-Instruct-7b` | https://huggingface.co/codellama/CodeLlama-7b-Instruct-hf |
+| DeepSeek-Coder-6.7b | `models/deepseekcoder-6.7b` | https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-base |
+| DeepSeek-Coder-1.3b | `models/deepseekcoder-1.3b` | https://huggingface.co/deepseek-ai/deepseek-coder-1.3b-base |
+| UnixCoder-base | `models/unixcoder-base` | https://huggingface.co/microsoft/unixcoder-base |
 
 ### Environment Variables
 
@@ -196,7 +196,7 @@ Dissecting-LLM-APR/
 
 ## Supported Benchmarks
 
-| Benchmark | c1 (original) | c2 (expanded context) |
+| Benchmark | c1 (original) | c2 (buggy_line) |
 |-----------|:---:|:---:|
 | QuixBugs (Java) | `quixbugs_c1` | `quixbugs_c2` |
 | HumanEval-Java | `humaneval-java_c1` | `humaneval-java_c2` |
